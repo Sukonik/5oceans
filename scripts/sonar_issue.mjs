@@ -30,7 +30,7 @@ if (!p.found.length && !p.address) {
   md += 'I could not detect any listing facts. Paste the part of the listing that shows the price, beds and baths, taxes and fees, and edit this issue or open a new one.\n';
 } else {
   md += `${p.address ? `**${p.address}**` : '**Listing**'}${p.site ? ` on ${p.site}` : ''} (${p.found.length} facts found)\n\n`;
-  const fmt = (f) => (typeof f.value !== 'number' ? String(f.value) : f.kind === 'money' ? usd(f.value) : f.kind === 'pct' ? `${Math.round(f.value * 10) / 10}%` : f.kind === 'year' ? String(f.value) : Math.round(f.value * 100) / 100);
+  const fmt = (f) => (typeof f.value !== 'number' ? String(f.value) : f.kind === 'money' ? usd(f.value) : f.kind === 'pct' ? `${Math.round(f.value * 100) / 100}%` : f.kind === 'year' ? String(f.value) : f.kind === 'int' ? Math.round(f.value).toLocaleString('en-US') : Math.round(f.value * 100) / 100);
   for (const g of S.GROUPS) { const rows = p.found.filter((f) => f.group === g); if (!rows.length) continue; md += `**${g}**\n\n| Fact | Value |\n|---|---|\n${rows.map((f) => `| ${f.label} | ${String(fmt(f)).replace(/\|/g, '/')} |`).join('\n')}\n\n`; }
   if (p.insights.length) md += `**What Sonar noticed**\n\n${p.insights.map((x) => `- ${x.text}`).join('\n')}\n\n`;
   md += `Suggested calculator: **${sug}**.\n\n[Open the Real Estate Calculator with these numbers](${link})\n\n`;

@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { policy, isPrivateIp, robotsAllows, extract, readLink, pingLink } from '../scripts/sonar_fetch.mjs';
+const SN = createRequire(import.meta.url)('../assets/calc/sonar.js');
 let n = 0; const ok = (name, fn) => Promise.resolve(fn()).then(() => { n++; console.log('ok', name); });
 
 const LISTING = `<!doctype html><html><head><title>9 Shell Ln</title><meta property="og:description" content="Charming 3 bed 2 bath home"><meta property="product:price:amount" content="699000">
@@ -41,6 +44,14 @@ await ok('robots.txt: longest match wins, own agent group beats *', () => {
 await ok('extractor keeps facts, drops scripts and styles', () => {
   const e = extract(LISTING);
   assert.match(e.text, /Price: \$699000/); assert.match(e.text, /3 beds 2 baths/); assert.match(e.text, /Property taxes/); assert.doesNotMatch(e.text, /var price|color:red|unrelated/); assert.match(e.jsonld, /SingleFamilyResidence/);
+});
+await ok('a listing laid out one line per div survives HTML to text to facts', () => {
+  const lines = readFileSync(new URL('./fixtures/redfin-style.txt', import.meta.url), 'utf8').split('\n').filter((l) => l.trim() && !/Agent Example|^Contact/.test(l));
+  const html = '<html><head><title>Fictional</title></head><body><nav>Buy Rent Sell</nav>' + lines.map((l) => '<div>' + l.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>').join('') + '<footer>Terms</footer></body></html>';
+  const e = extract(html), p = SN.parseListing({ url: '', text: e.text, jsonld: e.jsonld });
+  assert.ok(p.found.length >= 45, 'fields ' + p.found.length); assert.equal(p.facts.status, 'For Sale'); assert.equal(p.facts.style, 'Single Family Residential'); assert.equal(p.facts.county, 'Nassau County');
+  assert.equal(p.facts.taxMo, 1180); assert.equal(p.facts.hoaMo, 0); assert.equal(p.facts.price, 925000); assert.ok(p.facts.flags.some((x) => /accessory/i.test(x)));
+  assert.ok(e.text.length < 30000);
 });
 await ok('reads an allowed page and parses the facts', async () => {
   const { read, listing } = await pingLink(base + '/listing', O);

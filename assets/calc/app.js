@@ -145,7 +145,7 @@
     var v = f.value, k = f.kind;
     if (typeof v !== 'number') return esc(v);
     if (k === 'money') return usd.format(v);
-    if (k === 'pct') return (Math.round(v * 10) / 10) + '%';
+    if (k === 'pct') return (Math.round(v * 100) / 100) + '%';
     if (k === 'year') return String(v);
     if (k === 'int') return Math.round(v).toLocaleString('en-US');
     return (Math.round(v * 100) / 100).toLocaleString('en-US');
