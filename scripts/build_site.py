@@ -101,6 +101,8 @@ def inline(t, prefix=""):
         f_, _, anchor = url.partition("#")
         if url.startswith("resource:"):
             return f'<a href="{prefix}resources/{url[9:]}/index.html">{label}</a>'
+        if url.startswith("page:"):
+            return f'<a href="{prefix}{url[5:]}">{label}</a>'
         if url.startswith("animal:"):
             return f'<a href="{prefix}animals/{url[7:]}/index.html">{label}</a>'
         if f_ in GUIDE_SLUG:
@@ -183,6 +185,7 @@ for r in RESOURCES:
     assert r["icon"] in ICONS, (r["slug"], r["icon"])
 RES_GROUPS = {"retirement": ("Retirement & income", "landmark",
                              "Plans, pensions and accounts: what they are, who can use them, when the money is accessible, and what they cost in tax."),
+              "credit": ("Credit & debt", "wallet", "Scores, reports, cards and debt: how credit works, how to protect and build it, and how to use debt without letting it use you."),
               "property": ("Property & housing", "house",
                            "Home, vacation home, rental, land, timeshare and more: what each one costs, earns and risks.")}
 ANIMAL_TAGS = {}
@@ -526,7 +529,7 @@ h2{font-size:clamp(1.35rem,1.1rem + 1.1vw,2rem)}
 .rt td small{display:block;font-size:.76rem;font-weight:500}
 .neg{color:var(--neg)}.pos{color:var(--pos)}
 .sub{margin-top:22px}.sub h3{margin:0 0 4px;font-size:1.05rem}.subn{margin:0 0 8px;font-size:.88rem;opacity:.8}
-.tw{overflow-x:auto;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;background:var(--surface);padding:4px 12px}
+.tw{position:relative;overflow-x:auto;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;background:var(--surface);padding:4px 12px}
 .rt.grid th,.rt.grid td{padding:9px 8px;text-align:right;white-space:nowrap}.rt.grid th[scope=row],.rt.grid th:first-child{text-align:left}.rt.grid td.base{color:var(--action)}
 .rt.cmpt th,.rt.cmpt td{padding:9px 10px;text-align:right}.rt.cmpt th:first-child{text-align:left;white-space:normal;min-width:130px}
 .scn{margin-top:44px}
@@ -537,9 +540,59 @@ h2{font-size:clamp(1.35rem,1.1rem + 1.1vw,2rem)}
 .scl small{display:block;opacity:.7;font-size:.8rem}
 .msg{min-height:1.4em;font-size:.88rem;color:var(--action)}
 @media(max-width:960px){.calc{grid-template-columns:minmax(0,1fr);gap:24px}.calc-res{position:static;max-height:none;overflow:visible}}
+
+/* credit tool */
+.tabs button{white-space:nowrap;min-height:44px;display:inline-flex;align-items:center;padding:0 18px;border-radius:999px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:.92rem;font-weight:500;cursor:pointer}
+.tabs button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.tabs button.on{background:var(--action);color:var(--cta);font-weight:600;box-shadow:0 4px 12px color-mix(in srgb,var(--action) 40%,transparent)}
+.statusbar{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:.85rem;padding:10px 14px;border-radius:14px;margin:0 0 16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+.statusbar b{font-weight:600}
+.banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:14px;margin:0 0 16px;background:color-mix(in srgb,var(--action) 12%,transparent);border:1px solid color-mix(in srgb,var(--action) 30%,transparent)}
+.banner[hidden]{display:none}
+.cc-panel{padding-top:20px}.cc-panel[hidden]{display:none}
+.cc-panel h2{margin:0 0 6px;font-family:"Iowan Old Style",Georgia,serif;font-weight:400}
+.cc-panel h3{margin:28px 0 8px;font-size:1.1rem}
+.lead{max-width:66ch;margin:0 0 16px;opacity:.88}
+.cc-form{margin:0 0 14px}.fbtn{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:12px;min-height:44px;padding:10px 12px;width:100%}
+.inp select{border:0;border-radius:0;background:transparent;outline:none}
+textarea{display:block;margin:0 0 8px;resize:vertical}
+.detect,.hist{margin:0 0 16px;padding:12px 16px;border-radius:14px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+.detect summary,.hist summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center;background:none;border:0;padding:0}
+.chk{display:flex;gap:10px;align-items:center;min-height:44px;cursor:pointer;font-size:.92rem}.chk input{width:20px;height:20px;accent-color:var(--action);flex:none}
+.plain{margin:0 0 10px;padding-left:1.2em}
+.tiles3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin:0 0 14px}
+.stile{display:grid;gap:4px;padding:16px;border-radius:16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+.stile .k{font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.7}
+.stile strong{font:400 2.4rem/1 "Iowan Old Style",Georgia,serif;color:var(--action)}.stile .dim{opacity:.4}.stile small{opacity:.7}
+.band{display:inline-block;width:max-content;padding:2px 10px;border-radius:999px;font-size:.75rem;font-weight:700;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.b-poor{background:color-mix(in srgb,var(--neg) 18%,transparent);color:var(--neg)}.b-fair{background:color-mix(in srgb,#d97706 18%,transparent)}
+.b-good,.b-verygood,.b-exceptional{background:color-mix(in srgb,var(--pos) 18%,transparent);color:var(--pos)}
+.guide{margin:24px 0 0;padding:18px 20px;border-radius:18px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+.guide h3{margin:0 0 8px}.steps{padding-left:1.3em;margin:0 0 12px}.steps li{margin:0 0 10px}
+.callout.high{border-left-color:var(--neg)}.callout.ok{border-left-color:var(--pos)}
+.cardlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.ccard{padding:16px;border-radius:16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+.ccard .ch{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}.ccard .ch span{opacity:.7;font-size:.85rem}
+.ub{height:8px;border-radius:99px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden;margin:6px 0 8px}
+.ub i{display:block;height:100%;border-radius:99px}.ub i.lo{background:var(--pos)}.ub i.md{background:#d97706}.ub i.hi{background:var(--neg)}
+.cm{margin:0 0 4px;font-size:.88rem;font-variant-numeric:tabular-nums}.act{display:flex;gap:8px;margin-top:10px}
+.tgt{max-width:360px;margin:16px 0}
+.strats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin:0 0 14px}
+.strat{position:relative;padding:18px;border-radius:18px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);display:grid;gap:4px;align-content:start}
+.strat.best{border-color:var(--action);box-shadow:0 0 0 1px var(--action)}.strat h4{margin:0;font-size:1.05rem}
+.flag{position:absolute;top:-10px;right:14px;background:var(--action);color:var(--cta);padding:2px 10px;border-radius:99px;font-size:.72rem;font-weight:700}
+.big-n{font:400 2rem/1.1 "Iowan Old Style",Georgia,serif;color:var(--action);overflow-wrap:anywhere}
+.strat dl{display:grid;grid-template-columns:1fr auto;gap:4px 10px;margin:8px 0 0;font-size:.88rem}.strat dt{opacity:.75}.strat dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.vd{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.75rem;font-weight:700}
+.v-bad{background:color-mix(in srgb,var(--neg) 18%,transparent);color:var(--neg)}.v-good{background:color-mix(in srgb,var(--pos) 18%,transparent);color:var(--pos)}.v-judgment{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.rt td small{display:block;opacity:.7;font-weight:400;text-align:left}
+.guard{margin:0 0 8px;padding-left:14px;border-left:2px solid color-mix(in srgb,var(--ink) 20%,transparent);font-size:.92rem}
+.nav a{padding:8px 11px}
+.picker .lbl{display:none}.search{flex:0 1 210px}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
-@media(max-width:720px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
+@media(max-width:1100px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
   .menu{width:min(280px,calc(100vw - 32px));max-height:min(70vh,520px);overflow-y:auto}.picker .lbl{display:none}
   body{padding-bottom:84px}.wrap{padding-inline:16px}.hero .wrap{padding-block:36px 56px}
   .dock{display:flex;position:fixed;z-index:30;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));gap:2px;padding:6px;border-radius:999px;
@@ -591,9 +644,9 @@ document.documentElement.dataset.theme=t}})();</script>
 <a class="glass skip" href="#main">Skip to content</a>
 <header><div class="wrap bar">
 <a class="brand" href="{prefix}index.html">{ic("waves-horizontal")} FiveOceans</a>
-<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a><a href="{prefix}tools/index.html"{ac("tools")}>Tools</a></nav>
+<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a><a href="{prefix}tools/index.html"{ac("tools")}>Tools</a><a href="{prefix}credit/index.html"{ac("credit")}>Credit Card Tool</a></nav>
 <span class="spacer"></span>
-<div class="search"><label for="q" hidden>Search</label>{ic("search")}<input id="q" type="search" placeholder="Search 457(b), ERS…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
+<div class="search"><label for="q" hidden>Search</label>{ic("search")}<input id="q" type="search" placeholder="Search…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
 <details class="picker" id="picker"><summary class="glass" aria-label="Change theme">{ic("palette")} <span class="lbl">Change theme</span> {ic("chevron-down","chev")}</summary>
 <div class="menu" role="radiogroup" aria-label="Theme"><h4>Light</h4>{rows("light")}<h4>Dark</h4>{rows("dark")}</div></details>
 </div></header>
@@ -603,10 +656,10 @@ document.documentElement.dataset.theme=t}})();</script>
 <p><a href="{REPO}COLE_HANDOFF.txt">Handoff</a> · <a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> · <a href="https://github.com/Sukonik/5oceans">GitHub</a></p></div></footer>
 <nav class="dock" aria-label="Quick">
 <a href="{prefix}index.html"{ac("home")}>{ic("house")}<span>Home</span></a>
-<a href="{prefix}seawater/index.html"{ac("seawater")}>{ic("waves-horizontal")}<span>Seawater</span></a>
-<a href="{prefix}freshwater/index.html"{ac("freshwater")}>{ic("droplets")}<span>Fresh</span></a>
+<a href="{prefix}index.html#water"{"" if cur not in ("seawater","freshwater") else ' aria-current="page"'}>{ic("waves-horizontal")}<span>Water</span></a>
 <a href="{prefix}resources/index.html"{ac("resources")}>{ic("landmark")}<span>Resources</span></a>
 <a href="{prefix}tools/index.html"{ac("tools")}>{ic("calculator")}<span>Tools</span></a>
+<a href="{prefix}credit/index.html"{ac("credit")}>{ic("wallet")}<span>Credit</span></a>
 </nav>
 <script>const P={prefix!r};{JS}</script></body></html>"""
 
@@ -668,7 +721,7 @@ def tabs(prefix, here):
 
 
 write("index.html", "FiveOceans", 0,
-      f'<section class="section"><h2>Choose your water</h2><p>Six collections, six animals each. Every one links to a guide and a direct official resource.</p>'
+      f'<section class="section" id="water"><h2>Choose your water</h2><p>Six collections, six animals each. Every one links to a guide and a direct official resource.</p>'
       f'<div class="fam">{fam_cards}</div></section>'
       f'<section class="section"><h2>Explore the resources</h2><p>Two shelves behind every path: money plans and property.</p><div class="fam">'
       + "".join(f'<a class="big" href="resources/index.html#{k}"><span class="ico">{ic(v[1])}</span><h3>{v[0]}</h3><p>{v[2]}</p>'
@@ -677,6 +730,7 @@ write("index.html", "FiveOceans", 0,
       + f'<section class="section"><h2>Run the numbers</h2><p>Simple calculators that work in your browser.</p><div class="fam">'
       + f'<a class="big" href="tools/real-estate/index.html"><span class="ico">{ic("calculator")}</span><h3>Real Estate Calculator</h3><p>Home, rental, condo, co-op, land, flipper, income houses and more.</p><span class="meta">14 calculators {ic("arrow-right")}</span></a>'
       + f'<a class="big" href="tools/savings-bridge/index.html"><span class="ico">{ic("piggy-bank")}</span><h3>Savings Bridge</h3><p>Will your savings carry you to your first pension payment?</p><span class="meta">Open the tool {ic("arrow-right")}</span></a>'
+      + f'<a class="big" href="credit/index.html"><span class="ico">{ic("wallet")}</span><h3>Credit Card Tool</h3><p>Track your three scores, manage cards in a private packet and see how debt shapes wealth.</p><span class="meta">Open the tool {ic("arrow-right")}</span></a>'
       + '</div></section>', home_hero, "home")
 
 for k, (e, n, cs, d) in FAMILIES.items():
@@ -747,6 +801,8 @@ for r in RESOURCES:
         for n, (l, u) in enumerate(srcs[:2]))
     if r.get("calc"):
         btns += f'<a class="glass" href="../../tools/real-estate/index.html#{r["calc"]}">{ic("calculator")} Run the numbers</a>'
+    if r.get("tool") == "credit":
+        btns += f'<a class="glass" href="../../credit/index.html">{ic("wallet")} Credit Card Tool</a>'
     if r.get("bridge"):
         btns += f'<a class="glass" href="../../tools/savings-bridge/index.html">{ic("calculator")} Savings bridge</a>'
     crumb = (f'<a href="../../index.html">Home</a> / <a href="../index.html">Resources</a> / '
@@ -849,7 +905,7 @@ calc_credit = ("<p class=\"disclaim\">The formulas (loan payments, cap rate, cas
                "and the saved-scenario and stress-test approach from <a href=\"https://github.com/Sukonik/payout-lab\" rel=\"noopener\">Payout Lab</a>.</p>")
 
 mode_chips = "".join(f'<span>{html.escape(m["label"])}</span>' for m in MODE_LIST)
-tool_cards = "".join(
+tool_cards = f'<article class="card"><span class="aico">{ic("wallet")}</span><h3><a class="stretch" href="../credit/index.html">Credit Card Tool</a></h3><p class="desc">Record your three credit scores, keep your cards in a private packet, and compare good and bad debt for wealth building.</p></article>' + "".join(
     f'<article class="card"><span class="aico">{ic(ic_)}</span><h3><a class="stretch" href="{sl}/index.html">{html.escape(t)}</a></h3>'
     f'<p class="desc">{html.escape(d)}</p>' + (f'<div class="chips">{mode_chips}</div>' if sl == "real-estate" else "") + "</article>"
     for sl, t, ic_, d in TOOLS)
@@ -905,6 +961,23 @@ for sl, t, ic_, d in TOOLS:
     INDEX.append(dict(n=t, t="Tool", c="Tool", u=f"tools/{sl}/index.html", s=words(t + " " + d + " calculator mortgage rent")))
 for m in MODE_LIST:
     INDEX.append(dict(n=m["label"] + " calculator", t=m["blurb"][:90], c="Tool", u=f'tools/real-estate/index.html#{m["id"]}', s=words(m["label"] + " " + m["blurb"] + " calculator")))
+
+# ---------------- credit card tool ----------------
+credit_body = f"""<div id="credit-app">
+<div class="banner" id="cc-banner" hidden><span>A copy of your information is saved on this device.</span><button type="button" class="glass primary" id="cc-continue">Continue where I left off</button></div>
+<div class="statusbar" aria-label="Where your data is"><span>Device: <b id="st-dev">empty</b></span><span>Packet: <b id="st-pkt">no file yet</b></span><span id="cc-msg" role="status" class="msg" style="margin-left:auto"></span></div>
+<nav class="tabs" id="cc-tabs" role="tablist" aria-label="Credit Card Tool sections"></nav>
+<section class="cc-panel" id="p-scores" role="tabpanel" aria-labelledby="tab-scores"></section>
+<section class="cc-panel" id="p-cards" role="tabpanel" aria-labelledby="tab-cards" hidden></section>
+<section class="cc-panel" id="p-strategy" role="tabpanel" aria-labelledby="tab-strategy" hidden></section>
+<section class="cc-panel" id="p-packet" role="tabpanel" aria-labelledby="tab-packet" hidden></section></div>
+<p class="disclaim">{TOOL_NOTE} Nothing you enter is uploaded; do not enter card numbers, Social Security numbers or passwords. Credit scoring models and lender rules change; these are educational estimates, and a bureau or lender decides your actual score and terms. Learn more: <a href="../resources/credit-scores/index.html">Credit scores</a> · <a href="../resources/good-vs-bad-debt/index.html">Good debt and bad debt</a>. The saved-packet idea follows <a href="https://github.com/Sukonik/payout-lab" rel="noopener">Payout Lab</a>.</p>
+<script src="../assets/credit/engine.js"></script><script src="../assets/credit/app.js"></script>"""
+shutil.copytree(root / "assets/credit", out / "assets/credit", dirs_exist_ok=True)
+write("credit/index.html", "Credit Card Tool | FiveOceans", 1, f'<section class="section">{credit_body}</section>',
+      page_hero('<a href="../index.html">Home</a> / Credit Card Tool', ic("wallet"), "Credit Card Tool",
+                "Find and build your credit, keep your cards in a packet you own, and see how good and bad debt change your wealth."), "credit")
+INDEX.append(dict(n="Credit Card Tool", t="Tool", c="Tool", u="credit/index.html", s=words("credit card tool credit score three scores equifax experian transunion utilization debt payoff avalanche snowball good debt bad debt packet")))
 
 (out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")
 (out / ".nojekyll").write_text("")
