@@ -46,7 +46,9 @@ Seawater vs Freshwater, with a page for every water body:
 | 🏖️ 🌊 🦑 | [`/coastalsea/`](https://sukonik.github.io/5oceans/coastalsea/) · [`/centralsea/`](https://sukonik.github.io/5oceans/centralsea/) · [`/deepsea/`](https://sukonik.github.io/5oceans/deepsea/) |
 | 💧 🏞️ 🐊 | [`/spring/`](https://sukonik.github.io/5oceans/spring/) · [`/lake/`](https://sukonik.github.io/5oceans/lake/) · [`/river/`](https://sukonik.github.io/5oceans/river/) |
 
-Animals and guides don't have their own pages yet; animal cards link to the guides in [`docs/handoff/`](docs/handoff/).
+| 🐠 Animals (36) | `/animals/<name>/`, e.g. [`/animals/hermit-crab/`](https://sukonik.github.io/5oceans/animals/hermit-crab/) · [`/animals/yeti-crab/`](https://sukonik.github.io/5oceans/animals/yeti-crab/) |
+
+Each animal page shows the task, a primary official-source button, the matching decision guide rendered from the handoff docs, the other animals in its water body, and previous/next links. Search (press `/`) finds animals by name, program or guide text: try `457b`, `ERS`, `duplex` or `flood insurance`.
 
 ## 🎨 The three UIs
 
@@ -119,7 +121,7 @@ Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshot
 python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 ```
 
-- 🛠️ `scripts/build_site.py` generates 9 static pages and fails if the roster isn't exactly 36 animals.
+- 🛠️ `scripts/build_site.py` generates 45 static pages and a search index and fails if the roster isn't exactly 36 animals.
 - 🚀 `.github/workflows/pages.yml` deploys `site/` on every push to `main`.
 - ⚙️ One-time setup: **Settings → Pages → Source: GitHub Actions**.
 
@@ -139,6 +141,7 @@ site/              generated output (not committed)
 | v0.3 | Seawater vs Freshwater framework, page per water body |
 | v0.4 | Oceanic redesign: hero, glass controls, cleaner cards |
 | v0.5 | Sea Glass elements (tabs, stats, dock, key hints), responsive UX pass, expanded README |
+| v0.6 | 36 animal pages with guide content, site-wide search |
 
 ## 🧭 Roadmap
 
