@@ -53,18 +53,34 @@ Content lives in [`content/resources/`](content/resources/) as one markdown file
 
 ## 🧮 Tools
 
-| Tool | What it does |
-|---|---|
-| 🏠 [Real Estate Calculator](https://sukonik.github.io/5oceans/tools/real-estate/) | 14 calculators in one, each deep-linkable: **Home** · **Home with a rental** · **Condo** · **Co-op** · **House hacker** · **Vacation home** (with the IRS 14-day test) · **Land and build** · **Investment property** (cap rate, cash-on-cash, DSCR, GRM, break-even occupancy) · **Pure rental income** · **House flipper** (70% rule) · **Renter + business + investments** (rent vs buy) · **Influencer house** · **Hacker house** · **Music producer mansion** |
-| 🏦 [Savings Bridge](https://sukonik.github.io/5oceans/tools/savings-bridge/) | Monthly deposits to a balance at the day you stop working, the monthly draw it supports, and the deposit that closes a gap before a pension starts |
+Every tool runs in your browser, saves nothing unless you press a button, and has a build-out roadmap in GitHub Issues. Start at the tracker: **[#11 Tools roadmap](https://github.com/Sukonik/5oceans/issues/11)**.
 
-Every calculator has a **stress test** (income down 10%, vacancy up 10 points, rate up 1 point, costs up 10%) and rental modes add a vacancy-and-rate grid. You can **save scenarios** to your browser, **compare up to three** with a "what changed" line, and **export or import** them as a file. All math runs in your browser; nothing is uploaded. The engine is pure JavaScript in [`assets/calc/engine.js`](assets/calc/engine.js) and is tested by [`tests/calc.test.mjs`](tests/calc.test.mjs) against the handbook fixtures ($1,552 owner cost, $29,040 bad year, $83,669 savings balance, $181,847 needed). CI runs those tests before every deploy.
+| Tool | Page | What it does | Roadmap |
+|---|---|---|---|
+| 🏠 **Real Estate Calculator** | [`/tools/real-estate/`](https://sukonik.github.io/5oceans/tools/real-estate/) | 14 calculators: **Home** · **Home with a rental** · **Condo** · **Co-op** · **House hacker** · **Vacation home** (IRS 14-day test) · **Land and build** · **Investment property** · **Pure rental income** · **House flipper** · **Renter + business + investments** · **Influencer house** · **Hacker house** · **Music producer mansion**. Stress tests, vacancy-and-rate grid, saved scenarios, compare, export and import. | [#12](https://github.com/Sukonik/5oceans/issues/12) |
+| 🐬 **Dolphin Sonar** | top of the Real Estate Calculator | Fills the calculator from a listing link plus the listing text. See below. | [#15](https://github.com/Sukonik/5oceans/issues/15) · [licensed data #16](https://github.com/Sukonik/5oceans/issues/16) · [open data #17](https://github.com/Sukonik/5oceans/issues/17) |
+| 🏦 **Savings Bridge** | [`/tools/savings-bridge/`](https://sukonik.github.io/5oceans/tools/savings-bridge/) | Monthly deposits to a balance at the day you stop working, the monthly draw it supports, and the deposit that closes a gap before a pension starts. | [#13](https://github.com/Sukonik/5oceans/issues/13) |
+| 💳 **Credit Card Tool** | [`/credit/`](https://sukonik.github.io/5oceans/credit/) | Your three scores, cards, good-vs-bad debt strategy and a private packet. See below. | [#14](https://github.com/Sukonik/5oceans/issues/14) |
+| 🏡 **Funding the house** | planned (v0.13) | Mortgages, grants and assistance programs tied into the calculator. | [#18](https://github.com/Sukonik/5oceans/issues/18) |
+
+The calculator and bridge engine is pure JavaScript in [`assets/calc/engine.js`](assets/calc/engine.js), tested by [`tests/calc.test.mjs`](tests/calc.test.mjs) against the handbook fixtures ($1,552 owner cost, $29,040 bad year, $83,669 savings balance, $181,847 needed). CI runs every test before each deploy.
 
 Formulas are standard and written for this site. Ideas came from [Rental Property Deal Analyzer](https://github.com/berkcankapusuzoglu/Rental-Property-Deal-Analyzer) (MIT), [DealFlowPro MCP server](https://github.com/jbechtel-97/dealflowpro-mcp-server) (MIT), [RealEstateInvestmentCal](https://github.com/moonnstarr/RealEstateInvestmentCal), [real-estate-calculations](https://github.com/biegehydra/real-estate-calculations) (AGPL, so no code was copied) and the saved-scenario and stress-test approach of [Payout Lab](https://github.com/Sukonik/payout-lab).
 
+### 🐬 Dolphin Sonar: listing link data extractor
+
+Ping a listing and the calculator fills itself. Four ways in:
+
+1. **Link:** paste a Redfin, Zillow or StreetEasy link. The address, city, state, ZIP, unit and listing ID are read from the link.
+2. **Text:** paste the listing page text. Price, beds, baths, square feet, year built, HOA, common charges, co-op maintenance, property tax, rent estimate, units and property type are detected in your browser. Sonar suggests a calculator (house, condo, co-op, multi-family, land) and fills the numbers it found.
+3. **Bookmarklet** (desktop): drag it to your bookmarks bar; on a listing page you have open, click it. It sends the visible facts to the calculator once, in the address bar, then clears them.
+4. **GitHub issue:** open a **Dolphin Sonar ping** issue ([form](https://github.com/Sukonik/5oceans/issues/new?template=sonar-listing.yml)), paste the link and text, and the Dolphin Sonar action replies with the detected facts and a calculator link. The issue body is treated as data only.
+
+**Why it does not crawl.** A browser cannot fetch those pages from another site, and Redfin, Zillow and StreetEasy block automated reads; their terms are reported to forbid scraping, and Zillow has acted against scrapers. MLS data is licensed too: OneKey MLS (New York) delivers data through MLS Grid to brokers and registered vendors, and IDX is a display permission, not a general license. So Sonar reads only what you give it. Real listing feeds (a licensed OneKey partnership, or your own API key) and open public data (flood zone, HUD rents, tax lots) are planned in [#16](https://github.com/Sukonik/5oceans/issues/16) and [#17](https://github.com/Sukonik/5oceans/issues/17). Engine: [`assets/calc/sonar.js`](assets/calc/sonar.js); tests: [`tests/sonar.test.mjs`](tests/sonar.test.mjs) and [`tests/sonar_issue.test.mjs`](tests/sonar_issue.test.mjs).
+
 ## 💳 Credit Card Tool
 
-A new top-level tab, [`/credit/`](https://sukonik.github.io/5oceans/credit/), for finding and building credit and using debt well. It works like [Payout Lab](https://github.com/Sukonik/payout-lab): **your information is a small file you own**. There are no accounts and no servers.
+Roadmap: [#14](https://github.com/Sukonik/5oceans/issues/14). A top-level tab, [`/credit/`](https://sukonik.github.io/5oceans/credit/), for finding and building credit and using debt well. It works like [Payout Lab](https://github.com/Sukonik/payout-lab): **your information is a small file you own**. There are no accounts and no servers.
 
 | Tab | What it does |
 |---|---|
@@ -90,7 +106,7 @@ Seawater vs Freshwater, with a page for every water body:
 | 💧 🏞️ 🐊 | [`/spring/`](https://sukonik.github.io/5oceans/spring/) · [`/lake/`](https://sukonik.github.io/5oceans/lake/) · [`/river/`](https://sukonik.github.io/5oceans/river/) |
 
 | 💳 Credit Card Tool | [`/credit/`](https://sukonik.github.io/5oceans/credit/) |
-| 🧮 Tools (3 pages) | [`/tools/`](https://sukonik.github.io/5oceans/tools/), [`/tools/real-estate/`](https://sukonik.github.io/5oceans/tools/real-estate/), [`/tools/savings-bridge/`](https://sukonik.github.io/5oceans/tools/savings-bridge/) |
+| 🧮 Tools (3 pages) + 🐬 Dolphin Sonar | [`/tools/`](https://sukonik.github.io/5oceans/tools/), [`/tools/real-estate/`](https://sukonik.github.io/5oceans/tools/real-estate/), [`/tools/savings-bridge/`](https://sukonik.github.io/5oceans/tools/savings-bridge/) |
 | 📚 Resources (28) | [`/resources/`](https://sukonik.github.io/5oceans/resources/), one page each, e.g. [`/resources/governmental-457b/`](https://sukonik.github.io/5oceans/resources/governmental-457b/) · [`/resources/timeshare/`](https://sukonik.github.io/5oceans/resources/timeshare/) |
 | 📖 Guides (6) | [`/guides/`](https://sukonik.github.io/5oceans/guides/): decisions, programs, investments, insurance, taxes, real estate |
 | 🐠 Animals (36) | `/animals/<name>/`, e.g. [`/animals/hermit-crab/`](https://sukonik.github.io/5oceans/animals/hermit-crab/) · [`/animals/yeti-crab/`](https://sukonik.github.io/5oceans/animals/yeti-crab/) |
@@ -180,12 +196,13 @@ python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 docs/handoff/      planning handoff and Blue Glass plan
 assets/icons/      vendored Lucide SVGs and license
 assets/calc/       calculator engine and UI scripts
-tests/             calculator and credit tests (node tests/*.test.mjs)
+tests/             calculator, credit and Sonar tests (node tests/*.test.mjs)
+.github/ISSUE_TEMPLATE/  Dolphin Sonar ping issue form
 assets/credit/     credit tool engine and UI scripts
 content/resources/ one markdown file per resource page
 content/animal-tags.txt  which resources each animal is tagged with
 scripts/           site generator
-.github/workflows/ Pages deploy
+.github/workflows/ Pages deploy and Dolphin Sonar issue reply
 site/              generated output (not committed)
 ```
 
@@ -204,6 +221,7 @@ site/              generated output (not committed)
 | v0.9 | Resource tags on every animal card and page, searchable, driven by `content/animal-tags.txt` |
 | v0.10 | Tools menu, 14-mode Real Estate Calculator, Savings Bridge, saved scenarios, text/table/button responsive pass |
 | v0.11 | Credit Card Tool (scores, cards, debt strategy, packet), five credit and debt resource pages, nav and dock refresh |
+| v0.12 | Dolphin Sonar listing link data extractor (paste, bookmarklet, GitHub issue action), tool roadmaps in Issues |
 
 ## 🧭 Roadmap
 

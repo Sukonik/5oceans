@@ -1,0 +1,21 @@
+name: Dolphin Sonar ping
+description: Paste a listing link and its text. A bot replies with the detected facts and a link that fills the Real Estate Calculator.
+title: "[Sonar ping] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dolphin Sonar **does not fetch the listing**. It reads only what you paste here. Do not paste personal information. This issue is public.
+  - type: input
+    id: link
+    attributes:
+      label: Listing link
+      description: A Redfin, Zillow or StreetEasy link (optional, gives the address).
+      placeholder: https://www.redfin.com/...
+  - type: textarea
+    id: text
+    attributes:
+      label: Listing text
+      description: Select the listing page, copy, and paste. Price, beds and baths, taxes, HOA or maintenance, year built.
+    validations:
+      required: true
