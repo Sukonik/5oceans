@@ -34,6 +34,19 @@ Six plan collections, 36 animal "paths". Each animal is a branded planning path 
 
 **Example paths:** 🦀 Yeti Crab (457(b) access) · 🐬 Pink River Dolphin (NY ERS pension estimates) · 🐚 Hermit Crab (rent offsets housing cost: $3,300 carrying cost, $1,748 net rent, $1,552 left a month, fictional).
 
+## 📚 Resources
+
+Two shelves behind the animal paths, each resource with its own page, an at-a-glance box, the rules that matter, mistakes to avoid and the official sources:
+
+| 💰 Retirement & income (13) | 🏠 Property & housing (10) |
+|---|---|
+| Governmental 457(b) · 401(k) and 403(b) · Roth IRA · Traditional IRA | Primary home · Vacation or second home · Investment (rental) property |
+| NY ERS · NY teachers' pensions (NYSTRS and NYC TRS) · FERS and TSP | Duplex or multi-unit home · Accessory dwelling unit (ADU) · Land and building |
+| Social Security · Medicare and health coverage · HSA | Timeshare · Shared ownership · Renting |
+| Treasury bills, I bonds and TIPS · Saver's Credit and Match · Solo 401(k) | Waterfront and flood insurance |
+
+Content lives in [`content/resources/`](content/resources/) as one markdown file per resource, with front matter for title, group, icon, summary, related animals, glance facts and sources. Figures for 2026 (contribution limits, income phase-outs, HSA limits) come from IRS and agency pages checked on November 5, 2026; each page links its sources. The six reference guides from the handoff are rendered as on-site pages too, so no link on the live site sends a visitor to GitHub for content.
+
 ## 🧂 Site map
 
 Seawater vs Freshwater, with a page for every water body:
@@ -46,6 +59,8 @@ Seawater vs Freshwater, with a page for every water body:
 | 🏖️ 🌊 🦑 | [`/coastalsea/`](https://sukonik.github.io/5oceans/coastalsea/) · [`/centralsea/`](https://sukonik.github.io/5oceans/centralsea/) · [`/deepsea/`](https://sukonik.github.io/5oceans/deepsea/) |
 | 💧 🏞️ 🐊 | [`/spring/`](https://sukonik.github.io/5oceans/spring/) · [`/lake/`](https://sukonik.github.io/5oceans/lake/) · [`/river/`](https://sukonik.github.io/5oceans/river/) |
 
+| 📚 Resources (23) | [`/resources/`](https://sukonik.github.io/5oceans/resources/), one page each, e.g. [`/resources/governmental-457b/`](https://sukonik.github.io/5oceans/resources/governmental-457b/) · [`/resources/timeshare/`](https://sukonik.github.io/5oceans/resources/timeshare/) |
+| 📖 Guides (6) | [`/guides/`](https://sukonik.github.io/5oceans/guides/): decisions, programs, investments, insurance, taxes, real estate |
 | 🐠 Animals (36) | `/animals/<name>/`, e.g. [`/animals/hermit-crab/`](https://sukonik.github.io/5oceans/animals/hermit-crab/) · [`/animals/yeti-crab/`](https://sukonik.github.io/5oceans/animals/yeti-crab/) |
 
 Each animal page shows the task, a primary official-source button, the matching decision guide rendered from the handoff docs, the other animals in its water body, and previous/next links. Search (press `/`) finds animals by name, program or guide text: try `457b`, `ERS`, `duplex` or `flood insurance`.
@@ -125,13 +140,14 @@ Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshot
 python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 ```
 
-- 🛠️ `scripts/build_site.py` generates 45 static pages and a search index and fails if the roster isn't exactly 36 animals.
+- 🛠️ `scripts/build_site.py` generates 76 static pages and a search index and fails if the roster isn't exactly 36 animals.
 - 🚀 `.github/workflows/pages.yml` deploys `site/` on every push to `main`.
 - ⚙️ One-time setup: **Settings → Pages → Source: GitHub Actions**.
 
 ```text
 docs/handoff/      planning handoff and Blue Glass plan
 assets/icons/      vendored Lucide SVGs and license
+content/resources/ one markdown file per resource page
 scripts/           site generator
 .github/workflows/ Pages deploy
 site/              generated output (not committed)
@@ -148,6 +164,7 @@ site/              generated output (not committed)
 | v0.5 | Sea Glass elements (tabs, stats, dock, key hints), responsive UX pass, expanded README |
 | v0.6 | 36 animal pages with guide content, site-wide search |
 | v0.7 | Minimal line icons (Lucide) replace emoji across the site |
+| v0.8 | Resources hub with 23 resource pages (retirement and property), six on-site guide pages, resource-aware search |
 
 ## 🧭 Roadmap
 

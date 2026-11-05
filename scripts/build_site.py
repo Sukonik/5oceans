@@ -45,6 +45,11 @@ def norm(t):
     return re.sub(r"[^a-z0-9 ]", "", t.lower()).strip()
 
 
+GUIDE_SLUG = {"Guides.md": "guides", "Insurance.md": "insurance", "Programs.md": "programs",
+              "Investments.md": "investments", "Taxes.md": "taxes", "RealEstate.md": "real-estate"}
+GUIDE_ICON = {"guides": "book-open", "insurance": "umbrella", "programs": "landmark",
+              "investments": "coins", "taxes": "receipt", "real-estate": "house"}
+
 # --- guides: slug -> (title, markdown body) per file
 GUIDES = {}
 for f in (root / "docs/handoff").glob("*.md"):
@@ -94,13 +99,19 @@ def inline(t, prefix=""):
         if url.startswith("http"):
             return f'<a href="{html.escape(url)}" rel="noopener">{label}</a>'
         f_, _, anchor = url.partition("#")
+        if url.startswith("resource:"):
+            return f'<a href="{prefix}resources/{url[9:]}/index.html">{label}</a>'
+        if url.startswith("animal:"):
+            return f'<a href="{prefix}animals/{url[7:]}/index.html">{label}</a>'
+        if f_ in GUIDE_SLUG:
+            return f'<a href="{prefix}guides/{GUIDE_SLUG[f_]}/index.html' + (f'#{anchor}' if anchor else '') + f'">{label}</a>'
         if f_ == "FiveOcean.md" and anchor in BY_SLUG:
             return f'<a href="{prefix}animals/{anchor}/index.html">{label}</a>'
         return f'<a href="{REPO}{url}" rel="noopener">{label}</a>'
     return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link, t)
 
 
-def md_block(text, prefix):
+def md_block(text, prefix, heads=False):
     out, lines, i = [], text.strip().splitlines(), 0
     li = re.compile(r"(- |\d+\. )")
     while i < len(lines):
@@ -121,14 +132,78 @@ def md_block(text, prefix):
             out.append("<ul>" + "".join(f"<li>{inline(x, prefix)}</li>" for x in items) + "</ul>")
         elif not l.strip():
             i += 1
+        elif l.startswith("> "):
+            buf = []
+            while i < len(lines) and lines[i].startswith(">"):
+                buf.append(lines[i].lstrip("> ").rstrip()); i += 1
+            out.append(f'<aside class="callout">{inline(" ".join(buf), prefix)}</aside>')
         elif l.startswith("#"):
-            out.append(f"<h4>{html.escape(l.lstrip('# '))}</h4>"); i += 1
+            hm = re.match(r"(#+) (.+)", l)
+            lvl = len(hm.group(1)); txt = hm.group(2)
+            if heads and lvl in (2, 3):
+                out.append(f'<h{lvl} id="{slugify(txt)}">{html.escape(txt)}</h{lvl}>')
+            else:
+                out.append(f"<h4>{html.escape(txt)}</h4>")
+            i += 1
         else:
             para = []
-            while i < len(lines) and lines[i].strip() and not lines[i].startswith(("|", "#")) and not li.match(lines[i]):
+            while i < len(lines) and lines[i].strip() and not lines[i].startswith(("|", "#", "> ")) and not li.match(lines[i]):
                 para.append(lines[i]); i += 1
             out.append(f"<p>{inline(' '.join(para), prefix)}</p>")
     return "".join(out)
+
+
+
+# --- resources (content/resources/*.md)
+RESOURCES = []
+for f in sorted((root / "content/resources").glob("*.md")):
+    raw = f.read_text(encoding="utf-8")
+    m = re.match(r"---\n(.*?)\n---\n(.*)", raw, re.S)
+    meta, body = m.group(1), m.group(2)
+    d, key = {"glance": [], "sources": []}, None
+    for line in meta.splitlines():
+        if re.match(r"^[a-z]+:", line):
+            key, _, val = line.partition(":")
+            if key not in ("glance", "sources"):
+                d[key] = val.strip()
+        elif line.startswith("- ") and key in ("glance", "sources"):
+            a_, _, b_ = line[2:].partition("|")
+            d[key].append((a_.strip(), b_.strip()))
+    d["slug"] = f.stem
+    d["animals"] = [x.strip() for x in d.get("animals", "").split(",") if x.strip()]
+    d["related"] = [x.strip() for x in d.get("related", "").split(",") if x.strip()]
+    d["body"] = body
+    for a_ in d["animals"]:
+        assert a_ in BY_SLUG, (f.name, a_)
+    RESOURCES.append(d)
+RES = {r["slug"]: r for r in RESOURCES}
+for r in RESOURCES:
+    for x in r["related"]:
+        assert x in RES, (r["slug"], x)
+    assert r["icon"] in ICONS, (r["slug"], r["icon"])
+RES_GROUPS = {"retirement": ("Retirement & income", "landmark",
+                             "Plans, pensions and accounts: what they are, who can use them, when the money is accessible, and what they cost in tax."),
+              "property": ("Property & housing", "house",
+                           "Home, vacation home, rental, land, timeshare and more: what each one costs, earns and risks.")}
+ANIMAL_RES = {}
+for r in RESOURCES:
+    for a_ in r["animals"]:
+        ANIMAL_RES.setdefault(a_, []).append(r)
+
+def short(t, n=72):
+    if len(t) <= n:
+        return t
+    return t[:n].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+
+
+def tile(href, icon, name, sub=""):
+    return (f'<li><a class="tile" href="{href}"><span class="aico">{ic(icon)}</span><span><b>{html.escape(name)}</b>'
+            f'<small>{html.escape(sub)}</small></span></a></li>')
+
+
+def inline_href(url, prefix):
+    f_, _, anchor = url.partition("#")
+    return f"{prefix}guides/{GUIDE_SLUG[f_]}/index.html" + (f"#{anchor}" if anchor else "") if f_ in GUIDE_SLUG else REPO + url
 
 
 def card_html(a, prefix):
@@ -331,7 +406,7 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 .results a:hover,.results a:focus-visible{background:color-mix(in srgb,var(--action) 12%,transparent)}
 .results a b{font-weight:600}.results a span{font-size:.8rem;opacity:.7}
 .results p{margin:0;padding:12px 14px;opacity:.75;font-size:.9rem}
-.prose{max-width:76ch}
+.prose{max-width:76ch;overflow-wrap:anywhere}
 .prose p,.prose li{margin:0 0 1em}.prose ul{padding-left:1.2em;margin:0 0 1em}
 .prose h4{margin:1.6em 0 .4em;font-size:1rem}
 .tablewrap{overflow-x:auto;margin:0 0 1.4em;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;background:var(--surface)}
@@ -343,6 +418,30 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 .pager a{flex:1 1 220px}
 .pager .next{justify-content:flex-end;text-align:right}
 .src{margin-top:8px;font-size:.9rem}
+
+/* resources */
+.rgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:48px;align-items:start}
+.rside{position:sticky;top:88px;display:grid;gap:16px}
+.box{background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:18px;padding:18px 20px}
+.box h2{font:700 .75rem/1 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:.7;margin:0 0 10px}
+.gl{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);font-size:.92rem}
+.gl:first-of-type{border-top:0}.gl span{opacity:.8}.gl b{font-variant-numeric:tabular-nums;text-align:right}
+.srcs{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.srcs a{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin:0 -10px;border-radius:10px;text-decoration:none;font-size:.92rem}
+.srcs a:hover{background:color-mix(in srgb,var(--action) 10%,transparent)}.srcs .ic{margin-top:.25em}
+.stamp{font-size:.8rem;opacity:.7;margin:10px 0 0}
+.callout{border-left:3px solid var(--action);background:color-mix(in srgb,var(--action) 9%,transparent);padding:12px 16px;border-radius:0 12px 12px 0;margin:0 0 1.2em}
+.prose h2{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:1.6rem;margin:1.8em 0 .5em;letter-spacing:-.01em;scroll-margin-top:84px}
+.prose h2:first-child{margin-top:0}
+.prose h3{font-size:1.05rem;margin:1.4em 0 .3em;scroll-margin-top:84px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:10px;margin:0;padding:0;list-style:none}
+.tile{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;text-decoration:none;color:var(--ink);min-height:56px;
+  background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);transition:border-color .2s,transform .2s}
+.tile:hover{border-color:var(--action);transform:translateY(-1px)}
+.tile .aico{margin:0;flex:none;width:36px;height:36px}.tile b{display:block;font-weight:600;line-height:1.25}.tile small{display:block;opacity:.7;line-height:1.3}
+.rsec{scroll-margin-top:84px}
+.disclaim{font-size:.85rem;opacity:.75;margin-top:36px}
+@media(max-width:960px){.rgrid{grid-template-columns:minmax(0,1fr);gap:28px}.rside{position:static;order:-1}}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
 @media(max-width:720px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
@@ -362,12 +461,13 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 JS = """
 const q=document.getElementById('q'),pk=document.getElementById('picker'),res=document.getElementById('results');
 const norm=s=>s.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+const sc=(a,v)=>{const n=norm(a.n);return (n.includes(v)?100:0)+(n.startsWith(v)?50:0)+(a.c==='Resource'?10:a.c==='Guide'?5:0)};
 let INDEX=null;
 const load=()=>INDEX?Promise.resolve(INDEX):fetch(P+'search-index.json').then(r=>r.json()).then(d=>INDEX=d);
 q.addEventListener('focus',load);
 q.addEventListener('input',()=>{const v=norm(q.value);if(!v){res.hidden=true;return}
 load().then(()=>{if(norm(q.value)!==v)return;const tk=v.split(' ');
-const hits=INDEX.filter(a=>tk.every(t=>(' '+a.s).includes(' '+t))).sort((a,b)=>(norm(b.n).startsWith(v))-(norm(a.n).startsWith(v))).slice(0,8);
+const hits=INDEX.filter(a=>tk.every(t=>(' '+a.s).includes(' '+t))).sort((a,b)=>sc(b,v)-sc(a,v)).slice(0,8);
 res.innerHTML=hits.length?hits.map(a=>'<a href="'+P+a.u+'"><b>'+a.n+'</b><span>'+a.t+' \\u00b7 '+a.c+'</span></a>').join(''):'<p>No match. Try \\u201c457b\\u201d, \\u201cERS\\u201d or \\u201cduplex\\u201d.</p>';res.hidden=false})});
 q.addEventListener('keydown',e=>{if(e.key==='Enter'){const a=res.querySelector('a');if(a)location.href=a.href}
 if(e.key==='Escape'){q.value='';res.hidden=true}});
@@ -396,7 +496,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <a class="glass skip" href="#main">Skip to content</a>
 <header><div class="wrap bar">
 <a class="brand" href="{prefix}index.html">{ic("waves-horizontal")} FiveOceans</a>
-<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a></nav>
+<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a></nav>
 <span class="spacer"></span>
 <div class="search"><label for="q" hidden>Search</label>{ic("search")}<input id="q" type="search" placeholder="Search 457(b), ERS…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
 <details class="picker" id="picker"><summary class="glass" aria-label="Change theme">{ic("palette")} <span class="lbl">Change theme</span> {ic("chevron-down","chev")}</summary>
@@ -410,6 +510,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <a href="{prefix}index.html"{ac("home")}>{ic("house")}<span>Home</span></a>
 <a href="{prefix}seawater/index.html"{ac("seawater")}>{ic("waves-horizontal")}<span>Seawater</span></a>
 <a href="{prefix}freshwater/index.html"{ac("freshwater")}>{ic("droplets")}<span>Fresh</span></a>
+<a href="{prefix}resources/index.html"{ac("resources")}>{ic("landmark")}<span>Resources</span></a>
 </nav>
 <script>const P={prefix!r};{JS}</script></body></html>"""
 
@@ -472,7 +573,11 @@ def tabs(prefix, here):
 
 write("index.html", "FiveOceans", 0,
       f'<section class="section"><h2>Choose your water</h2><p>Six collections, six animals each. Every one links to a guide and a direct official resource.</p>'
-      f'<div class="fam">{fam_cards}</div></section>', home_hero, "home")
+      f'<div class="fam">{fam_cards}</div></section>'
+      f'<section class="section"><h2>Explore the resources</h2><p>Two shelves behind every path: money plans and property.</p><div class="fam">'
+      + "".join(f'<a class="big" href="resources/index.html#{k}"><span class="ico">{ic(v[1])}</span><h3>{v[0]}</h3><p>{v[2]}</p>'
+                f'<span class="meta">{sum(1 for r in RESOURCES if r["group"] == k)} guides {ic("arrow-right")}</span></a>' for k, v in RES_GROUPS.items())
+      + '</div></section>', home_hero, "home")
 
 for k, (e, n, cs, d) in FAMILIES.items():
     write(f"{k}/index.html", f"{n} | FiveOceans", 1,
@@ -505,9 +610,12 @@ for i, a in enumerate(ANIMALS):
             f'<span class="kicker">{ic(ANIMAL_ICON[a["slug"]])} {html.escape(a["task"])}</span><h1>{html.escape(a["name"])}</h1>'
             f'<p class="lede">{inline(a["desc"], "../../")}</p><div class="cta">{btns}</div></div></div></section>')
     body = ""
+    if a["slug"] in ANIMAL_RES:
+        body += ('<section class="section"><h2>Resources for this path</h2><ul class="tiles">'
+                 + "".join(tile(f'../../resources/{r_["slug"]}/index.html', r_["icon"], r_["title"], short(r_["summary"])) for r_ in ANIMAL_RES[a["slug"]]) + "</ul></section>")
     if sec:
         body += (f'<section class="section" id="guide"><h2>{html.escape(sec[0])}</h2><div class="prose">{md_block(sec[1], "../../")}</div>'
-                 f'<p class="src"><a href="{REPO}{gl[1]}" rel="noopener">Open the full guide on GitHub {ic("arrow-up-right")}</a></p></section>')
+                 f'<p class="src"><a href="{inline_href(gl[1], "../../")}">Open the full guide {ic("arrow-right")}</a></p></section>')
     sib = [x for x in COLL[a["coll"]] if x is not a]
     body += (f'<section class="section"><h2>More in {a["coll"]}</h2><div class="grid">'
              f'{"".join(card_html(x, "../../") for x in sib)}</div></section>')
@@ -516,6 +624,104 @@ for i, a in enumerate(ANIMALS):
              f'<a class="glass" href="../{prv["slug"]}/index.html">{ic("arrow-left")} {html.escape(prv["name"])}</a>'
              f'<a class="glass next" href="../{nxt["slug"]}/index.html">{html.escape(nxt["name"])} {ic("arrow-right")}</a></nav>')
     write(f'animals/{a["slug"]}/index.html', f'{a["name"]} | FiveOceans', 2, body, hero, fam)
+
+# ---------------- resources, guides ----------------
+def rcard(r, prefix):
+    g = r["glance"][0] if r["glance"] else None
+    chip = f'<div class="chips"><span>{html.escape(g[0])}: <strong>{html.escape(g[1])}</strong></span></div>' if g else ""
+    return (f'<article class="card"><span class="aico">{ic(r["icon"])}</span>'
+            f'<h3><a class="stretch" href="{prefix}resources/{r["slug"]}/index.html">{html.escape(r["title"])}</a></h3>'
+            f'<p class="desc">{html.escape(r["summary"])}</p>{chip}</article>')
+
+
+STAMP = "Checked against official sources on November 5, 2026. Rules and limits change; confirm with the plan, agency or a licensed professional."
+DISCLAIM = ('<p class="disclaim">General information for planning, not financial, tax, legal or insurance advice. '
+            'Figures in worked examples are fictional.</p>')
+
+for r in RESOURCES:
+    grp = RES_GROUPS[r["group"]]
+    srcs = r["sources"]
+    btns = "".join(
+        f'<a class="glass{" primary" if n == 0 else ""}" href="{html.escape(u)}" rel="noopener">{html.escape(l)} {ic("arrow-up-right")}</a>'
+        for n, (l, u) in enumerate(srcs[:2]))
+    crumb = (f'<a href="../../index.html">Home</a> / <a href="../index.html">Resources</a> / '
+             f'<a href="../index.html#{r["group"]}">{grp[0]}</a> / {html.escape(r["title"])}')
+    hero = (f'<section class="hero compact"><div class="wrap"><div><p class="crumb">{crumb}</p>'
+            f'<span class="kicker">{ic(r["icon"])} {grp[0]}</span><h1>{html.escape(r["title"])}</h1>'
+            f'<p class="lede">{html.escape(r["summary"])}</p><div class="cta">{btns}</div></div></div></section>')
+    gl = ""
+    if r["glance"]:
+        gl = '<div class="box"><h2>At a glance</h2>' + "".join(
+            f'<div class="gl"><span>{html.escape(a_)}</span><b>{inline(b_, "../../")}</b></div>' for a_, b_ in r["glance"]) + "</div>"
+    sl = ('<div class="box"><h2>Official sources</h2><ul class="srcs">' + "".join(
+        f'<li><a href="{html.escape(u)}" rel="noopener">{ic("arrow-up-right")}<span>{html.escape(l)}</span></a></li>' for l, u in srcs)
+          + f'</ul><p class="stamp">{STAMP}</p></div>')
+    main = f'<div class="prose">{md_block(r["body"], "../../", heads=True)}</div>'
+    if r["animals"]:
+        main += ('<section class="rsec" style="margin-top:40px"><h2 style="font-family:Iowan Old Style,Georgia,serif;font-weight:400">Animal paths that use this</h2><ul class="tiles">'
+                 + "".join(tile(f'../../animals/{a_}/index.html', ANIMAL_ICON[a_], BY_SLUG[a_]["name"], BY_SLUG[a_]["task"]) for a_ in r["animals"]) + "</ul></section>")
+    if r["related"]:
+        main += ('<section class="rsec" style="margin-top:32px"><h2 style="font-family:Iowan Old Style,Georgia,serif;font-weight:400">Related resources</h2><ul class="tiles">'
+                 + "".join(tile(f'../{x}/index.html', RES[x]["icon"], RES[x]["title"], short(RES[x]["summary"])) for x in r["related"]) + "</ul></section>")
+    main += DISCLAIM
+    body = f'<div class="section"><div class="rgrid"><div>{main}</div><aside class="rside">{gl}{sl}</aside></div></div>'
+    write(f'resources/{r["slug"]}/index.html', f'{r["title"]} | FiveOceans', 2, body, hero, "resources")
+
+# guide pages
+GUIDE_FILES = {v: k for k, v in GUIDE_SLUG.items()}
+GUIDE_GROUP = {"guides": "retirement", "insurance": "property", "programs": "retirement",
+               "investments": "retirement", "taxes": "retirement", "real-estate": "property"}
+GUIDE_META = {}
+for slugg, fn in GUIDE_FILES.items():
+    raw = (root / "docs/handoff" / fn).read_text(encoding="utf-8")
+    title = re.match(r"# (.+)", raw).group(1)
+    rest = raw.split("\n", 1)[1]
+    first = next((x for x in rest.split("\n\n") if x.strip() and not x.startswith("#") and not x.startswith("|")), "")
+    GUIDE_META[slugg] = (title, re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", first.strip())[:240])
+    toc = "".join(f'<li><a href="#{slugify(h)}">{html.escape(h)}</a></li>' for h in re.findall(r"^## (.+)$", rest, re.M))
+    grp = GUIDE_GROUP[slugg]
+    rel = [r for r in RESOURCES if r["group"] == grp]
+    crumb = f'<a href="../../index.html">Home</a> / <a href="../index.html">Guides</a> / {html.escape(title)}'
+    hero = (f'<section class="hero compact"><div class="wrap"><div><p class="crumb">{crumb}</p>'
+            f'<span class="kicker">{ic(GUIDE_ICON[slugg])} Reference guide</span><h1>{html.escape(title)}</h1>'
+            f'<p class="lede">{html.escape(GUIDE_META[slugg][1])}</p></div></div></section>')
+    side = (f'<div class="box"><h2>On this page</h2><ul class="srcs">{toc}</ul></div>'
+            f'<div class="box"><h2>Resources</h2><ul class="srcs"><li><a href="../../resources/index.html#{grp}">{ic("arrow-right")}<span>{RES_GROUPS[grp][0]}</span></a></li></ul></div>')
+    main = (f'<div class="prose">{md_block(rest, "../../", heads=True)}</div>' + DISCLAIM)
+    body = f'<div class="section"><div class="rgrid"><div>{main}</div><aside class="rside">{side}</aside></div></div>'
+    write(f"guides/{slugg}/index.html", f"{title} | FiveOceans", 2, body, hero, "resources")
+
+gcards = "".join(
+    f'<article class="card"><span class="aico">{ic(GUIDE_ICON[k])}</span><h3><a class="stretch" href="{k}/index.html">{html.escape(GUIDE_META[k][0])}</a></h3>'
+    f'<p class="desc">{html.escape(GUIDE_META[k][1][:150])}…</p></article>' for k in GUIDE_FILES)
+write("guides/index.html", "Reference guides | FiveOceans", 1,
+      f'<section class="section"><div class="grid">{gcards}</div></section>',
+      page_hero('<a href="../index.html">Home</a> / Guides', ic("book-open"), "Reference guides",
+                "Six reference guides behind the animal paths: decisions, programs, investments, insurance, taxes and real estate."), "resources")
+
+# resources hub
+tabs_h = ('<nav class="tabs" aria-label="Resource sections">'
+          + "".join(f'<a href="#{k}">{ic(v[1])} {v[0]}</a>' for k, v in RES_GROUPS.items())
+          + f'<a href="#guides">{ic("book-open")} Guides</a></nav>')
+sections_h = ""
+for k, (title_, icn, blurb) in RES_GROUPS.items():
+    rs = [r for r in RESOURCES if r["group"] == k]
+    sections_h += (f'<section class="section rsec" id="{k}"><h2>{title_}</h2><p>{blurb}</p>'
+                   f'<div class="grid">{"".join(rcard(r, "../") for r in rs)}</div></section>')
+sections_h += (f'<section class="section rsec" id="guides"><h2>Reference guides</h2><p>The full guides the animal paths draw on.</p>'
+               f'<div class="grid">{"".join(f"""<article class="card"><span class="aico">{ic(GUIDE_ICON[k])}</span><h3><a class="stretch" href="../guides/{k}/index.html">{html.escape(GUIDE_META[k][0])}</a></h3><p class="desc">{html.escape(GUIDE_META[k][1][:140])}…</p></article>""" for k in GUIDE_FILES)}</div></section>')
+write("resources/index.html", "Resources | FiveOceans", 1, sections_h,
+      page_hero('<a href="../index.html">Home</a> / Resources', ic("landmark"), "Resources",
+                "Every plan, account and property type behind the animal paths, with eligibility, access rules, costs and the official source.", tabs_h), "resources")
+
+# search index additions
+for r in RESOURCES:
+    INDEX.append(dict(n=r["title"], t=r["summary"], c="Resource", u=f'resources/{r["slug"]}/index.html',
+                      s=words(" ".join([r["title"], r["summary"], r["body"]] + [a_ + " " + b_ for a_, b_ in r["glance"]]))))
+for k, fn in GUIDE_FILES.items():
+    INDEX.append(dict(n=GUIDE_META[k][0], t="Reference guide", c="Guide", u=f"guides/{k}/index.html",
+                      s=words((root / "docs/handoff" / fn).read_text(encoding="utf-8"))))
+
 (out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")
 (out / ".nojekyll").write_text("")
 print(f"built {len(list(out.rglob('index.html')))} pages, {total} animals")
