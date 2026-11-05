@@ -63,6 +63,8 @@ Every tool runs in your browser, saves nothing unless you press a button, and ha
 | 💳 **Credit Card Tool** | [`/credit/`](https://sukonik.github.io/5oceans/credit/) | Your three scores, cards, good-vs-bad debt strategy and a private packet. See below. | [#14](https://github.com/Sukonik/5oceans/issues/14) |
 | 🏡 **Funding the house** | planned (v0.13) | Mortgages, grants and assistance programs tied into the calculator. | [#18](https://github.com/Sukonik/5oceans/issues/18) |
 
+**Tools menu.** Every tool is reachable from the **Tools** item in the main navigation: a themed bubble dropdown (desktop: opens on hover or click, pins on click, closes on Esc or an outside click; arrow keys, Home and End move through it) that becomes a bubble above the bottom dock on phones. Add a tool by adding a row to `TOOLS_MENU` in `scripts/build_site.py`. The idea follows [responsive-dropdown-menu-2](https://github.com/bedimcode/responsive-dropdown-menu-2) (MIT); the code is original and keyboard accessible.
+
 The calculator and bridge engine is pure JavaScript in [`assets/calc/engine.js`](assets/calc/engine.js), tested by [`tests/calc.test.mjs`](tests/calc.test.mjs) against the handbook fixtures ($1,552 owner cost, $29,040 bad year, $83,669 savings balance, $181,847 needed). CI runs every test before each deploy.
 
 Formulas are standard and written for this site. Ideas came from [Rental Property Deal Analyzer](https://github.com/berkcankapusuzoglu/Rental-Property-Deal-Analyzer) (MIT), [DealFlowPro MCP server](https://github.com/jbechtel-97/dealflowpro-mcp-server) (MIT), [RealEstateInvestmentCal](https://github.com/moonnstarr/RealEstateInvestmentCal), [real-estate-calculations](https://github.com/biegehydra/real-estate-calculations) (AGPL, so no code was copied) and the saved-scenario and stress-test approach of [Payout Lab](https://github.com/Sukonik/payout-lab).
@@ -228,6 +230,7 @@ site/              generated output (not committed)
 | v0.11 | Credit Card Tool (scores, cards, debt strategy, packet), five credit and debt resource pages, nav and dock refresh |
 | v0.12 | Dolphin Sonar listing link data extractor (paste, bookmarklet, GitHub issue action), tool roadmaps in Issues |
 | v0.13 | Dolphin Sonar polite link reader (robots.txt, portal refusal, SSRF guard), fictional sample listing |
+| v0.14 | Tools menu: themed bubble dropdown on desktop, bubble above the dock on phones |
 
 ## 🧭 Roadmap
 

@@ -599,6 +599,35 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
 .sn-head{margin:14px 0 6px}.sn-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
 .sn-row select{flex:1 1 220px;max-width:340px}.sn-row label{font-weight:600;font-size:.9rem}
 .bk{margin:14px 0 0}.bk summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center;background:none;border:0;padding:0}
+
+/* tools dropdown bubble */
+.dd{position:relative;display:inline-flex}
+.dd-btn{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:8px 11px;border:0;border-radius:999px;background:none;color:var(--ink);font:inherit;font-size:.95rem;font-weight:500;opacity:.85;cursor:pointer}
+.dd-btn:hover,.dd-btn[aria-expanded="true"],.dd-btn[aria-current]{background:color-mix(in srgb,var(--ink) 8%,transparent);opacity:1}
+.dd-btn .chev{width:1em;height:1em;transition:transform .2s}.dd-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.dd-menu{position:absolute;z-index:60;top:calc(100% + 14px);left:-12px;width:min(350px,calc(100vw - 32px));padding:10px;border-radius:22px;background:var(--surface);
+  border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);box-shadow:0 26px 60px rgb(0 0 0/.3),inset 0 1px 0 color-mix(in srgb,#fff 35%,transparent);transform-origin:30px -8px;animation:ddpop .18s ease}
+.dd-menu[hidden]{display:none}
+.dd-menu::before{content:"";position:absolute;top:-8px;left:36px;width:14px;height:14px;background:var(--surface);border-left:1px solid color-mix(in srgb,var(--ink) 16%,transparent);border-top:1px solid color-mix(in srgb,var(--ink) 16%,transparent);border-radius:3px 0 0 0;transform:rotate(45deg)}
+.dd::after{content:"";position:absolute;left:0;right:0;top:100%;height:16px}
+.dd-item{display:flex;gap:12px;align-items:center;min-height:56px;padding:9px 12px;border-radius:15px;text-decoration:none;color:var(--ink)}
+.dd-item:hover,.dd-item:focus-visible{background:color-mix(in srgb,var(--action) 12%,transparent)}
+.dd-item .aico{margin:0;flex:none;width:38px;height:38px}.dd-item b{display:block;font-weight:600;line-height:1.25}.dd-item small{display:block;opacity:.7;line-height:1.3;font-size:.82rem}
+.dd-all{display:flex;justify-content:space-between;align-items:center;margin:6px 4px 0;padding:11px 10px 6px;min-height:44px;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent);color:var(--action);font-weight:600;font-size:.9rem;text-decoration:none}
+.dd-all:hover{text-decoration:underline}
+@keyframes ddpop{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+.dock .dd{flex:1;display:flex}
+.dock .dd-btn{flex:1;flex-direction:column;justify-content:center;gap:1px;min-height:52px;padding:0;font-size:.72rem;font-weight:600;opacity:1;border-radius:999px}
+.dock .dd-btn .ic{width:22px;height:22px}.dock .dd-btn .chev{display:none}
+.dock .dd-btn[aria-current],.dock .dd-btn[aria-expanded="true"]{background:var(--action);color:var(--cta)}
+.dock .dd::after{display:none}
+.dock .dd-menu{top:auto;bottom:calc(100% + 16px);left:auto;right:-6px;transform-origin:calc(100% - 40px) calc(100% + 8px);animation-name:ddpopup}
+.dock .dd-menu::before{top:auto;bottom:-8px;left:auto;right:36px;border:0;border-right:1px solid color-mix(in srgb,var(--ink) 16%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ink) 16%,transparent);border-radius:0 0 3px 0}
+.dock .dd-menu a.dd-item{flex:none;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;min-height:56px;padding:9px 12px;border-radius:15px;font-size:1rem;font-weight:400;text-align:left;background:none;color:var(--ink)}
+.dock .dd-menu a.dd-item b{font-size:1rem;font-weight:600}.dock .dd-menu a.dd-item small{font-size:.82rem}
+.dock .dd-menu a.dd-item:hover,.dock .dd-menu a.dd-item:focus-visible{background:color-mix(in srgb,var(--action) 12%,transparent)}
+.dock .dd-menu a.dd-all{flex:none;flex-direction:row;justify-content:space-between;align-items:center;min-height:44px;border-radius:0;font-size:.9rem;font-weight:600;color:var(--action);background:none;text-align:left}
+@keyframes ddpopup{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
 @media(max-width:1100px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
@@ -635,7 +664,45 @@ try{localStorage.setItem('fiveoceans-theme',r.value)}catch(e){}});});
 pk.addEventListener('keydown',e=>{if(e.key==='Escape'&&pk.open){pk.open=false;pk.querySelector('summary').focus()}});
 document.addEventListener('click',e=>{if(!pk.contains(e.target))pk.open=false;if(!e.target.closest('.search'))res.hidden=true});
 document.addEventListener('keydown',e=>{const t=e.target.tagName;if((e.key==='/'||(e.key==='k'&&(e.ctrlKey||e.metaKey)))&&t!=='INPUT'&&t!=='TEXTAREA'){e.preventDefault();q.focus()}});
+
+document.querySelectorAll('.dd').forEach(function(dd){
+  var b=dd.querySelector('.dd-btn'),m=dd.querySelector('.dd-menu'),pinned=false,t;
+  var items=function(){return [].slice.call(m.querySelectorAll('a'))};
+  function open(){m.hidden=false;b.setAttribute('aria-expanded','true')}
+  function close(f){m.hidden=true;pinned=false;b.setAttribute('aria-expanded','false');if(f)b.focus()}
+  b.addEventListener('click',function(){if(m.hidden){pinned=true;open()}else if(pinned||!hov){close()}else{pinned=true}});
+  var hov=matchMedia('(hover:hover) and (pointer:fine)').matches&&!dd.closest('.dock');
+  if(hov){dd.addEventListener('mouseenter',function(){clearTimeout(t);open()});dd.addEventListener('mouseleave',function(){t=setTimeout(function(){if(!pinned)close()},200)})}
+  dd.addEventListener('keydown',function(e){var a=items(),i=a.indexOf(document.activeElement);
+    if(e.key==='Escape'&&!m.hidden){e.preventDefault();close(true)}
+    else if(e.key==='ArrowDown'){e.preventDefault();if(m.hidden){pinned=true;open()}(a[i+1]||a[0]).focus()}
+    else if(e.key==='ArrowUp'){e.preventDefault();if(m.hidden){pinned=true;open()}(a[i-1]||a[a.length-1]).focus()}
+    else if(e.key==='Home'&&!m.hidden){e.preventDefault();a[0].focus()}
+    else if(e.key==='End'&&!m.hidden){e.preventDefault();a[a.length-1].focus()}});
+  dd.addEventListener('focusout',function(e){if(e.relatedTarget&&!dd.contains(e.relatedTarget))close()});
+  m.addEventListener('click',function(e){if(e.target.closest('a'))close()});
+});
+document.addEventListener('click',function(e){document.querySelectorAll('.dd').forEach(function(d){var m=d.querySelector('.dd-menu');if(!m.hidden&&!d.contains(e.target)){m.hidden=true;d.querySelector('.dd-btn').setAttribute('aria-expanded','false')}})});
 """
+
+
+TOOLS_MENU = [
+    ("tools/real-estate/index.html", "calculator", "Real Estate Calculator", "14 ways to own, rent or flip a place"),
+    ("tools/real-estate/index.html#sonar", "search", "Dolphin Sonar", "Fill the calculator from a listing"),
+    ("tools/savings-bridge/index.html", "piggy-bank", "Savings Bridge", "Cover the years before a pension"),
+    ("credit/index.html", "wallet", "Credit Card Tool", "Scores, cards and debt strategy"),
+]
+
+
+def tools_menu(prefix, mid, current):
+    items = "".join(
+        f'<a class="dd-item" role="menuitem" href="{prefix}{h}"><span class="aico">{ic(i)}</span><span><b>{t}</b><small>{d}</small></span></a>'
+        for h, i, t, d in TOOLS_MENU)
+    cur = ' aria-current="page"' if current in ("tools", "credit") else ""
+    return (f'<div class="dd"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="{mid}"{cur}>'
+            f'{ic("calculator") if mid.endswith("-m") else ""}<span>Tools</span>{ic("chevron-down", "chev")}</button>'
+            f'<div class="dd-menu" id="{mid}" role="menu" aria-label="Tools" hidden>{items}'
+            f'<a class="dd-all" href="{prefix}tools/index.html">All tools {ic("arrow-right")}</a></div></div>')
 
 
 def render(title, prefix, body, hero="", cur=""):
@@ -653,7 +720,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <a class="glass skip" href="#main">Skip to content</a>
 <header><div class="wrap bar">
 <a class="brand" href="{prefix}index.html">{ic("waves-horizontal")} FiveOceans</a>
-<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a><a href="{prefix}tools/index.html"{ac("tools")}>Tools</a><a href="{prefix}credit/index.html"{ac("credit")}>Credit Card Tool</a></nav>
+<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a>{tools_menu(prefix, "tools-menu", cur)}</nav>
 <span class="spacer"></span>
 <div class="search"><label for="q" hidden>Search</label>{ic("search")}<input id="q" type="search" placeholder="Search…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
 <details class="picker" id="picker"><summary class="glass" aria-label="Change theme">{ic("palette")} <span class="lbl">Change theme</span> {ic("chevron-down","chev")}</summary>
@@ -667,8 +734,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <a href="{prefix}index.html"{ac("home")}>{ic("house")}<span>Home</span></a>
 <a href="{prefix}index.html#water"{"" if cur not in ("seawater","freshwater") else ' aria-current="page"'}>{ic("waves-horizontal")}<span>Water</span></a>
 <a href="{prefix}resources/index.html"{ac("resources")}>{ic("landmark")}<span>Resources</span></a>
-<a href="{prefix}tools/index.html"{ac("tools")}>{ic("calculator")}<span>Tools</span></a>
-<a href="{prefix}credit/index.html"{ac("credit")}>{ic("wallet")}<span>Credit</span></a>
+{tools_menu(prefix, "tools-menu-m", cur)}
 </nav>
 <script>const P={prefix!r};{JS}</script></body></html>"""
 
@@ -914,7 +980,7 @@ calc_credit = ("<p class=\"disclaim\">The formulas (loan payments, cap rate, cas
                "and the saved-scenario and stress-test approach from <a href=\"https://github.com/Sukonik/payout-lab\" rel=\"noopener\">Payout Lab</a>.</p>")
 
 mode_chips = "".join(f'<span>{html.escape(m["label"])}</span>' for m in MODE_LIST)
-tool_cards = f'<article class="card"><span class="aico">{ic("wallet")}</span><h3><a class="stretch" href="../credit/index.html">Credit Card Tool</a></h3><p class="desc">Record your three credit scores, keep your cards in a private packet, and compare good and bad debt for wealth building.</p></article>' + "".join(
+tool_cards = f'<article class="card"><span class="aico">{ic("search")}</span><h3><a class="stretch" href="real-estate/index.html#sonar">Dolphin Sonar</a></h3><p class="desc">Fill the Real Estate Calculator from a listing link and its text, with a bookmarklet and a GitHub issue bot.</p></article>' + f'<article class="card"><span class="aico">{ic("wallet")}</span><h3><a class="stretch" href="../credit/index.html">Credit Card Tool</a></h3><p class="desc">Record your three credit scores, keep your cards in a private packet, and compare good and bad debt for wealth building.</p></article>' + "".join(
     f'<article class="card"><span class="aico">{ic(ic_)}</span><h3><a class="stretch" href="{sl}/index.html">{html.escape(t)}</a></h3>'
     f'<p class="desc">{html.escape(d)}</p>' + (f'<div class="chips">{mode_chips}</div>' if sl == "real-estate" else "") + "</article>"
     for sl, t, ic_, d in TOOLS)
