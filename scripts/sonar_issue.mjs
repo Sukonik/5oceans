@@ -13,16 +13,16 @@ const field = (name) => { const m = body.match(new RegExp('###\\s*' + name + '\\
 const url = field('Listing link').slice(0, 500), text = field('Listing text');
 const site = process.env.SITE_URL || `https://${(ev.repository?.owner?.login || 'sukonik').toLowerCase()}.github.io/${ev.repository?.name || '5oceans'}/`;
 
-let p = S.parseListing({ url, text, jsonld: '' }), note = '';
+let p = S.parseListing({ url, text, jsonld: '' }), note = '', carryText = text, carryLd = '';
 if (url && p.found.length < 3 && process.env.SONAR_FETCH !== '0') {
   const { read } = await pingLink(url);
-  if (read.ok) { p = S.parseListing({ url, text: text + '\n' + read.text, jsonld: read.jsonld }); note = `I read the link politely (robots.txt allowed it) and found ${p.found.length} facts.`; }
+  if (read.ok) { carryText = (text + '\n' + read.text).trim(); carryLd = read.jsonld || ''; p = S.parseListing({ url, text: carryText, jsonld: carryLd }); note = `I read the link politely (robots.txt allowed it) and found ${p.found.length} facts.`; }
   else note = read.reason;
 }
 const sug = S.suggestMode(p);
 const usd = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const money = new Set(['price', 'hoaMo', 'commonMo', 'maintMo', 'taxYr', 'rent']);
-const b64 = Buffer.from(unescape(encodeURIComponent(JSON.stringify({ u: url, t: text.slice(0, 8000), j: '' }))), 'binary').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const b64 = Buffer.from(unescape(encodeURIComponent(JSON.stringify({ u: url, t: carryText.slice(0, 8000), j: carryLd.slice(0, 4000) }))), 'binary').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const link = `${site.replace(/\/?$/, '/')}tools/real-estate/#sonar=${b64}`;
 
 let md = '## Dolphin Sonar\n\n';
@@ -32,9 +32,9 @@ if (!p.found.length && !p.address) {
   md += `${p.address ? `**${p.address}**` : '**Listing**'}${p.site ? ` on ${p.site}` : ''}\n\n| Fact | Value |\n|---|---|\n`;
   md += p.found.map((f) => `| ${f.label} | ${money.has(f.key) ? usd(f.value) : f.value} |`).join('\n') + '\n\n';
   md += `Suggested calculator: **${sug}**.\n\n[Open the Real Estate Calculator with these numbers](${link})\n\n`;
-  md += 'Check every number against the listing. The calculator link carries the pasted text in the address bar once and then clears it.\n';
+  md += 'Check every number against the listing. The calculator link carries these listing facts in the address bar once and then clears them.\n';
 }
 if (note) md += `\n**Link reader:** ${note}\n`;
-md += '\n---\n_Sonar never fetches a listing page. It reads only what was pasted here. Posted by the Dolphin Sonar action._\n';
+md += '\n---\n_Sonar does not fetch listing portals. It reads what was pasted here, plus a polite read of the link when the site allows it. Posted by the Dolphin Sonar action._\n';
 writeFileSync(outPath, md);
 console.log(`facts: ${p.found.length}, suggested: ${sug}`);

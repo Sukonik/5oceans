@@ -38,6 +38,10 @@ ok('reads a permitted link when no text is pasted', async () => {
     const c = spawn('node', ['scripts/sonar_issue.mjs', ev, out], { env: { ...process.env, SONAR_ALLOW_PRIVATE: '1' } }); c.on('close', () => resolve(readFileSync(out, 'utf8'))); });
   srv.close();
   assert.match(md, /\$512,000/); assert.match(md, /read the link politely/);
+  const code = md.match(/#sonar=([A-Za-z0-9_-]+)/)[1];
+  const S = (await import('node:module')).createRequire(import.meta.url)('../assets/calc/sonar.js');
+  const back = S.decodeHash('#sonar=' + code); assert.match(back.text, /512,000/); assert.match(back.text, /6,200/);
+  assert.doesNotMatch(md, /never fetches/);
 });
 await Promise.all(pending);
 console.log(n + ' sonar-issue checks passed');
