@@ -10,9 +10,11 @@ REPO = "https://github.com/Sukonik/5oceans/blob/main/docs/handoff/"
 EMOJI = {"CoastalSea": "🏖️", "CentralSea": "🌊", "DeepSea": "🦑",
          "Spring": "💧", "Lake": "🏞️", "River": "🐊"}
 
+
 def inline(t):
     t = html.escape(t)
     t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
+
     def link(m):
         url = m.group(2)
         if not url.startswith("http"):
@@ -20,19 +22,26 @@ def inline(t):
         return f'<a href="{url}" rel="noopener">{m.group(1)}</a>'
     return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link, t)
 
+
+def card(aname, abody):
+    paras = [p.strip() for p in abody.strip().split("\n\n") if p.strip()]
+    m = re.match(r"\*\*(.+?)\.?\*\*\s*(.*)", paras[0], re.S)
+    task, desc = (m.group(1), m.group(2)) if m else ("", paras[0])
+    links = ""
+    if len(paras) > 1:
+        parts = [x.strip() for x in paras[-1].split("·")]
+        links = "".join(f"<span>{inline(x)}</span>" for x in parts)
+    return (f'<article class="card" data-s="{html.escape((aname + " " + abody).lower())}">'
+            f'<p class="eyebrow">{html.escape(task)}</p><h3>{html.escape(aname)}</h3>'
+            f'<p class="desc">{inline(desc)}</p><div class="chips">{links}</div></article>')
+
+
 part = src.split("## Animal directory", 1)[1]
 cols = re.split(r"\n## ", "\n" + part)[1:]
 COLL, total = {}, 0
 for c in cols:
     name, body = c.split("\n", 1)
-    cards = []
-    for a in re.split(r"\n### ", "\n" + body)[1:]:
-        aname, abody = a.split("\n", 1)
-        paras = [p.strip() for p in abody.strip().split("\n\n") if p.strip()]
-        cards.append(
-            f'<article class="card" data-s="{html.escape((aname + " " + abody).lower())}">'
-            f"<h3>{html.escape(aname)}</h3>"
-            + "".join(f"<p>{inline(p)}</p>" for p in paras) + "</article>")
+    cards = [card(*a.split("\n", 1)) for a in re.split(r"\n### ", "\n" + body)[1:]]
     total += len(cards)
     COLL[name.strip()] = cards
 if total != 36:
@@ -50,91 +59,160 @@ THEMES = [  # slug, label, mode, page, surface, ink, action, glow, cta-text
 ]
 theme_css = "".join(
     f'[data-theme="{t[0]}"]{{color-scheme:{t[2]};--page:{t[3]};--surface:{t[4]};--ink:{t[5]};'
-    f'--action:{t[6]};--glow:{t[7]};--cta:{t[8]}}}' for t in THEMES)
-theme_rows = "".join(
-    f'<label class="opt"><input type="radio" name="theme" value="{t[0]}">'
-    f'<span class="sw" style="background:linear-gradient(135deg,{t[3]} 50%,{t[6]} 50%)"></span>'
-    f'<span>{t[1]}</span></label>' for t in THEMES)
-light_rows = "".join(f"{r}</label>" for r, t in zip(theme_rows.split("</label>"), THEMES) if t[2] == "light")
-dark_rows = "".join(f"{r}</label>" for r, t in zip(theme_rows.split("</label>"), THEMES) if t[2] == "dark")
+    f'--action:{t[6]};--glow:{t[7]};--cta:{t[8]};--wash:{"26%" if t[2] == "light" else "42%"};'
+    f'--wash2:{"16%" if t[2] == "light" else "30%"}}}' for t in THEMES)
 
-def render(title, prefix, body):
+
+def rows(mode):
+    return "".join(
+        f'<label class="opt"><input type="radio" name="theme" value="{t[0]}">'
+        f'<span class="sw" style="background:linear-gradient(135deg,{t[3]} 50%,{t[6]} 50%)"></span>'
+        f'<span>{t[1]}</span></label>' for t in THEMES if t[2] == mode)
+
+
+CSS = theme_css + """
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--page);color:var(--ink);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--action)}
+:focus-visible{outline:3px solid var(--action);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+/* header */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page) 88%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}
+@supports(backdrop-filter:blur(1px)){header{backdrop-filter:blur(12px) saturate(1.3)}}
+@media(prefers-reduced-transparency:reduce){header{background:var(--page);backdrop-filter:none}}
+.bar{display:flex;align-items:center;gap:12px;min-height:64px;flex-wrap:wrap;padding-block:8px}
+.brand{white-space:nowrap;display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.01em;text-decoration:none;color:var(--ink);font-size:1.1rem}
+.nav{display:flex;gap:2px;margin-left:12px}
+.nav a{padding:8px 14px;border-radius:999px;text-decoration:none;color:var(--ink);font-weight:500;font-size:.95rem;opacity:.85}
+.nav a:hover,.nav a[aria-current]{background:color-mix(in srgb,var(--ink) 8%,transparent);opacity:1}
+.spacer{flex:1}
+/* sea glass controls */
+.glass{min-height:44px;display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:.95rem;color:var(--ink);cursor:pointer;text-decoration:none;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 92%,transparent),color-mix(in srgb,var(--surface) 80%,transparent));
+  border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);border-radius:999px;padding:8px 18px;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 55%,transparent),0 1px 2px rgb(0 0 0/.08);transition:transform .15s,box-shadow .15s}
+@supports(backdrop-filter:blur(1px)){.glass{backdrop-filter:blur(10px)}}
+.glass:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 60%,transparent),0 6px 16px rgb(0 0 0/.12)}
+.glass.primary{background:var(--action);color:var(--cta);border-color:transparent;font-weight:600;
+  box-shadow:inset 0 1px 0 rgb(255 255 255/.35),0 6px 18px color-mix(in srgb,var(--action) 40%,transparent)}
+.search{flex:0 1 300px;position:relative}
+.search input{width:100%;min-height:44px;font:inherit;font-size:.95rem;color:var(--ink);padding:8px 16px 8px 40px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 50%,transparent)}
+.search input::placeholder{color:color-mix(in srgb,var(--ink) 55%,transparent)}
+.search::before{content:"⌕";position:absolute;left:15px;top:50%;transform:translateY(-52%);font-size:1.2rem;opacity:.6;pointer-events:none}
+/* picker */
+.picker{position:relative}
+summary.glass{list-style:none} summary::-webkit-details-marker{display:none}
+.menu{position:absolute;right:0;top:calc(100% + 8px);width:240px;max-width:calc(100vw - 40px);background:var(--surface);
+  border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);border-radius:18px;padding:8px 14px 12px;box-shadow:0 20px 50px rgb(0 0 0/.28)}
+.menu h4{margin:10px 0 2px;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;opacity:.65}
+.opt{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;border-radius:10px;padding:0 6px}
+.opt:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.opt input{accent-color:var(--action);width:18px;height:18px;margin:0}
+.sw{width:24px;height:24px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink) 35%,transparent)}
+/* hero */
+.hero{position:relative;overflow:hidden;isolation:isolate;
+  background:radial-gradient(60% 55% at 50% 118%,color-mix(in srgb,var(--glow) var(--wash),transparent),transparent 70%),
+  radial-gradient(90% 70% at 50% 100%,color-mix(in srgb,var(--action) var(--wash2),transparent),transparent 72%),var(--page)}
+.hero .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center;padding-block:72px 96px}
+.hero.compact .wrap{grid-template-columns:1fr;padding-block:40px 56px}
+.kicker{display:inline-flex;gap:8px;align-items:center;font-size:.85rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--action)}
+h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:400;letter-spacing:-.02em;
+  font-size:clamp(2.2rem,5.6vw,4rem);line-height:1.06;margin:.3em 0 .4em;text-wrap:balance}
+h1 em{font-style:italic;color:var(--action)}
+.lede{font-size:clamp(1rem,2vw,1.2rem);max-width:56ch;opacity:.85;margin:0 0 28px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.panel{background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:22px;padding:22px;
+  box-shadow:0 30px 60px -20px rgb(0 0 0/.35),inset 0 1px 0 color-mix(in srgb,#fff 40%,transparent)}
+.panel .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+.panel h2{font:600 1.1rem/1.3 inherit;margin:.4em 0 1em}
+.big-n{font-family:"Iowan Old Style",Georgia,serif;font-size:2.8rem;line-height:1;margin:0;color:var(--action)}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);font-variant-numeric:tabular-nums}
+.small{font-size:.8rem;opacity:.7;margin:.8em 0 0}
+/* sections */
+main{padding-bottom:56px}
+.section{padding-block:48px 0}
+.section>h2{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:clamp(1.5rem,3vw,2.1rem);margin:0 0 6px;letter-spacing:-.01em}
+.section>p{margin:0 0 22px;opacity:.8;max-width:60ch}
+.fam{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.big{position:relative;display:flex;flex-direction:column;gap:6px;overflow:hidden;background:var(--surface);color:var(--ink);text-decoration:none;
+  border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);border-radius:22px;padding:26px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.big::after{content:"";position:absolute;inset:auto -20% -60% -20%;height:70%;pointer-events:none;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--glow) 28%,transparent),transparent)}
+.big:hover{transform:translateY(-3px);border-color:var(--action);box-shadow:0 18px 40px -12px rgb(0 0 0/.3)}
+.big .ico{font-size:2rem}
+.big h2,.big h3{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:1.7rem;margin:.1em 0;letter-spacing:-.01em}
+.big p{margin:0;opacity:.8}
+.big .meta{margin-top:10px;font-size:.85rem;font-weight:600;color:var(--action)}
+.crumb{font-size:.9rem;opacity:.8;margin:0 0 10px}
+.crumb a{color:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:16px}
+.card{display:flex;flex-direction:column;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);
+  border-radius:18px;padding:22px;overflow-wrap:anywhere;transition:transform .2s,box-shadow .2s,border-color .2s}
+.card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--action) 55%,transparent);box-shadow:0 14px 30px -14px rgb(0 0 0/.35)}
+.card h3{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:1.45rem;margin:.1em 0 .4em;letter-spacing:-.01em}
+.eyebrow{margin:0;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--action)}
+.desc{margin:0 0 16px;font-size:.95rem;opacity:.88}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.chips span{font-size:.82rem}
+.chips a{display:inline-block;padding:5px 12px;border-radius:999px;text-decoration:none;
+  background:color-mix(in srgb,var(--action) 11%,transparent);border:1px solid color-mix(in srgb,var(--action) 25%,transparent)}
+.chips a:hover{background:color-mix(in srgb,var(--action) 20%,transparent)}
+.empty{display:none;opacity:.7}
+footer{border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);padding-block:28px;font-size:.9rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
+footer p{margin:0;opacity:.8}
+/* responsive */
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
+@media(max-width:720px){.bar{gap:8px}.brand{flex:1 0 auto}.nav{order:3;width:100%;margin:0;overflow-x:auto}.search{order:4;flex:1 1 100%}
+  .menu{position:fixed;left:20px;right:20px;top:auto;width:auto;max-width:none;margin-top:8px}.picker .lbl{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media(forced-colors:active){.card,.menu,.glass,.big,.panel{border:1px solid CanvasText}}
+"""
+
+JS = """
+const q=document.getElementById('q'),pk=document.getElementById('picker');
+const norm=s=>s.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+q.addEventListener('input',()=>{const v=norm(q.value);let any=false;
+document.querySelectorAll('.card').forEach(c=>{const h=!!v&&!norm(c.dataset.s).includes(v);c.hidden=h;if(!h)any=true});
+const e=document.getElementById('empty');if(e)e.style.display=!any&&v?'block':'none';});
+const cur=document.documentElement.dataset.theme;
+document.querySelectorAll('input[name=theme]').forEach(r=>{r.checked=r.value===cur;
+r.addEventListener('change',()=>{document.documentElement.dataset.theme=r.value;
+try{localStorage.setItem('fiveoceans-theme',r.value)}catch(e){}});});
+pk.addEventListener('keydown',e=>{if(e.key==='Escape'&&pk.open){pk.open=false;pk.querySelector('summary').focus()}});
+document.addEventListener('click',e=>{if(!pk.contains(e.target))pk.open=false});
+"""
+
+
+def render(title, prefix, body, hero="", cur=""):
+    ids = [t[0] for t in THEMES]
+    ac = lambda k: ' aria-current="page"' if cur == k else ""
     return f"""<!doctype html><html lang="en" data-theme="chalk"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="FiveOceans: when can you afford to work less near the water? A planning demo.">
 <title>{title}</title>
-<script>
-(function(){{var ids={[t[0] for t in THEMES]!r},t=null;
-try{{t=localStorage.getItem('fiveoceans-theme')}}catch(e){{}}
+<script>(function(){{var ids={ids!r},t=null;try{{t=localStorage.getItem('fiveoceans-theme')}}catch(e){{}}
 if(ids.indexOf(t)<0)t=matchMedia('(prefers-color-scheme: dark)').matches?'basalt':'chalk';
-document.documentElement.dataset.theme=t}})();
-</script>
-<style>
-{theme_css}
-*{{box-sizing:border-box}}
-body{{margin:0;background:var(--page);color:var(--ink);font:16px/1.5 Inter,system-ui,-apple-system,sans-serif;
-  background-image:radial-gradient(60rem 24rem at 85% -8rem,color-mix(in srgb,var(--glow) 22%,transparent),transparent)}}
-a{{color:var(--action)}}
-header{{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;
-  padding:10px 16px;background:color-mix(in srgb,var(--page) 90%,transparent);border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}}
-@supports(backdrop-filter:blur(1px)){{header{{backdrop-filter:blur(10px)}}}}
-@media(prefers-reduced-transparency:reduce){{header{{background:var(--page);backdrop-filter:none}}}}
-.brand{{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--ink)}}
-main{{max-width:1100px;margin:0 auto;padding:24px 16px 48px}}
-h1{{font-family:'Inter Tight',Inter,system-ui,sans-serif;font-size:clamp(1.9rem,6vw,3rem);line-height:1.1;margin:.2em 0}}
-h2{{margin-top:2rem}}
-.btn,summary,input[type=search]{{min-height:44px;font:inherit;color:var(--ink);background:var(--surface);
-  border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:10px;padding:8px 14px}}
-summary{{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}}
-summary::-webkit-details-marker{{display:none}}
-:focus-visible{{outline:3px solid var(--action);outline-offset:2px}}
-.picker{{position:relative}}
-.menu{{position:absolute;right:0;margin-top:6px;min-width:220px;max-width:calc(100vw - 32px);background:var(--surface);
-  border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:12px;padding:8px 12px;
-  box-shadow:0 12px 32px rgb(0 0 0/.25)}}
-.menu h4{{margin:8px 0 2px;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;opacity:.7}}
-.opt{{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}}
-.opt input{{accent-color:var(--action);width:18px;height:18px}}
-.sw{{width:22px;height:22px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink) 40%,transparent)}}
-.nav{{display:flex;gap:6px}} .nav a{{padding:10px 12px;border-radius:8px;text-decoration:none;font-weight:600}} .nav a:hover{{background:var(--surface)}}
-.fam{{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin:1.5rem 0}}
-.big{{display:block;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:14px;padding:20px;text-decoration:none;color:var(--ink)}}
-.big h2{{margin:.2em 0}} .big:hover{{border-color:var(--action)}}
-.crumb{{font-size:.9rem}}
-.search{{flex:1 1 220px;max-width:440px;min-width:0}} input[type=search]{{width:100%}}
-.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}}
-.card{{background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:12px;padding:4px 16px 8px;
-  overflow-wrap:anywhere}}
-.card h3{{margin:.8em 0 .2em}} .note{{font-size:.9rem;opacity:.8}}
-@media(max-width:640px){{.brand{{flex:1}} .nav{{order:2;width:100%}} .search{{order:3;flex-basis:100%;max-width:none}} .menu{{position:fixed;left:16px;right:16px;top:auto;margin-top:8px}}}}
-@media(prefers-reduced-motion:reduce){{*{{transition:none!important;animation:none!important}}}}
-@media(forced-colors:active){{.card,.menu,.btn,summary{{border:1px solid CanvasText}}}}
-</style></head><body>
-<header>
+document.documentElement.dataset.theme=t}})();</script>
+<style>{CSS}</style></head><body>
+<header><div class="wrap bar">
 <a class="brand" href="{prefix}index.html">🌊 FiveOceans</a>
-<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html">🧂 Seawater</a><a href="{prefix}freshwater/index.html">🚰 Freshwater</a></nav>
-<div class="search"><label for="q" class="sr" hidden>Search</label>
-<input id="q" type="search" placeholder="🔎 Search: 457(b), ERS, duplex…" autocomplete="off"></div>
-<details class="picker" id="picker"><summary aria-label="Change theme">🎨 Change theme ▾</summary>
-<div class="menu" role="radiogroup" aria-label="Theme"><h4>☀️ Light</h4>{light_rows}<h4>🌙 Dark</h4>{dark_rows}</div></details>
-</header>
-<main>
-{body}
-<p class="note">📚 <a href="{REPO}COLE_HANDOFF.txt">Handoff</a> ·
-<a href="{prefix}index.html">Home</a> ·
-<a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> ·
-<a href="https://github.com/Sukonik/5oceans">GitHub</a></p>
-</main><script>
-const q=document.getElementById('q'),pk=document.getElementById('picker');
-q.addEventListener('input',()=>{{const v=q.value.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
-document.querySelectorAll('.card').forEach(c=>c.hidden=v&&!c.dataset.s.replace(/[^a-z0-9 ]/g,'').includes(v));
-document.querySelectorAll('section').forEach(s=>s.hidden=![...s.querySelectorAll('.card')].some(c=>!c.hidden));}});
-const cur=document.documentElement.dataset.theme;
-document.querySelectorAll('input[name=theme]').forEach(r=>{{r.checked=r.value===cur;
-r.addEventListener('change',()=>{{document.documentElement.dataset.theme=r.value;
-try{{localStorage.setItem('fiveoceans-theme',r.value)}}catch(e){{}}}});}});
-pk.addEventListener('keydown',e=>{{if(e.key==='Escape'&&pk.open){{pk.open=false;pk.querySelector('summary').focus()}}}});
-document.addEventListener('click',e=>{{if(!pk.contains(e.target))pk.open=false}});
-</script></body></html>"""
+<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a></nav>
+<span class="spacer"></span>
+<div class="search"><label for="q" hidden>Search</label><input id="q" type="search" placeholder="Search 457(b), ERS, duplex…" autocomplete="off"></div>
+<details class="picker" id="picker"><summary class="glass" aria-label="Change theme">🎨 <span class="lbl">Change theme</span> ▾</summary>
+<div class="menu" role="radiogroup" aria-label="Theme"><h4>Light</h4>{rows("light")}<h4>Dark</h4>{rows("dark")}</div></details>
+</div></header>
+{hero}
+<main><div class="wrap">{body}</div></main>
+<footer><div class="wrap"><p>🌊 FiveOceans · planning demo, fictional figures, not financial advice. Nothing you type is stored or sent.</p>
+<p><a href="{REPO}COLE_HANDOFF.txt">Handoff</a> · <a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> · <a href="https://github.com/Sukonik/5oceans">GitHub</a></p></div></footer>
+<script>{JS}</script></body></html>"""
+
 
 FAMILIES = {
     "seawater": ("🧂", "Seawater", ["CoastalSea", "CentralSea", "DeepSea"],
@@ -144,31 +222,59 @@ FAMILIES = {
 }
 BLURB = {"CoastalSea": "Right-size, rent, and stay near the shore.", "CentralSea": "Mid-water decisions between coast and deep.",
          "DeepSea": "Deeper planning: longer horizons and complex pairings.",
-         "Spring": "Starting points near the source.", "Lake": "Calm, steady planning.", "River": "Moving income and benefits downstream."}
+         "Spring": "Starting points near the source.", "Lake": "Calm, steady planning.",
+         "River": "Moving income and benefits downstream."}
 
-def write(path, title, depth, body):
+
+def write(path, title, depth, body, hero="", cur=""):
     f = out / path
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(render(title, "../" * depth, body), encoding="utf-8")
+    f.write_text(render(title, "../" * depth, body, hero, cur), encoding="utf-8")
 
-def slug(n): return n.lower()
+
+def slug(n):
+    return n.lower()
+
+
+def coll_card(prefix, c):
+    return (f'<a class="big" href="{prefix}{slug(c)}/index.html"><span class="ico">{EMOJI[c]}</span><h3>{c}</h3>'
+            f'<p>{BLURB[c]}</p><span class="meta">{len(COLL[c])} animals →</span></a>')
+
+
+def page_hero(crumb, emoji, h, lede):
+    return (f'<section class="hero compact"><div class="wrap"><div><p class="crumb">{crumb}</p>'
+            f'<span class="kicker">{emoji} FiveOceans</span><h1>{h}</h1><p class="lede">{lede}</p></div></div></section>')
+
+
+home_hero = """<section class="hero"><div class="wrap"><div>
+<span class="kicker">🌊 Retirement planning, near the water</span>
+<h1>Where near the water would you like to live, and <em>when can you afford to work less?</em></h1>
+<p class="lede">Thirty-six animal paths, each tied to a real decision and an official source. Start with salt water or fresh.</p>
+<div class="cta"><a class="glass primary" href="seawater/index.html">🧂 Explore Seawater</a><a class="glass" href="freshwater/index.html">🚰 Explore Freshwater</a></div></div>
+<aside class="panel" aria-label="Sample result"><span class="tag">🐚 Hermit Crab · fictional example</span>
+<h2>Could a tenant pay part of my housing cost?</h2>
+<p class="big-n">$1,552<span style="font-size:1rem;font-family:inherit;color:var(--ink);opacity:.7"> /month</span></p>
+<p class="small" style="margin-top:4px">what the owner still pays after rent</p>
+<div class="row"><span>Carrying cost</span><span>$3,300</span></div>
+<div class="row"><span>Rent after vacancy &amp; management</span><span>−$1,748</span></div>
+<p class="small">Illustrative numbers. Before income tax.</p></aside></div></section>"""
 
 fam_cards = "".join(
-    f'<a class="big" href="{k}/index.html"><div>{e}</div><h2>{n}</h2><p>{d}</p>'
-    f'<p class="note">{" · ".join(c)}</p></a>' for k, (e, n, c, d) in FAMILIES.items())
+    f'<a class="big" href="{k}/index.html"><span class="ico">{e}</span><h2>{n}</h2><p>{d}</p>'
+    f'<span class="meta">{" · ".join(c)} →</span></a>' for k, (e, n, c, d) in FAMILIES.items())
 write("index.html", "FiveOceans", 0,
-      '<h1>Where near the water would you like to live, and when can you afford to work less?</h1>'
-      '<p class="note">Planning demo, 36 animal paths. Illustrative only; not financial advice. Nothing you type is stored or sent.</p>'
-      f'<div class="fam">{fam_cards}</div>')
+      f'<section class="section"><h2>Choose your water</h2><p>Six collections, six animals each. Every one links to a guide and a direct official resource.</p>'
+      f'<div class="fam">{fam_cards}</div></section>', home_hero)
+
 for k, (e, n, cs, d) in FAMILIES.items():
-    links = "".join(
-        f'<a class="big" href="../{slug(c)}/index.html"><div>{EMOJI[c]}</div><h2>{c}</h2>'
-        f'<p>{BLURB[c]}</p><p class="note">{len(COLL[c])} animals</p></a>' for c in cs)
     write(f"{k}/index.html", f"{n} | FiveOceans", 1,
-          f'<p class="crumb"><a href="../index.html">Home</a> / {n}</p><h1>{e} {n}</h1><p>{d}</p><div class="fam">{links}</div>')
+          f'<section class="section"><div class="fam">{"".join(coll_card("../", c) for c in cs)}</div></section>',
+          page_hero(f'<a href="../index.html">Home</a> / {n}', e, f"{n} paths", d), k)
     for c in cs:
         write(f"{slug(c)}/index.html", f"{c} | FiveOceans", 1,
-              f'<p class="crumb"><a href="../index.html">Home</a> / <a href="../{k}/index.html">{n}</a> / {c}</p>'
-              f'<h1>{EMOJI[c]} {c}</h1><p>{BLURB[c]}</p><div class="grid">{"".join(COLL[c])}</div>')
+              f'<section class="section"><div class="grid">{"".join(COLL[c])}</div>'
+              f'<p class="empty" id="empty">No animals here match that search.</p></section>',
+              page_hero(f'<a href="../index.html">Home</a> / <a href="../{k}/index.html">{n}</a> / {c}',
+                        EMOJI[c], f"{c}", BLURB[c]), k)
 (out / ".nojekyll").write_text("")
 print(f"built {len(list(out.rglob('index.html')))} pages, {total} animals")
