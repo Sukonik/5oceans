@@ -45,6 +45,10 @@ Two shelves behind the animal paths, each resource with its own page, an at-a-gl
 | Social Security · Medicare and health coverage · HSA | Timeshare · Shared ownership · Renting |
 | Treasury bills, I bonds and TIPS · Saver's Credit and Match · Solo 401(k) | Waterfront and flood insurance |
 
+### 🏷️ Animal tags
+
+Every animal carries tags that link straight to its resource pages, for example 🐚 Hermit Crab: *Primary home (with rental) · Duplex · ADU · Investment property · Flood insurance*, and 🐒 Spider Monkey: *457(b) · ERS · Medicare · HSA*. Tags show on animal cards and animal pages, and tag names are searchable (try `primary home` or `457b ers`). Each resource page lists the animals that use it. Tags come from one editable file, [`content/animal-tags.txt`](content/animal-tags.txt): `slug: resource, resource=Custom label, ...`.
+
 Content lives in [`content/resources/`](content/resources/) as one markdown file per resource, with front matter for title, group, icon, summary, related animals, glance facts and sources. Figures for 2026 (contribution limits, income phase-outs, HSA limits) come from IRS and agency pages checked on November 5, 2026; each page links its sources. The six reference guides from the handoff are rendered as on-site pages too, so no link on the live site sends a visitor to GitHub for content.
 
 ## 🧂 Site map
@@ -148,6 +152,7 @@ python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 docs/handoff/      planning handoff and Blue Glass plan
 assets/icons/      vendored Lucide SVGs and license
 content/resources/ one markdown file per resource page
+content/animal-tags.txt  which resources each animal is tagged with
 scripts/           site generator
 .github/workflows/ Pages deploy
 site/              generated output (not committed)
@@ -165,6 +170,7 @@ site/              generated output (not committed)
 | v0.6 | 36 animal pages with guide content, site-wide search |
 | v0.7 | Minimal line icons (Lucide) replace emoji across the site |
 | v0.8 | Resources hub with 23 resource pages (retirement and property), six on-site guide pages, resource-aware search |
+| v0.9 | Resource tags on every animal card and page, searchable, driven by `content/animal-tags.txt` |
 
 ## 🧭 Roadmap
 

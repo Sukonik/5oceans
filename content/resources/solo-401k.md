@@ -3,7 +3,6 @@ title: One-participant (solo) 401(k)
 group: retirement
 icon: hammer
 summary: A 401(k) for self-employed people with no employees other than a spouse. You contribute as both employee and employer.
-animals: black-seadevil
 related: 401k-403b, traditional-ira, roth-ira
 glance:
 - Who | Owner-only business and spouse

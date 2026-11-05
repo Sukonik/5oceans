@@ -3,7 +3,6 @@ title: Shared ownership
 group: property
 icon: handshake
 summary: Owning a home with family or friends can cut the cost, but you need clear terms for money, use, repairs and how someone can leave.
-animals: capybara, giant-otter
 related: vacation-home, investment-property, primary-home
 glance:
 - Common forms | Joint tenancy, tenancy in common, LLC

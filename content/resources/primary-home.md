@@ -3,7 +3,6 @@ title: Primary home
 group: property
 icon: house
 summary: The home you live in most of the year. It carries the strongest tax breaks, the cheapest financing and the main decision of whether to stay, right-size or move.
-animals: hermit-crab, sea-lion, green-sea-turtle, scarlet-ibis, swan, common-loon
 related: vacation-home, duplex-house-hacking, renting, waterfront-flood-insurance
 glance:
 - Home-sale tax exclusion | $250,000 ($500,000 joint)

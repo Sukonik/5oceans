@@ -3,7 +3,6 @@ title: New York ERS
 group: retirement
 icon: building
 summary: New York's Employees' Retirement System pension for most state and local government workers, run by the State and Local Retirement System (NYSLRS).
-animals: pink-river-dolphin, colossal-squid, giant-otter, spider-monkey, dumbo-octopus
 related: governmental-457b, social-security, medicare, ny-trs
 glance:
 - Vesting (Tier 5 and 6, since April 9, 2022) | 5 years

@@ -3,7 +3,6 @@ title: Waterfront and flood insurance
 group: property
 icon: umbrella
 summary: Ordinary homeowners policies generally exclude flood. Price flood, wind and displacement separately for every waterfront address before you compare homes.
-animals: peacock-flounder, red-cushion-sea-star, goblin-shark, painted-turtle, pike, hermit-crab
 related: primary-home, vacation-home, investment-property, land
 glance:
 - NFIP building limit, 1-4 family home | $250,000

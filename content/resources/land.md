@@ -3,7 +3,6 @@ title: Land and building a home
 group: property
 icon: shovel
 summary: Buying a lot and building costs more time and carries more risk than buying a finished home. Zoning, utilities, flood and septic can each decide the outcome.
-animals: hermit-crab, painted-turtle, hippopotamus
 related: investment-property, adu, waterfront-flood-insurance
 glance:
 - Rent during design and build | Zero

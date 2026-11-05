@@ -3,7 +3,6 @@ title: Health Savings Account (HSA)
 group: retirement
 icon: heart-pulse
 summary: A triple-tax-advantaged account for people with a qualifying high-deductible health plan. Qualified medical spending comes out tax-free.
-animals: spider-monkey, giant-manta-ray
 related: medicare, traditional-ira
 glance:
 - 2026 limit, self-only plan | $4,400

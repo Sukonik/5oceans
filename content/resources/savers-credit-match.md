@@ -3,7 +3,6 @@ title: Saver's Credit and Saver's Match
 group: retirement
 icon: banknote
 summary: Federal help for lower- and moderate-income savers: the Saver's Credit now, and the Saver's Match of up to $1,000 starting with 2027 contributions.
-animals: sea-pig, rhesus-macaque-monkey
 related: roth-ira, traditional-ira, 401k-403b
 glance:
 - 2026 Saver's Credit income limit, single | $40,250

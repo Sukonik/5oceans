@@ -3,7 +3,6 @@ title: Social Security
 group: retirement
 icon: users
 summary: A lifetime income based on your 35 highest-earning years, with the amount depending heavily on the age you claim.
-animals: colossal-squid, giant-otter, bobcat, sea-pig, pink-river-dolphin
 related: medicare, ny-ers, fers-tsp
 glance:
 - Earliest claim | 62

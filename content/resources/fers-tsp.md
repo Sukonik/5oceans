@@ -3,7 +3,6 @@ title: FERS and the Thrift Savings Plan
 group: retirement
 icon: flag
 summary: Federal civilian employees get three income streams: a FERS pension, Social Security and the Thrift Savings Plan (TSP).
-animals: colossal-squid, pink-river-dolphin, giant-otter
 related: social-security, medicare, traditional-ira
 glance:
 - Pieces of FERS | Basic benefit, Social Security, TSP

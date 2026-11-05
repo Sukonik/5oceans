@@ -3,7 +3,6 @@ title: New York teachers' pensions
 group: retirement
 icon: graduation-cap
 summary: Teachers outside New York City are in the New York State Teachers' Retirement System (NYSTRS). New York City teachers are in a separate city system.
-animals: pink-river-dolphin, colossal-squid, giant-otter, dumbo-octopus
 related: ny-ers, 401k-403b, social-security
 glance:
 - Systems | NYSTRS (outside NYC), NYC TRS (inside NYC)
