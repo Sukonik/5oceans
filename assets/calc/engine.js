@@ -25,13 +25,56 @@
   };
   const R = (k, v, kind, note, strong) => ({ k, v, kind: kind || 'money', note: note || '', strong: !!strong });
 
+  /* ---------- loan programs ---------- */
+  // Typical published terms; lenders and agencies set the real ones. Fees below are financed into the loan.
+  const PROGRAMS = [
+    { id: 0, label: 'Conventional', down: 20 },
+    { id: 1, label: 'FHA', down: 3.5 },
+    { id: 2, label: 'VA', down: 0 },
+    { id: 3, label: 'USDA', down: 0 },
+  ];
+  function progCosts(code, downPct) {
+    const c = code | 0;
+    if (c === 1) return { upfrontPct: 1.75, annualPct: 100 - downPct > 95 ? 0.55 : 0.5 }; // HUD ML 2023-05, 30-year base loan up to $726,200
+    if (c === 2) return { upfrontPct: downPct < 5 ? 2.15 : downPct < 10 ? 1.5 : 1.25, annualPct: 0 }; // VA first use
+    if (c === 3) return { upfrontPct: 1, annualPct: 0.35 }; // USDA guaranteed loan
+    return { upfrontPct: 0, annualPct: downPct < 20 ? 0.5 : 0 }; // conventional PMI estimate
+  }
+  const fundFields = () => [
+    { id: 'program', label: 'Loan program', def: 0, kind: 'select', options: PROGRAMS.map((x) => x.label), hint: 'Sets a typical down payment and the fees' },
+    F.num('score', 'Credit score (optional)', 0, 'Checks program minimums; 0 to skip'),
+    F.money('assist', 'Grant or down-payment help', 0, 'Reduces cash to close'),
+  ];
+  function programWarn(v) {
+    const w = [], c = v.program | 0, sc = v.score || 0, dp = v.downPct;
+    if (c === 1) {
+      w.push('FHA loans are for a home you will live in. The upfront premium is financed; the annual premium is added to your payment.');
+      if (sc && sc < 500) w.push('Below a 500 score a loan cannot be FHA-insured.');
+      else if (sc && sc < 580 && dp < 10) w.push('From 500 to 579, FHA limits the loan to about 90% of value, so about 10% down.');
+      else if (!sc && dp < 3.5) w.push('FHA generally needs about 3.5% down at a 580 or higher score.');
+    } else if (c === 2) {
+      w.push('VA loans are for eligible veterans, service members and some surviving spouses, with a Certificate of Eligibility. The funding fee shown is for first use and is waived for veterans with a service-connected disability rating of 10% or more.');
+    } else if (c === 3) {
+      w.push('USDA loans need an eligible rural area, household income under the program limit (115% of the area median) and a home you will live in.');
+    } else {
+      if (dp < 3) w.push('Most conventional loans need at least 3% down.');
+      if (sc && sc < 620) w.push('Many conventional lenders look for a 620 score or higher. Lenders set their own minimums.');
+    }
+    if (v.assist > 0) w.push('Assistance programs often come with conditions: first-time buyer status, income and price limits, homebuyer education and repayment if you sell or move. Confirm each one.');
+    return w;
+  }
+  const assistCash = (v) => Math.max(v.assist || 0, 0);
+
   /* ---------- shared building blocks ---------- */
   function financing(v, priceKey) {
     const price = v[priceKey || 'price'];
     const down = price * (v.downPct / 100);
-    const loan = Math.max(price - down, 0);
+    const base = Math.max(price - down, 0);
+    let upfront = 0, mi = 0;
+    if (v.program !== undefined) { const c = progCosts(v.program, v.downPct); upfront = (base * c.upfrontPct) / 100; mi = (base * c.annualPct) / 1200; }
+    const loan = base + upfront;
     const pi = v.piOverride > 0 ? v.piOverride : pmt(loan, v.rate, v.term);
-    return { price, down, loan, pi };
+    return { price, down, base, loan, pi, upfront, mi };
   }
   function rentalCore(o) {
     // o: price, down, closing, capex, loan, pi, grossMo, otherMo, vacancy, mgmtPct, opexYr (excl mgmt), growth, rentGrowth, years, rate, term
@@ -98,14 +141,14 @@
 
   add({
     id: 'home', group: 'Live in it', label: 'Home', blurb: 'A primary home: the full monthly cost, cash to close and how much income a lender expects.',
-    fields: [...loanFields(450000, 20, 6.5, 30), F.pct('closingPct', 'Closing costs', 3, '% of price'),
+    fields: [...loanFields(450000, 20, 6.5, 30), ...fundFields(), F.pct('closingPct', 'Closing costs', 3, '% of price'),
       F.pct('taxPct', 'Property tax', 1.2, '% of price per year'), F.money('insYr', 'Home insurance', 1800, 'per year'),
       F.pct('maintPct', 'Maintenance', 1, '% of price per year'), F.money('hoaMo', 'HOA dues', 0, 'per month'),
       F.pct('growth', 'Appreciation', 3, 'per year'), F.num('years', 'Years you hold it', 5, '', 'years')],
     expFields: ['insYr', 'hoaMo'], rentFields: [],
     compute(v) {
       const f = financing(v), tax = (v.price * v.taxPct) / 1200, ins = v.insYr / 12, mt = (v.price * v.maintPct) / 1200;
-      const pmi = v.downPct < 20 ? (f.loan * 0.005) / 12 : 0;
+      const pmi = f.mi;
       const total = f.pi + tax + ins + mt + v.hoaMo + pmi;
       const yrs = Math.max(1, Math.round(v.years)), val = v.price * Math.pow(1 + v.growth / 100, yrs);
       const bal = balance(f.loan, v.rate, v.term, yrs * 12), eq = val - bal, net = eq - val * 0.06;
@@ -113,12 +156,13 @@
         headline: R('Total monthly cost', total, 'money'), key: total, keyLabel: 'Monthly cost', higherIsBetter: false,
         rows: [R('Loan amount', f.loan), R('Principal and interest', f.pi), R('Property tax', tax), R('Home insurance', ins),
           R('Maintenance reserve', mt, 'money', 'Budget, not a bill'), R('HOA dues', v.hoaMo),
-          ...(pmi ? [R('Mortgage insurance (estimate)', pmi, 'money', 'Under 20% down; about 0.5% of the loan per year')] : []),
-          R('Cash to close', f.down + (v.price * v.closingPct) / 100, 'money', 'Down payment plus closing costs', true),
+          ...(pmi ? [R('Mortgage insurance', pmi, 'money', (v.program | 0) === 0 ? 'Estimate, about 0.5% of the loan a year; can usually be removed later' : 'Part of the payment for this program')] : []),
+          ...(f.upfront ? [R('Upfront program fee (financed)', f.upfront, 'money', 'Added to the loan, not paid at closing')] : []),
+          R('Cash to close', Math.max(f.down + (v.price * v.closingPct) / 100 - assistCash(v), 0), 'money', 'Down payment plus closing costs' + (assistCash(v) ? ', less your assistance' : ''), true),
           R('Income a lender expects', (total / 0.28) * 12, 'money', 'Per year, from the common 28% housing-cost guide'),
           R(`Equity after ${yrs} years`, eq, 'money', 'Value minus loan balance'),
           R('Equity after a 6% sale cost', net, 'money', 'What you could keep, before tax')],
-        warn: pmi ? ['With less than 20% down, lenders usually require mortgage insurance.'] : [],
+        warn: [...(pmi && (v.program | 0) === 0 ? ['With less than 20% down, lenders usually require mortgage insurance.'] : []), ...programWarn(v)],
       };
     },
   });
@@ -126,7 +170,7 @@
   const rentalOwnerFields = [
     F.money('price', 'Purchase price', 415300), F.pct('downPct', 'Down payment', 20, '% of price'),
     F.pct('rate', 'Interest rate', 6.5), F.num('term', 'Loan term', 30, '', 'years'),
-    F.money('piOverride', 'Fixed monthly P&I (optional)', 0, 'Leave 0 to compute from the loan'),
+    ...fundFields(), F.money('piOverride', 'Fixed monthly P&I (optional)', 0, 'Leave 0 to compute from the loan'),
     F.money('taxMo', 'Property tax', 600, 'per month'), F.money('insMo', 'Home and landlord insurance', 180, 'per month'),
     F.money('floodMo', 'Flood insurance', 100, 'per month'), F.money('utilMo', 'Owner-paid utilities', 120, 'per month'),
     F.money('maintMo', 'Maintenance and reserve', 200, 'per month'),
@@ -137,7 +181,7 @@
   ];
   function ownerRental(v) {
     const f = financing(v);
-    const carry = f.pi + v.taxMo + v.insMo + v.floodMo + v.utilMo + v.maintMo;
+    const carry = f.pi + f.mi + v.taxMo + v.insMo + v.floodMo + v.utilMo + v.maintMo;
     const coll = v.rent * v.units * (1 - v.vacancy / 100), mg = coll * (v.mgmt / 100), net = coll - mg;
     const owner = carry - net;
     const bo = v.rent * v.units * (v.badOcc / 100), bnet = bo - bo * (v.mgmt / 100), bad = carry - bnet;
@@ -168,20 +212,21 @@
 
   add({
     id: 'condo', group: 'Live in it', label: 'Condo', blurb: 'Condo costs hinge on dues and assessments. Shows the all-in monthly figure and what share is dues.',
-    fields: [...loanFields(380000, 20, 6.5, 30), F.pct('closingPct', 'Closing costs', 3), F.money('taxMo', 'Property tax', 450, 'per month'),
+    fields: [...loanFields(380000, 20, 6.5, 30), ...fundFields(), F.pct('closingPct', 'Closing costs', 3), F.money('taxMo', 'Property tax', 450, 'per month'),
       F.money('hoaMo', 'HOA / common charges', 520, 'per month'), F.money('specialMo', 'Special assessment reserve', 100, 'per month'),
       F.money('ho6Yr', 'Condo (HO-6) insurance', 600, 'per year'), F.money('utilMo', 'Utilities', 150, 'per month'),
       F.pct('growth', 'Appreciation', 2, 'per year'), F.num('years', 'Years you hold it', 5, '', 'years')],
     expFields: ['hoaMo', 'specialMo', 'ho6Yr', 'utilMo'], rentFields: [],
     compute(v) {
-      const f = financing(v), ins = v.ho6Yr / 12, total = f.pi + v.taxMo + v.hoaMo + v.specialMo + ins + v.utilMo;
+      const f = financing(v), ins = v.ho6Yr / 12, total = f.pi + f.mi + v.taxMo + v.hoaMo + v.specialMo + ins + v.utilMo;
       const yrs = Math.max(1, Math.round(v.years)), val = v.price * Math.pow(1 + v.growth / 100, yrs), eq = val - balance(f.loan, v.rate, v.term, yrs * 12);
       return {
         headline: R('Total monthly cost', total), key: total, keyLabel: 'Monthly cost', higherIsBetter: false,
         rows: [R('Principal and interest', f.pi), R('Property tax', v.taxMo), R('HOA / common charges', v.hoaMo), R('Special assessment reserve', v.specialMo),
           R('Condo insurance', ins), R('Utilities', v.utilMo), R('Dues as a share of the monthly cost', total ? ((v.hoaMo + v.specialMo) / total) * 100 : 0, 'pct'),
-          R('Cash to close', f.down + (v.price * v.closingPct) / 100, 'money', '', true), R(`Equity after ${yrs} years`, eq)],
-        warn: ['Ask for the condo budget, reserve study and any planned assessments. Some lenders limit loans in buildings with litigation or low reserves.'],
+          ...(f.mi ? [R('Mortgage insurance', f.mi, 'money', 'Included in the monthly cost')] : []),
+          R('Cash to close', Math.max(f.down + (v.price * v.closingPct) / 100 - assistCash(v), 0), 'money', assistCash(v) ? 'Less your assistance' : '', true), R(`Equity after ${yrs} years`, eq)],
+        warn: [...programWarn(v), 'Ask for the condo budget, reserve study and any planned assessments. Some lenders limit loans in buildings with litigation or low reserves.'],
       };
     },
   });
@@ -212,7 +257,7 @@
   add({
     id: 'house-hacker', group: 'Live in it', label: 'House hacker', blurb: 'Buy a 2 to 4 unit property, live in one unit and rent the rest. Shows your housing cost now and the numbers if you later move out.',
     fields: [F.money('price', 'Purchase price', 680000), F.pct('downPct', 'Down payment', 5, 'Some owner-occupied loans allow low down payments'),
-      F.pct('rate', 'Interest rate', 6.5), F.num('term', 'Loan term', 30, '', 'years'), F.pct('closingPct', 'Closing costs', 3),
+      F.pct('rate', 'Interest rate', 6.5), F.num('term', 'Loan term', 30, '', 'years'), ...fundFields(), F.pct('closingPct', 'Closing costs', 3),
       F.num('unitsTotal', 'Units in the building', 3, '', 'units'), F.num('unitsRented', 'Units you rent out', 2, '', 'units'),
       F.money('rent', 'Rent per unit', 2200, 'per month'), F.money('miMo', 'Mortgage insurance', 200, 'per month'),
       F.money('taxMo', 'Property tax', 700, 'per month'), F.money('insMo', 'Insurance', 300, 'per month'), F.money('utilMo', 'Owner-paid utilities', 200, 'per month'),
@@ -220,10 +265,10 @@
       F.money('ownerOnly', 'Renting a comparable home instead', 2600, 'per month'), F.pct('growth', 'Appreciation', 3), F.pct('rentGrowth', 'Rent growth', 3)],
     expFields: ['taxMo', 'insMo', 'utilMo', 'maintMo', 'miMo'], rentFields: ['rent'], sens: true,
     compute(v) {
-      const f = financing(v), carry = f.pi + v.miMo + v.taxMo + v.insMo + v.utilMo + v.maintMo;
+      const f = financing(v), mi = (v.program | 0) ? f.mi : v.miMo, carry = f.pi + mi + v.taxMo + v.insMo + v.utilMo + v.maintMo;
       const coll = v.rent * v.unitsRented * (1 - v.vacancy / 100), net = coll * (1 - v.mgmt / 100), housing = carry - net;
-      const cash = f.down + (v.price * v.closingPct) / 100;
-      const all = rentalCore({ price: v.price, down: f.down, closing: (v.price * v.closingPct) / 100, loan: f.loan, pi: f.pi + v.miMo, grossMo: v.rent * v.unitsTotal,
+      const cash = Math.max(f.down + (v.price * v.closingPct) / 100 - assistCash(v), 0);
+      const all = rentalCore({ price: v.price, down: f.down, closing: (v.price * v.closingPct) / 100, loan: f.loan, pi: f.pi + mi, grossMo: v.rent * v.unitsTotal,
         otherMo: 0, vacancy: v.vacancy, mgmtPct: v.mgmt, opexYr: (v.taxMo + v.insMo + v.utilMo + v.maintMo) * 12, growth: v.growth, rentGrowth: v.rentGrowth, years: 5, rate: v.rate, term: v.term });
       return {
         headline: R('Your housing cost per month', housing), key: housing, keyLabel: 'Your housing cost', higherIsBetter: false,
@@ -231,7 +276,7 @@
           R('Savings vs renting a comparable home', v.ownerOnly - housing, 'money', 'Per month'), R('Cash to close', cash, 'money', '', true),
           R('If you move out and rent every unit: cash flow per month', all.cf / 12, 'money', '', true), R('...cap rate', all.cap, 'pct'), R('...cash-on-cash return', all.coc, 'pct'),
           R('...DSCR', all.dscr, 'x')],
-        warn: ['Owner-occupant loans usually require that you live in the property, often for a year. Confirm with a lender before planning to move out.'],
+        warn: [...((v.program | 0) ? programWarn(v) : []), 'Owner-occupant loans usually require that you live in the property, often for a year. Confirm with a lender before planning to move out.'],
       };
     },
   });
@@ -488,5 +533,5 @@
     const depNeeded = Math.max(((need - v.start * Math.pow(1 + r, n)) * (r === 0 ? 1 / n : r / (Math.pow(1 + r, n) - 1))), 0);
     return { end, draw, need, shortfall: need - end, depNeeded, deposited: v.start + v.deposit * n, growth: end - v.start - v.deposit * n };
   }
-  return { pmt, balance, MODES, defaults, run, stressTests, sensitivity, rentalCore, bridge };
+  return { pmt, balance, MODES, PROGRAMS, defaults, run, stressTests, sensitivity, rentalCore, bridge };
 });

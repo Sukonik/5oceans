@@ -52,6 +52,37 @@ ok('flipper 70% rule', () => {
 });
 ok('sensitivity grid shape', () => { const s = RE.sensitivity('investment', {}); assert.equal(s.grid.length, 3); assert.equal(s.grid[0].length, 3); });
 ok('renter vs buyer returns a break-even year or zero', () => { const r = RE.run('renter'); assert.ok(r.rows.some((x) => x.k.startsWith('First year'))); });
+ok('FHA: financed upfront premium and annual premium', () => {
+  const r = RE.run('home', { price: 400000, downPct: 3.5, program: 1, rate: 6, term: 30, closingPct: 0 });
+  const row = (k) => r.rows.find((x) => x.k.startsWith(k)).v;
+  near(row('Upfront program fee'), 386000 * 0.0175, 0.5); near(row('Mortgage insurance'), 386000 * 0.0055 / 12, 0.05);
+  near(row('Loan amount'), 386000 * 1.0175, 0.5);
+});
+ok('VA: funding fee tiers and no monthly mortgage insurance', () => {
+  const fee = (d) => RE.run('home', { price: 400000, downPct: d, program: 2 }).rows.find((x) => x.k.startsWith('Upfront program fee')).v;
+  near(fee(0), 8600, 0.5); near(fee(5), 380000 * 0.015, 0.5); near(fee(10), 360000 * 0.0125, 0.5);
+  assert.equal(RE.run('home', { downPct: 0, program: 2 }).rows.some((x) => x.k === 'Mortgage insurance'), false);
+});
+ok('USDA: one percent upfront, 0.35% a year', () => {
+  const r = RE.run('home', { price: 300000, downPct: 0, program: 3, closingPct: 0 });
+  near(r.rows.find((x) => x.k.startsWith('Upfront program fee')).v, 3000, 0.5); near(r.rows.find((x) => x.k === 'Mortgage insurance').v, 300000 * 0.0035 / 12, 0.05);
+});
+ok('conventional PMI only under 20% down; assistance lowers cash to close', () => {
+  assert.equal(RE.run('home', { downPct: 20 }).rows.some((x) => x.k === 'Mortgage insurance'), false);
+  assert.equal(RE.run('home', { downPct: 10 }).rows.some((x) => x.k === 'Mortgage insurance'), true);
+  const a = RE.run('home', { price: 400000, downPct: 5, closingPct: 3, assist: 0 }).rows.find((x) => x.k === 'Cash to close').v;
+  const b = RE.run('home', { price: 400000, downPct: 5, closingPct: 3, assist: 10000 }).rows.find((x) => x.k === 'Cash to close').v;
+  near(a - b, 10000, 0.5);
+  assert.equal(RE.run('home', { price: 100000, downPct: 3, closingPct: 3, assist: 99999 }).rows.find((x) => x.k === 'Cash to close').v, 0);
+});
+ok('credit score prompts follow HUD FHA tiers', () => {
+  const w = (sc, d) => RE.run('home', { program: 1, score: sc, downPct: d }).warn.join(' ');
+  assert.match(w(480, 3.5), /cannot be FHA-insured/); assert.match(w(550, 3.5), /about 10% down/); assert.doesNotMatch(w(600, 3.5), /10% down|cannot/);
+  assert.match(RE.run('home', { program: 0, score: 600 }).warn.join(' '), /620/);
+});
+ok('programs do not affect modes without a program field', () => {
+  assert.equal(RE.run('investment').rows.some((x) => x.k === 'Mortgage insurance'), false);
+});
 ok('savings bridge fixture (effective monthly rates)', () => {
   const eff = (a) => Math.pow(1 + a / 100, 1 / 12) - 1, r = eff(3);
   near(600 * (Math.pow(1 + r, 120) - 1) / r, 83669, 1);

@@ -4,7 +4,7 @@ group: property
 icon: layout-grid
 calc: house-hacker
 summary: Buy a two-to-four-unit home, live in one unit and rent the others so the rent offsets your housing cost.
-related: investment-property, adu, primary-home, waterfront-flood-insurance
+related: investment-property, adu, primary-home, waterfront-flood-insurance, fha-loans, mortgage-basics
 glance:
 - Worked example carrying cost | $3,300 a month
 - Rent covers | About 53% of carrying cost

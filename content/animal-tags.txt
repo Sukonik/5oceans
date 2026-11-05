@@ -1,10 +1,10 @@
 # One line per animal: slug: resource-slug[=Tag label], ...
 # Order matters (first tag shows first). A label after = overrides the resource name for this animal.
 # Resource slugs are the file names in content/resources/.
-hermit-crab: primary-home=Primary home (with rental), duplex-house-hacking=Duplex, adu=ADU, investment-property=Investment property, waterfront-flood-insurance=Flood insurance
-sea-lion: primary-home=Primary home, renting, medicare
+hermit-crab: primary-home=Primary home (with rental), duplex-house-hacking=Duplex, adu=ADU, investment-property=Investment property, waterfront-flood-insurance=Flood insurance, mortgage-basics=Mortgage
+sea-lion: primary-home=Primary home, renting, medicare, mortgage-basics=Mortgage
 royal-tern: vacation-home=Vacation home, investment-property=Seasonal rental, timeshare, co-ownership
-green-sea-turtle: renting, primary-home=Buy a home
+green-sea-turtle: renting, primary-home=Buy a home, fha-loans=FHA, down-payment-assistance=Down payment help
 peacock-flounder: waterfront-flood-insurance=Flood insurance, primary-home=Waterfront home, vacation-home
 red-cushion-sea-star: waterfront-flood-insurance=Flood insurance, treasuries=Insured reserve
 blue-whale: treasuries=T-bills, renting
@@ -25,14 +25,14 @@ black-bear: treasuries=T-bills
 bobcat: social-security, roth-ira, 401k-403b
 alligator: 401k-403b=Employer match, roth-ira
 largemouth-bass: governmental-457b=457(b), 401k-403b, roth-ira
-painted-turtle: waterfront-flood-insurance=Flood insurance, land, vacation-home
-common-loon: renting, primary-home=Buy a home
-hippopotamus: primary-home=Convert a cabin, land
-swan: primary-home=Age in place, adu, medicare
+painted-turtle: waterfront-flood-insurance=Flood insurance, land, vacation-home, construction-and-land-loans=Land and construction loan
+common-loon: renting, primary-home=Buy a home, mortgage-basics=Mortgage
+hippopotamus: primary-home=Convert a cabin, land, renovation-loans=Renovation loan, usda-loans=USDA
+swan: primary-home=Age in place, adu, medicare, home-equity-and-reverse=Reverse mortgage
 pike: waterfront-flood-insurance=Boat and dock cover, vacation-home
-capybara: co-ownership, vacation-home, investment-property
+capybara: co-ownership, vacation-home, investment-property, mortgage-basics=Co-owner mortgage
 giant-otter: social-security, ny-ers=ERS, medicare
-scarlet-ibis: adu=ADU for family, primary-home, renting
+scarlet-ibis: adu=ADU for family, primary-home, renting, down-payment-assistance=Down payment help
 pink-river-dolphin: ny-ers=ERS, ny-trs=Teachers' pension, governmental-457b=457(b), social-security
 green-anaconda: roth-ira, treasuries=T-bills
 electric-eel: 401k-403b, governmental-457b=457(b), ny-ers=ERS

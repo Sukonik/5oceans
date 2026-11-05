@@ -4,7 +4,7 @@ group: property
 icon: key-round
 calc: investment
 summary: A home you buy mainly to rent. The numbers that decide it are vacancy, financing, upkeep and the owner's own time, not the headline rent.
-related: duplex-house-hacking, vacation-home, land, waterfront-flood-insurance
+related: duplex-house-hacking, vacation-home, land, waterfront-flood-insurance, conventional-loans, mortgage-basics
 glance:
 - Worked example carrying cost | $3,300 a month
 - Rent offset after 95% occupancy and 8% management | $1,748

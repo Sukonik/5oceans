@@ -4,7 +4,7 @@ group: property
 icon: shovel
 calc: land
 summary: Buying a lot and building costs more time and carries more risk than buying a finished home. Zoning, utilities, flood and septic can each decide the outcome.
-related: investment-property, adu, waterfront-flood-insurance
+related: investment-property, adu, waterfront-flood-insurance, construction-and-land-loans
 glance:
 - Rent during design and build | Zero
 - Check first | Zoning, access, utilities, flood zone, septic

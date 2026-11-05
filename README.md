@@ -38,7 +38,7 @@ Six plan collections, 36 animal "paths". Each animal is a branded planning path 
 
 Two shelves behind the animal paths, each resource with its own page, an at-a-glance box, the rules that matter, mistakes to avoid and the official sources:
 
-| 💰 Retirement & income (13) · 💳 Credit & debt (5) | 🏠 Property & housing (10) |
+| 💰 Retirement & income (13) · 🏡 Mortgages & grants (10) · 💳 Credit & debt (5) | 🏠 Property & housing (10) |
 |---|---|
 | Governmental 457(b) · 401(k) and 403(b) · Roth IRA · Traditional IRA | Primary home · Vacation or second home · Investment (rental) property |
 | NY ERS · NY teachers' pensions (NYSTRS and NYC TRS) · FERS and TSP | Duplex or multi-unit home · Accessory dwelling unit (ADU) · Land and building |
@@ -61,13 +61,28 @@ Every tool runs in your browser, saves nothing unless you press a button, and ha
 | 🐬 **Dolphin Sonar** | top of the Real Estate Calculator | Fills the calculator from a listing link plus the listing text. See below. | [#15](https://github.com/Sukonik/5oceans/issues/15) · [licensed data #16](https://github.com/Sukonik/5oceans/issues/16) · [open data #17](https://github.com/Sukonik/5oceans/issues/17) |
 | 🏦 **Savings Bridge** | [`/tools/savings-bridge/`](https://sukonik.github.io/5oceans/tools/savings-bridge/) | Monthly deposits to a balance at the day you stop working, the monthly draw it supports, and the deposit that closes a gap before a pension starts. | [#13](https://github.com/Sukonik/5oceans/issues/13) |
 | 💳 **Credit Card Tool** | [`/credit/`](https://sukonik.github.io/5oceans/credit/) | Your three scores, cards, good-vs-bad debt strategy and a private packet. See below. | [#14](https://github.com/Sukonik/5oceans/issues/14) |
-| 🏡 **Funding the house** | planned (v0.13) | Mortgages, grants and assistance programs tied into the calculator. | [#18](https://github.com/Sukonik/5oceans/issues/18) |
+| 🏡 **Funding the house** | [`/resources/`](https://sukonik.github.io/5oceans/resources/#funding) + a **Loan program** selector in the calculator | Conventional, FHA, VA and USDA terms (down payment, financed fees, mortgage insurance), credit-score prompts and a grant or down-payment-help line that lowers cash to close. See below. | [#18](https://github.com/Sukonik/5oceans/issues/18) |
 
 **Tools menu.** Every tool is reachable from the **Tools** item in the main navigation: a themed bubble dropdown (desktop: opens on hover or click, pins on click, closes on Esc or an outside click; arrow keys, Home and End move through it) that becomes a bubble above the bottom dock on phones. Add a tool by adding a row to `TOOLS_MENU` in `scripts/build_site.py`. The idea follows [responsive-dropdown-menu-2](https://github.com/bedimcode/responsive-dropdown-menu-2) (MIT); the code is original and keyboard accessible.
 
 The calculator and bridge engine is pure JavaScript in [`assets/calc/engine.js`](assets/calc/engine.js), tested by [`tests/calc.test.mjs`](tests/calc.test.mjs) against the handbook fixtures ($1,552 owner cost, $29,040 bad year, $83,669 savings balance, $181,847 needed). CI runs every test before each deploy.
 
 Formulas are standard and written for this site. Ideas came from [Rental Property Deal Analyzer](https://github.com/berkcankapusuzoglu/Rental-Property-Deal-Analyzer) (MIT), [DealFlowPro MCP server](https://github.com/jbechtel-97/dealflowpro-mcp-server) (MIT), [RealEstateInvestmentCal](https://github.com/moonnstarr/RealEstateInvestmentCal), [real-estate-calculations](https://github.com/biegehydra/real-estate-calculations) (AGPL, so no code was copied) and the saved-scenario and stress-test approach of [Payout Lab](https://github.com/Sukonik/payout-lab).
+
+### 🏡 Funding the house: mortgages, grants and ways to land the home
+
+The **Home**, **Condo**, **Home with a rental** and **House hacker** calculators have a **Loan program** selector. Choosing a program sets its typical down payment and adds its costs:
+
+| Program | Typical down | Fees the calculator adds |
+|---|---|---|
+| Conventional | 20% (3% on some programs) | Estimated PMI, about 0.5% a year, when under 20% down |
+| FHA | 3.5% | 1.75% upfront premium (financed) and 0.55% a year (0.50% with a larger down payment) |
+| VA | 0% | Funding fee 2.15%, 1.5% or 1.25% by down payment (first use), financed; no monthly insurance |
+| USDA | 0% | 1% upfront (financed) and 0.35% a year |
+
+Add your credit score to get program prompts (FHA tiers from HUD Mortgagee Letter 2026-11) and any grant or assistance in **Grant or down-payment help** to see the effect on cash to close. These are typical published terms, and lenders and agencies set the real ones; the pages link each official source.
+
+Ten new **Mortgages & grants** resource pages: [Mortgage basics](https://sukonik.github.io/5oceans/resources/mortgage-basics/) · [Conventional](https://sukonik.github.io/5oceans/resources/conventional-loans/) · [FHA](https://sukonik.github.io/5oceans/resources/fha-loans/) · [VA](https://sukonik.github.io/5oceans/resources/va-loans/) · [USDA](https://sukonik.github.io/5oceans/resources/usda-loans/) · [Down-payment assistance](https://sukonik.github.io/5oceans/resources/down-payment-assistance/) (including New York's SONYMA DPAL) · [Renovation loans](https://sukonik.github.io/5oceans/resources/renovation-loans/) · [Construction and land loans](https://sukonik.github.io/5oceans/resources/construction-and-land-loans/) · [Home equity and reverse mortgages](https://sukonik.github.io/5oceans/resources/home-equity-and-reverse/) · [Housing counseling](https://sukonik.github.io/5oceans/resources/housing-counseling/). Animals are tagged to them (for example Green Sea Turtle: FHA, Down payment help).
 
 ### 🐬 Dolphin Sonar: listing link data extractor
 
@@ -113,7 +128,7 @@ Seawater vs Freshwater, with a page for every water body:
 
 | 💳 Credit Card Tool | [`/credit/`](https://sukonik.github.io/5oceans/credit/) |
 | 🧮 Tools (3 pages) + 🐬 Dolphin Sonar | [`/tools/`](https://sukonik.github.io/5oceans/tools/), [`/tools/real-estate/`](https://sukonik.github.io/5oceans/tools/real-estate/), [`/tools/savings-bridge/`](https://sukonik.github.io/5oceans/tools/savings-bridge/) |
-| 📚 Resources (28) | [`/resources/`](https://sukonik.github.io/5oceans/resources/), one page each, e.g. [`/resources/governmental-457b/`](https://sukonik.github.io/5oceans/resources/governmental-457b/) · [`/resources/timeshare/`](https://sukonik.github.io/5oceans/resources/timeshare/) |
+| 📚 Resources (38) | [`/resources/`](https://sukonik.github.io/5oceans/resources/), one page each, e.g. [`/resources/governmental-457b/`](https://sukonik.github.io/5oceans/resources/governmental-457b/) · [`/resources/timeshare/`](https://sukonik.github.io/5oceans/resources/timeshare/) |
 | 📖 Guides (6) | [`/guides/`](https://sukonik.github.io/5oceans/guides/): decisions, programs, investments, insurance, taxes, real estate |
 | 🐠 Animals (36) | `/animals/<name>/`, e.g. [`/animals/hermit-crab/`](https://sukonik.github.io/5oceans/animals/hermit-crab/) · [`/animals/yeti-crab/`](https://sukonik.github.io/5oceans/animals/yeti-crab/) |
 
@@ -194,7 +209,7 @@ Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshot
 python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 ```
 
-- 🛠️ `scripts/build_site.py` generates 85 static pages and a search index and fails if the roster isn't exactly 36 animals.
+- 🛠️ `scripts/build_site.py` generates 96 static pages and a search index and fails if the roster isn't exactly 36 animals.
 - 🚀 `.github/workflows/pages.yml` deploys `site/` on every push to `main`.
 - ⚙️ One-time setup: **Settings → Pages → Source: GitHub Actions**.
 
@@ -231,6 +246,7 @@ site/              generated output (not committed)
 | v0.12 | Dolphin Sonar listing link data extractor (paste, bookmarklet, GitHub issue action), tool roadmaps in Issues |
 | v0.13 | Dolphin Sonar polite link reader (robots.txt, portal refusal, SSRF guard), fictional sample listing |
 | v0.14 | Tools menu: themed bubble dropdown on desktop, bubble above the dock on phones |
+| v0.15 | Funding the house: loan-program selector (conventional, FHA, VA, USDA), assistance line, 10 mortgage and grant pages; accessibility sweep (landmarks, heading order, contrast) |
 
 ## 🧭 Roadmap
 

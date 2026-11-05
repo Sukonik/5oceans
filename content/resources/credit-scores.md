@@ -4,6 +4,7 @@ group: credit
 icon: gauge
 tool: credit
 summary: A three-digit number built from your credit report that lenders use to price loans. You have three files, so you have more than one score.
+related: mortgage-basics, fha-loans
 glance:
 - Typical range | 300 to 850
 - FICO bands | Poor under 580, Fair 580-669, Good 670-739, Very good 740-799, Exceptional 800+
