@@ -1,0 +1,28 @@
+FIVEOCEANS | COLE HANDOFF
+Planning edition 1.0 | November 5, 2026
+
+Cole,
+
+FiveOceans starts with two questions. Where near the water would someone like to live, and when can they afford to work less? The six collections and 36 animal names are settled. The proposed tool names and program matches are in FiveOcean.md. Please review those matches first, then use the three worked paths to scope the first public build.
+
+READ IN THIS ORDER
+1. FiveOcean.md — product map, exact 36 animals, proposed actions, direct source per animal and acceptance criteria.
+2. Guides.md — visitor flows, starting at age 35, family support and paycheck decisions.
+3. Programs.md — eligibility and discovery cards including governmental 457(b), New York ERS, Social Security, IRA, HSA companion links, self-employed and service-specific options.
+4. Investments.md — spendable balances, insured cash, Treasury bills, I bonds, TIPS, diversified brokerage and HSA.
+5. Insurance.md — flood and landlord quotes, health transitions, Medicare abroad, long-term support and property use.
+6. Taxes.md — withdrawals, household taxes, residential rental use, sale and residency.
+7. RealEstate.md — buy, build, rent, seasonal use, shared ownership and an auditable rental example.
+
+THREE ROUTES TO REVIEW
+• Yeti Crab / Largemouth Bass: drawing from versus contributing to a governmental 457(b). Ask about separation, rollovers, tax basis and administrator rules.
+• Pink River Dolphin / Spider Monkey: obtain an ERS estimate at each work-stop date, then bridge the gap to the first payment and new health coverage.
+• Hermit Crab / Royal Tern: compare a legal duplex or permitted accessory unit with a normal home. Add a seasonal rental option and test cash flow without a tenant. Keep a cash-purchase option for visitors who do not want debt.
+
+FIRST PR
+Implement the catalog and connected guides, then the worked routes. The user should be able to search by program name and discover a relevant plan without knowing an animal. Give every opportunity a reason, eligibility check, direct primary source and action. Use the age-35 bridge and duplex examples to check calculator results. Keep personal inputs local and demo values fictional.
+
+FUTURE EDITORIAL IDEA
+WhaleMap may fit Atlantic city pages as a conservation and marketing link. Review attribution, data permissions and any partnership terms before expanding beyond a link. No third-party partnership has been arranged.
+
+The eight files are a planning handoff. Public deployment, product copy approval, property-specific feasibility and individual benefit estimates are later decisions.
