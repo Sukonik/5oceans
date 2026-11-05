@@ -1,18 +1,29 @@
+<div align="center">
+
 # 🌊 FiveOceans
 
 **Where near the water would you like to live, and when can you afford to work less?**
 
-FiveOceans (Five Oceans) is a retirement planner that combines planning tools, trusted resources, and a framework for retirement public-policy development. 🧭
+[![Live site](https://img.shields.io/badge/🌐_live-sukonik.github.io/5oceans-0a6a8f?style=for-the-badge)](https://sukonik.github.io/5oceans/)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/Sukonik/5oceans/pages.yml?branch=main&label=pages%20deploy&style=for-the-badge)](https://github.com/Sukonik/5oceans/actions)
+![Animals](https://img.shields.io/badge/🐠_animal_paths-36-ff866b?style=for-the-badge)
+![Themes](https://img.shields.io/badge/🪨_themes-8-7ecff1?style=for-the-badge)
 
-🔗 **Live demo:** https://sukonik.github.io/5oceans/
+🧭 A retirement planner with planning tools, trusted resources, and a framework for retirement public-policy development.
+
+</div>
+
+---
+
+## 🗺️ Contents
+
+[🐠 How it works](#-how-it-works) · [🧂 Site map](#-site-map) · [🎨 The three UIs](#-the-three-uis) · [🪟 Sea Glass elements](#-sea-glass-elements) · [🪨 Themes](#-eight-shore-rock-themes) · [📱 Responsive & accessible](#-responsive--accessible) · [📚 Docs](#-docs) · [🚀 Build & deploy](#-build--deploy) · [🏷️ Versions](#️-versions) · [🧭 Roadmap](#-roadmap)
 
 ## 🐠 How it works
 
-The site is organized as **🧂 Seawater** vs **🚰 Freshwater**, and each water body has its own page: `/seawater/`, `/freshwater/`, `/coastalsea/`, `/centralsea/`, `/deepsea/`, `/spring/`, `/lake/`, `/river/`.
+Six plan collections, 36 animal "paths". Each animal is a branded planning path with a plain-language task, a guide, and a direct official resource. An animal never decides financial eligibility.
 
-Six plan collections, 36 animal "paths", each tied to a real decision and an official source:
-
-| | Collection | Type |
+| | Collection | Family |
 |---|---|---|
 | 🏖️ | CoastalSea | 🧂 Seawater |
 | 🌊 | CentralSea | 🧂 Seawater |
@@ -21,24 +32,56 @@ Six plan collections, 36 animal "paths", each tied to a real decision and an off
 | 🏞️ | Lake | 🚰 Freshwater |
 | 🐊 | River | 🚰 Freshwater |
 
-Example paths: 🦀 Yeti Crab (457(b) access), 🐬 Pink River Dolphin (NY ERS pension estimates), 🐚 Hermit Crab (rental offsets housing cost).
+**Example paths:** 🦀 Yeti Crab (457(b) access) · 🐬 Pink River Dolphin (NY ERS pension estimates) · 🐚 Hermit Crab (rent offsets housing cost: $3,300 carrying cost, $1,748 net rent, $1,552 left a month, fictional).
+
+## 🧂 Site map
+
+Seawater vs Freshwater, with a page for every water body:
+
+| Page | Path |
+|---|---|
+| 🏠 Home | [`/`](https://sukonik.github.io/5oceans/) |
+| 🧂 Seawater | [`/seawater/`](https://sukonik.github.io/5oceans/seawater/) |
+| 🚰 Freshwater | [`/freshwater/`](https://sukonik.github.io/5oceans/freshwater/) |
+| 🏖️ 🌊 🦑 | [`/coastalsea/`](https://sukonik.github.io/5oceans/coastalsea/) · [`/centralsea/`](https://sukonik.github.io/5oceans/centralsea/) · [`/deepsea/`](https://sukonik.github.io/5oceans/deepsea/) |
+| 💧 🏞️ 🐊 | [`/spring/`](https://sukonik.github.io/5oceans/spring/) · [`/lake/`](https://sukonik.github.io/5oceans/lake/) · [`/river/`](https://sukonik.github.io/5oceans/river/) |
+
+Animals and guides don't have their own pages yet; animal cards link to the guides in [`docs/handoff/`](docs/handoff/).
 
 ## 🎨 The three UIs
 
-FiveOceans' interface is built from three named layers, specified in the [Blue Glass development plan](docs/handoff/Blue-Glass-Development-Plan.md) and shown in the [theme board (PDF)](docs/handoff/Blue-Glass-Theme-Board.pdf).
+Specified in the [Blue Glass development plan](docs/handoff/Blue-Glass-Development-Plan.md) and shown on the [theme board (PDF)](docs/handoff/Blue-Glass-Theme-Board.pdf).
 
 | | UI | What it is | Built with |
 |---|---|---|---|
 | 🦈 | **Blue Manta Ray UI** | Interaction system: app shell, forms, validation, comparison tables, plus the theme menu, search dialog and mobile drawer | [Mantine](https://github.com/mantinedev/mantine) (layout, forms, tables) + [Radix Primitives](https://github.com/radix-ui/primitives) (menu, dialog, focus) |
-| 🪟 | **Sea Glass UI** | Visual treatment: translucent buttons, header search and theme trigger with a thin highlight and soft blur | Scoped CSS, informed by [Glassy UI](https://github.com/alexburlis/glassyui), [Ein UI](https://github.com/einui/einui) and [Vue Web Liquid Glass](https://github.com/mkj0kjay/vue-web-liquid-glass) |
+| 🪟 | **Sea Glass UI** | Visual treatment: translucent buttons, search, tabs, stats and dock with a thin highlight and soft blur | Scoped CSS, informed by [Glassy UI](https://github.com/alexburlis/glassyui), [Ein UI](https://github.com/einui/einui), [Vue Web Liquid Glass](https://github.com/mkj0kjay/vue-web-liquid-glass); [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) may be used as needed |
 | 💎 | **Blue Glass UI** | The two assembled: glass controls over solid, readable panels for dollar amounts, quotes and eligibility rules | React + TypeScript + Vite (planned) |
 
 ### ⭐ Key foundations
 
 - 🧩 **[Mantine](https://github.com/mantinedev/mantine)** is the backbone of Blue Manta Ray UI: responsive layout, theming, form management and financial tables.
 - 🧱 **[Radix Primitives](https://github.com/radix-ui/primitives)** supplies the accessible behavior: radio-group theme menu, search dialog and mobile drawer, including dismissal and focus restoration. Use one primitive per interaction and never nest a Mantine modal or menu inside a Radix one.
+- 🌬️ **[Tailwind CSS](https://github.com/tailwindlabs/tailwindcss)** is approved for use where it helps, for example when importing Glassy UI or Ein UI components, which assume Tailwind 4. The current static demo uses plain CSS and needs no build step.
 
-### 🪨 Eight shore-rock themes
+## 🪟 Sea Glass elements
+
+What the live demo already ships, in plain CSS:
+
+| Element | Where | Behavior |
+|---|---|---|
+| 🔘 **Glass pill buttons** | Hero, theme trigger | Frosted fill, inner highlight, light-sweep on hover; the primary button gets an accent glow |
+| 🔎 **Glass search** | Header on every page | Pill field with a `/` key hint; press `/` or `Ctrl/Cmd+K` to focus; filters animal cards live |
+| 📊 **Glass stat tiles** | Home hero | 36 animal paths · 6 water bodies · 8 themes |
+| 🗂️ **Glass segmented tabs** | Water-body pages | Hop between all six water bodies; scrolls sideways on narrow screens |
+| 🏷️ **Frosted link chips** | Animal cards | Guide and official-source links |
+| 🧭 **Floating glass dock** | Phones (≤720px) | Bottom navigation: Home, Seawater, Fresh, with safe-area padding |
+| 🎨 **Theme menu** | Header | Radio list with swatches, grouped Light and Dark |
+| 🧊 **Solid result panel** | Home hero | Money stays on a solid surface, never on glass |
+
+Glass is progressive: it falls back to opaque surfaces when `backdrop-filter`, reduced transparency or forced colors apply.
+
+## 🪨 Eight shore-rock themes
 
 | ☀️ Light | 🌙 Dark |
 |---|---|
@@ -47,34 +90,59 @@ FiveOceans' interface is built from three named layers, specified in the [Blue G
 | Pink Granite | Obsidian |
 | Quartzite | Greenstone |
 
-The live demo already includes all eight, with a "Change theme" picker. The choice is saved in the browser only, under its own key and never mixed with financial data. First visits follow the OS light or dark preference.
+Each theme's palette comes from the plan (Page, Surface, Ink, Action, Glow). The hero's horizon glow is built from the active theme. The choice is saved in the browser only, under its own key and never mixed with financial data. First visits follow the OS light or dark preference, and there's no flash on load.
 
-### 📱 Responsive and accessible by design
+## 📱 Responsive & accessible
 
-- 📐 Checked for no horizontal scroll at 320px, 390px and 1440px; mobile search drops to its own row
-- 👆 44px minimum touch targets and visible focus rings
-- ⌨️ Escape closes the picker and returns focus to its trigger
-- 🧊 Falls back to opaque surfaces when blur, reduced transparency or forced colors apply
-- 🐢 Honors reduced motion
-- 💵 Money always sits on solid surfaces, never on glass
-
-### 🔗 Design sources
-
-[Mantine](https://github.com/mantinedev/mantine) · [Radix Primitives](https://github.com/radix-ui/primitives) · [Glassy UI](https://github.com/alexburlis/glassyui) · [Ein UI](https://github.com/einui/einui) · [Vue Web Liquid Glass](https://github.com/mkj0kjay/vue-web-liquid-glass) · [GoldenSunLaw theme picker](https://github.com/Sukonik/GoldenSunLaw/blob/main/js/main.js) · [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
-
-Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshots; ship original or licensed imagery. Upstream code imported later must have its source revision and license notices documented.
+- 📐 Tested at 320, 390, 768, 1024 and 1440px: no horizontal scroll on any page
+- 👆 44px minimum touch targets on controls
+- ⌨️ Skip link, visible focus rings, Escape closes the theme menu and returns focus
+- 🧊 Opaque fallbacks for blur, reduced transparency and forced colors
+- 🐢 Honors reduced motion; hover light-sweeps are disabled
+- 💵 Contrast pairs from the plan: CTA text 6.7:1 to 10.5:1
 
 ## 📚 Docs
 
-Planning handoff in [`docs/handoff/`](docs/handoff/): 💎 [Blue Glass plan](docs/handoff/Blue-Glass-Development-Plan.md) · 🖼️ [Theme board](docs/handoff/Blue-Glass-Theme-Board.pdf) · 📝 [Start here](docs/handoff/COLE_HANDOFF.txt) · 🗺️ [FiveOcean](docs/handoff/FiveOcean.md) · 🧑‍🏫 [Guides](docs/handoff/Guides.md) · 🏛️ [Programs](docs/handoff/Programs.md) · 📈 [Investments](docs/handoff/Investments.md) · 🛡️ [Insurance](docs/handoff/Insurance.md) · 🧾 [Taxes](docs/handoff/Taxes.md) · 🏠 [RealEstate](docs/handoff/RealEstate.md)
+Planning handoff in [`docs/handoff/`](docs/handoff/):
 
-## 🚀 GitHub Pages
+💎 [Blue Glass plan](docs/handoff/Blue-Glass-Development-Plan.md) · 🖼️ [Theme board](docs/handoff/Blue-Glass-Theme-Board.pdf) · 📝 [Start here](docs/handoff/COLE_HANDOFF.txt) · 🗺️ [FiveOcean](docs/handoff/FiveOcean.md) · 🧑‍🏫 [Guides](docs/handoff/Guides.md) · 🏛️ [Programs](docs/handoff/Programs.md) · 📈 [Investments](docs/handoff/Investments.md) · 🛡️ [Insurance](docs/handoff/Insurance.md) · 🧾 [Taxes](docs/handoff/Taxes.md) · 🏠 [RealEstate](docs/handoff/RealEstate.md)
 
-`.github/workflows/pages.yml` builds `site/` with `scripts/build_site.py` and deploys on every push to `main`. One-time setup: **Settings → Pages → Source: GitHub Actions**.
+### 🔗 Design sources
+
+[Mantine](https://github.com/mantinedev/mantine) · [Radix Primitives](https://github.com/radix-ui/primitives) · [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) · [Glassy UI](https://github.com/alexburlis/glassyui) · [Ein UI](https://github.com/einui/einui) · [Vue Web Liquid Glass](https://github.com/mkj0kjay/vue-web-liquid-glass) · [GoldenSunLaw theme picker](https://github.com/Sukonik/GoldenSunLaw/blob/main/js/main.js) · [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
+
+Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshots; ship original or licensed imagery. Upstream code imported later needs its source revision and license notices documented.
+
+## 🚀 Build & deploy
 
 ```bash
-python scripts/build_site.py   # then open site/index.html
+python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 ```
+
+- 🛠️ `scripts/build_site.py` generates 9 static pages and fails if the roster isn't exactly 36 animals.
+- 🚀 `.github/workflows/pages.yml` deploys `site/` on every push to `main`.
+- ⚙️ One-time setup: **Settings → Pages → Source: GitHub Actions**.
+
+```text
+docs/handoff/      planning handoff and Blue Glass plan
+scripts/           site generator
+.github/workflows/ Pages deploy
+site/              generated output (not committed)
+```
+
+## 🏷️ Versions
+
+| Version | What shipped |
+|---|---|
+| v0.1 | Handoff docs, emoji README, Pages deploy |
+| v0.2 | Eight themes, saved picker, Blue Glass docs |
+| v0.3 | Seawater vs Freshwater framework, page per water body |
+| v0.4 | Oceanic redesign: hero, glass controls, cleaner cards |
+| v0.5 | Sea Glass elements (tabs, stats, dock, key hints), responsive UX pass, expanded README |
+
+## 🧭 Roadmap
+
+Per the plan, Cole's PRs: 1️⃣ Blue Glass foundation (React, Mantine, Radix) · 2️⃣ catalog and search · 3️⃣ Yeti Crab and Pink River Dolphin routes · 4️⃣ housing and insurance · 5️⃣ atlas and comparison · 6️⃣ launch. WhaleMap stays a later attributed link.
 
 ## ⚠️ Disclaimer
 
