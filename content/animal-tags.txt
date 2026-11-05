@@ -1,0 +1,39 @@
+# One line per animal: slug: resource-slug[=Tag label], ...
+# Order matters (first tag shows first). A label after = overrides the resource name for this animal.
+# Resource slugs are the file names in content/resources/.
+hermit-crab: primary-home=Primary home (with rental), duplex-house-hacking=Duplex, adu=ADU, investment-property=Investment property, waterfront-flood-insurance=Flood insurance
+sea-lion: primary-home=Primary home, renting, medicare
+royal-tern: vacation-home=Vacation home, investment-property=Seasonal rental, timeshare, co-ownership
+green-sea-turtle: renting, primary-home=Buy a home
+peacock-flounder: waterfront-flood-insurance=Flood insurance, primary-home=Waterfront home, vacation-home
+red-cushion-sea-star: waterfront-flood-insurance=Flood insurance, treasuries=Insured reserve
+blue-whale: treasuries=T-bills, renting
+giant-squid: vacation-home=Two homes, investment-property, primary-home=Sell a home
+giant-manta-ray: medicare, hsa
+wandering-albatross: renting, medicare, timeshare
+sailfish: renting, treasuries=T-bills
+great-white-shark: treasuries=Insured cash, renting
+yeti-crab: governmental-457b=457(b), ny-ers=ERS, traditional-ira=Rollover IRA
+goblin-shark: waterfront-flood-insurance=Flood insurance, treasuries=Reserve
+colossal-squid: ny-ers=ERS, fers-tsp=FERS, social-security, ny-trs=Teachers' pension
+dumbo-octopus: ny-ers=ERS, ny-trs=Teachers' pension, medicare, 401k-403b
+sea-pig: savers-credit-match, roth-ira, traditional-ira, social-security
+black-seadevil: solo-401k=Solo 401(k)
+rhesus-macaque-monkey: roth-ira, traditional-ira, savers-credit-match
+west-indian-manatee: treasuries=Insured savings
+black-bear: treasuries=T-bills
+bobcat: social-security, roth-ira, 401k-403b
+alligator: 401k-403b=Employer match, roth-ira
+largemouth-bass: governmental-457b=457(b), 401k-403b, roth-ira
+painted-turtle: waterfront-flood-insurance=Flood insurance, land, vacation-home
+common-loon: renting, primary-home=Buy a home
+hippopotamus: primary-home=Convert a cabin, land
+swan: primary-home=Age in place, adu, medicare
+pike: waterfront-flood-insurance=Boat and dock cover, vacation-home
+capybara: co-ownership, vacation-home, investment-property
+giant-otter: social-security, ny-ers=ERS, medicare
+scarlet-ibis: adu=ADU for family, primary-home, renting
+pink-river-dolphin: ny-ers=ERS, ny-trs=Teachers' pension, governmental-457b=457(b), social-security
+green-anaconda: roth-ira, treasuries=T-bills
+electric-eel: 401k-403b, governmental-457b=457(b), ny-ers=ERS
+spider-monkey: governmental-457b=457(b), ny-ers=ERS, medicare, hsa

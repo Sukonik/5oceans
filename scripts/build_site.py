@@ -185,10 +185,31 @@ RES_GROUPS = {"retirement": ("Retirement & income", "landmark",
                              "Plans, pensions and accounts: what they are, who can use them, when the money is accessible, and what they cost in tax."),
               "property": ("Property & housing", "house",
                            "Home, vacation home, rental, land, timeshare and more: what each one costs, earns and risks.")}
+ANIMAL_TAGS = {}
+for line in (root / "content/animal-tags.txt").read_text(encoding="utf-8").splitlines():
+    if not line.strip() or line.startswith("#"):
+        continue
+    k, _, v = line.partition(":")
+    items = []
+    for it in v.split(","):
+        rs, _, lab = it.strip().partition("=")
+        assert rs in RES, (k, rs)
+        items.append((rs, lab or RES[rs]["title"]))
+    assert k.strip() in BY_SLUG, k
+    ANIMAL_TAGS[k.strip()] = items
+assert set(ANIMAL_TAGS) == set(BY_SLUG), set(BY_SLUG) - set(ANIMAL_TAGS)
 ANIMAL_RES = {}
 for r in RESOURCES:
-    for a_ in r["animals"]:
-        ANIMAL_RES.setdefault(a_, []).append(r)
+    r["animals"] = [a_ for a_, tg in ANIMAL_TAGS.items() if any(x == r["slug"] for x, _ in tg)]
+for a_, tg in ANIMAL_TAGS.items():
+    ANIMAL_RES[a_] = [RES[x] for x, _ in tg]
+
+
+def tags_html(slug, prefix, big=False):
+    return (f'<div class="tags{" lg" if big else ""}">' + "".join(
+        f'<a class="tag" href="{prefix}resources/{x}/index.html">{ic(RES[x]["icon"])}{html.escape(lab)}</a>'
+        for x, lab in ANIMAL_TAGS[slug]) + "</div>")
+
 
 def short(t, n=72):
     if len(t) <= n:
@@ -210,7 +231,7 @@ def card_html(a, prefix):
     chips = "".join(f'<span>{inline(f"[{l}]({u})", prefix)}</span>' for l, u in a["links"])
     return (f'<article class="card"><span class="aico">{ic(ANIMAL_ICON[a["slug"]])}</span><p class="eyebrow">{html.escape(a["task"])}</p>'
             f'<h3><a class="stretch" href="{prefix}animals/{a["slug"]}/index.html">{html.escape(a["name"])}</a></h3>'
-            f'<p class="desc">{inline(a["desc"], prefix)}</p><div class="chips">{chips}</div></article>')
+            f'<p class="desc">{inline(a["desc"], prefix)}</p>{tags_html(a["slug"], prefix)}<div class="chips">{chips}</div></article>')
 
 
 def guide_text(a):
@@ -227,7 +248,7 @@ def words(t):
 
 
 INDEX = [dict(n=a["name"], t=a["task"], c=a["coll"], u=f'animals/{a["slug"]}/index.html',
-              s=words(" ".join([a["name"], a["task"], a["desc"], a["coll"]] + [l for l, _ in a["links"]] + [guide_text(a)])))
+              s=words(" ".join([a["name"], a["task"], a["desc"], a["coll"]] + [l for l, _ in a["links"]] + [lab for _, lab in ANIMAL_TAGS.get(a["slug"], [])] + [guide_text(a)])))
          for a in ANIMALS]
 
 
@@ -419,6 +440,14 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 .pager .next{justify-content:flex-end;text-align:right}
 .src{margin-top:8px;font-size:.9rem}
 
+/* tags */
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;position:relative;z-index:1}
+.tag{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:3px 10px;border-radius:999px;font-size:.78rem;font-weight:600;text-decoration:none;color:var(--ink);
+  background:color-mix(in srgb,var(--surface) 80%,transparent);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 40%,transparent);transition:border-color .15s,background .15s}
+.tag:hover{border-color:var(--action);background:color-mix(in srgb,var(--action) 12%,transparent)}
+.tag .ic{width:.95em;height:.95em;color:var(--action)}
+.tags.lg{margin:4px 0 22px;gap:8px}.tags.lg .tag{min-height:40px;padding:6px 14px;font-size:.9rem}
 /* resources */
 .rgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:48px;align-items:start}
 .rside{position:sticky;top:88px;display:grid;gap:16px}
@@ -608,7 +637,7 @@ for i, a in enumerate(ANIMALS):
              f'<a href="../../{slug(a["coll"])}/index.html">{a["coll"]}</a> / {html.escape(a["name"])}')
     hero = (f'<section class="hero compact"><div class="wrap"><div><p class="crumb">{crumb}</p>'
             f'<span class="kicker">{ic(ANIMAL_ICON[a["slug"]])} {html.escape(a["task"])}</span><h1>{html.escape(a["name"])}</h1>'
-            f'<p class="lede">{inline(a["desc"], "../../")}</p><div class="cta">{btns}</div></div></div></section>')
+            f'<p class="lede">{inline(a["desc"], "../../")}</p>{tags_html(a["slug"], "../../", True)}<div class="cta">{btns}</div></div></div></section>')
     body = ""
     if a["slug"] in ANIMAL_RES:
         body += ('<section class="section"><h2>Resources for this path</h2><ul class="tiles">'
@@ -628,7 +657,8 @@ for i, a in enumerate(ANIMALS):
 # ---------------- resources, guides ----------------
 def rcard(r, prefix):
     g = r["glance"][0] if r["glance"] else None
-    chip = f'<div class="chips"><span>{html.escape(g[0])}: <strong>{html.escape(g[1])}</strong></span></div>' if g else ""
+    n_a = len(r["animals"])
+    chip = (f'<div class="chips"><span>{html.escape(g[0])}: <strong>{html.escape(g[1])}</strong></span>' if g else '<div class="chips">') + (f'<span>{n_a} animal path{"s" if n_a != 1 else ""}</span>' if n_a else "") + "</div>"
     return (f'<article class="card"><span class="aico">{ic(r["icon"])}</span>'
             f'<h3><a class="stretch" href="{prefix}resources/{r["slug"]}/index.html">{html.escape(r["title"])}</a></h3>'
             f'<p class="desc">{html.escape(r["summary"])}</p>{chip}</article>')

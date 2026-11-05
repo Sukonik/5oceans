@@ -3,7 +3,6 @@ title: Treasury bills, I bonds and TIPS
 group: retirement
 icon: coins
 summary: Government-backed savings you can match to the months you will spend them: short bills for a known gap, I bonds for a long reserve, TIPS for inflation-linked principal.
-animals: blue-whale, black-bear, sailfish, west-indian-manatee, great-white-shark
 related: roth-ira, hsa, governmental-457b
 glance:
 - Treasury bills | 4 to 52 weeks

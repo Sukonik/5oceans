@@ -3,7 +3,6 @@ title: Vacation or second home
 group: property
 icon: tent
 summary: A home you use part of the year. The tax treatment depends on how many days you use it yourself and how many you rent it, and insurance and financing differ from a primary home.
-animals: royal-tern, giant-squid, wandering-albatross, painted-turtle, pike
 related: investment-property, primary-home, waterfront-flood-insurance, timeshare
 glance:
 - Treated as a residence if personal days exceed | Greater of 14 days or 10% of rental days

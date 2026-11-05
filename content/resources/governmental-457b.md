@@ -3,7 +3,6 @@ title: Governmental 457(b)
 group: retirement
 icon: landmark
 summary: A deferred-compensation plan for state and local government employees, often the most flexible way to reach retirement money after you leave a job before 59½.
-animals: yeti-crab, largemouth-bass, spider-monkey, pink-river-dolphin
 related: 401k-403b, ny-ers, roth-ira, social-security
 glance:
 - 2026 employee limit | $24,500

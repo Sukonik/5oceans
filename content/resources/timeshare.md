@@ -3,7 +3,6 @@ title: Timeshare
 group: property
 icon: calendar-days
 summary: A right to use a vacation property for set periods. It is easy to buy and hard to sell, so price the lifetime cost and the exit before signing.
-animals: royal-tern, wandering-albatross, sailfish
 related: vacation-home, renting
 glance:
 - Ongoing cost | Annual maintenance fees that can rise

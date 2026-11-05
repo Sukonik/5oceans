@@ -3,7 +3,6 @@ title: Duplex or multi-unit home
 group: property
 icon: layout-grid
 summary: Buy a two-to-four-unit home, live in one unit and rent the others so the rent offsets your housing cost.
-animals: hermit-crab, royal-tern
 related: investment-property, adu, primary-home, waterfront-flood-insurance
 glance:
 - Worked example carrying cost | $3,300 a month

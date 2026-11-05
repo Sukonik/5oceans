@@ -3,7 +3,6 @@ title: Investment (rental) property
 group: property
 icon: key-round
 summary: A home you buy mainly to rent. The numbers that decide it are vacancy, financing, upkeep and the owner's own time, not the headline rent.
-animals: hermit-crab, royal-tern, giant-squid, capybara
 related: duplex-house-hacking, vacation-home, land, waterfront-flood-insurance
 glance:
 - Worked example carrying cost | $3,300 a month

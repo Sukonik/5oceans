@@ -3,7 +3,6 @@ title: Medicare and health coverage before 65
 group: retirement
 icon: stethoscope
 summary: How health coverage fits around retirement: COBRA or Marketplace plans before 65, Medicare enrollment at 65, and what Medicare does not cover.
-animals: spider-monkey, giant-manta-ray, swan, giant-otter, dumbo-octopus
 related: hsa, social-security, ny-ers
 glance:
 - Medicare Initial Enrollment Period | 7 months around age 65

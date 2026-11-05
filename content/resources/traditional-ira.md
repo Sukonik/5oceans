@@ -3,7 +3,6 @@ title: Traditional IRA
 group: retirement
 icon: wallet
 summary: An individual account with a possible tax deduction going in and ordinary income tax coming out, often used as the landing place for old 401(k) and 403(b) balances.
-animals: rhesus-macaque-monkey, sea-pig
 related: roth-ira, 401k-403b, savers-credit-match
 glance:
 - 2026 contribution limit | $7,500

@@ -3,7 +3,6 @@ title: Accessory dwelling unit (ADU)
 group: property
 icon: hammer
 summary: A second, lawful dwelling on a lot you already own: a backyard cottage, garage conversion or basement apartment. Zoning, permits and financing decide whether it works.
-animals: hermit-crab, scarlet-ibis, swan
 related: duplex-house-hacking, primary-home, investment-property
 glance:
 - Six extra months of construction carry | About $8,400 in the example

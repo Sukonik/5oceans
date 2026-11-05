@@ -3,7 +3,6 @@ title: Renting and staying flexible
 group: property
 icon: map
 summary: Renting costs more per month in some places and less in others, but it keeps cash free and lets you try a city before you commit.
-animals: green-sea-turtle, common-loon, sailfish, great-white-shark, wandering-albatross
 related: primary-home, timeshare, vacation-home
 glance:
 - Test a place | A one-year lease before buying
