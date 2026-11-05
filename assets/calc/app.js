@@ -126,8 +126,53 @@
   }
   function download(name, text) { var a = el('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
 
+
+  /* ---------- Dolphin Sonar ---------- */
+  var SN = window.SONAR, snPing = null;
+  var MONEYK = { price: 1, hoaMo: 1, commonMo: 1, maintMo: 1, taxYr: 1, rent: 1 };
+  function snFmt(k, v) { return MONEYK[k] ? usd.format(v) : k === 'year' ? String(v) : (Math.round(v * 10) / 10).toLocaleString('en-US'); }
+  function snRender(p, auto) {
+    var box = $('sn-out'); box.innerHTML = ''; snPing = p;
+    if (!p.found.length && !p.address) { box.appendChild(el('aside', 'callout', 'Nothing detected. Paste the part of the listing that shows the price, beds and baths, taxes and fees. Include the link too if you have it.')); return; }
+    var head = p.address ? esc(p.address) : 'Listing', site = p.site ? ' on ' + esc(p.site) : '';
+    box.appendChild(el('p', 'sn-head', '<b>' + head + '</b>' + site + (p.listingId ? ' <small>ID ' + esc(p.listingId) + '</small>' : '')));
+    if (p.found.length) {
+      var t = el('table', 'rt'); t.innerHTML = '<caption class="sr">Detected facts</caption><tbody>' + p.found.map(function (f) { return '<tr><th scope="row">' + esc(f.label) + '</th><td>' + snFmt(f.key, f.value) + '</td></tr>'; }).join('') + '</tbody>';
+      box.appendChild(t);
+    }
+    var row = el('div', 'sn-row'), lab = el('label', '', 'Send to'), sel = el('select'); sel.id = 'sn-mode'; lab.htmlFor = 'sn-mode';
+    var sug = SN.suggestMode(p);
+    Object.keys(RE.MODES).forEach(function (id) { var o = el('option', '', esc(RE.MODES[id].label)); o.value = id; if (id === sug) o.selected = true; sel.appendChild(o); });
+    var go = el('button', 'glass primary', 'Fill the calculator'); go.type = 'button';
+    go.onclick = function () { snApply(sel.value); };
+    row.appendChild(lab); row.appendChild(sel); row.appendChild(go); box.appendChild(row);
+    box.appendChild(el('p', 'subn', 'Suggested calculator: <b>' + esc(RE.MODES[sug].label) + '</b>. Check every number against the listing. Nothing was fetched or sent anywhere.'));
+    if (auto) snApply(sug);
+  }
+  function snApply(modeId) {
+    var m = RE.MODES[modeId], ids = m.fields.map(function (f) { return f.id; }), v = SN.toValues(snPing, modeId, ids), keys = Object.keys(v);
+    setMode(modeId, v);
+    var nm = $('scn-name'); if (nm && snPing.address) nm.value = snPing.address.slice(0, 60);
+    var names = m.fields.filter(function (f) { return v[f.id] != null; }).map(function (f) { return f.label; });
+    var msg = $('sn-msg'); msg.textContent = keys.length ? 'Filled ' + names.join(', ') + '. Everything else is still a default: set your rate, down payment and other costs.' : 'Nothing could be mapped to this calculator. Try another one.';
+    var top = $('calc-top'); if (top && top.scrollIntoView) top.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function snInit() {
+    if (!$('sonar') || !SN) return false;
+    $('sn-bm').href = SN.bookmarkletSource(location.origin + location.pathname);
+    $('sn-go').addEventListener('click', function () { snRender(SN.parseListing({ url: $('sn-url').value.trim(), text: $('sn-text').value }), false); });
+    $('sn-clear').addEventListener('click', function () { $('sn-url').value = ''; $('sn-text').value = ''; $('sn-out').innerHTML = ''; $('sn-msg').textContent = ''; snPing = null; });
+    var d = SN.decodeHash(location.hash);
+    if (d) {
+      history.replaceState(null, '', location.pathname);
+      $('sn-url').value = d.url; $('sn-text').value = d.text.slice(0, 4000);
+      snRender(SN.parseListing(d), true); return true;
+    }
+    return false;
+  }
+
   function init() {
-    load(); buildModes();
+    load(); buildModes(); var sonarApplied = snInit();
     $('save-btn').addEventListener('click', function () {
       var name = $('scn-name').value.trim() || (cur.label + ' ' + (saved.length + 1));
       saved.unshift({ id: String(Date.now()), name: name, mode: cur.id, values: Object.assign({}, vals), at: Date.now() }); saved = saved.slice(0, 12);
@@ -153,7 +198,7 @@
       }; r.readAsText(f);
     });
     window.addEventListener('hashchange', function () { var id = location.hash.slice(1); if (RE.MODES[id] && (!cur || cur.id !== id)) setMode(id); });
-    setMode(RE.MODES[location.hash.slice(1)] ? location.hash.slice(1) : 'home');
+    if (!sonarApplied) setMode(RE.MODES[location.hash.slice(1)] ? location.hash.slice(1) : 'home'); else renderScenarios();
   }
   document.addEventListener('DOMContentLoaded', init);
 })();

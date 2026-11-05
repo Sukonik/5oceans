@@ -590,6 +590,15 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
 .guard{margin:0 0 8px;padding-left:14px;border-left:2px solid color-mix(in srgb,var(--ink) 20%,transparent);font-size:.92rem}
 .nav a{padding:8px 11px}
 .picker .lbl{display:none}.search{flex:0 1 210px}
+
+/* sonar */
+.sonar{margin:0 0 36px;padding:20px 22px;border-radius:20px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 35%,transparent)}
+.sonar h2{margin:0 0 6px;font-family:"Iowan Old Style",Georgia,serif;font-weight:400;display:flex;gap:10px;align-items:center}
+.sonar h2 .ic{color:var(--action)}
+.sn-head{margin:14px 0 6px}.sn-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+.sn-row select{flex:1 1 220px;max-width:340px}.sn-row label{font-weight:600;font-size:.9rem}
+.bk{margin:14px 0 0}.bk summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center;background:none;border:0;padding:0}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
 @media(max-width:1100px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
@@ -889,7 +898,7 @@ sys.path.insert(0, str(root / "scripts"))
 MODE_LIST = json.loads((root / "assets/calc/modes.json").read_text(encoding="utf-8"))
 TOOLS = [
     ("real-estate", "Real Estate Calculator", "calculator",
-     "Fourteen calculators in one: home, home with a rental, condo, co-op, house hacker, vacation home, land, investment property, pure rental income, flipper, renter, and three income-house types."),
+     "Fourteen calculators in one, with Dolphin Sonar to fill them from a listing: home, home with a rental, condo, co-op, house hacker, vacation home, land, investment property, pure rental income, flipper, renter, and three income-house types."),
     ("savings-bridge", "Savings Bridge", "piggy-bank",
      "How much a monthly deposit grows by the day you stop working, what monthly draw it supports, and the deposit needed to close a gap before your pension starts."),
 ]
@@ -920,7 +929,19 @@ def group_modes():
         gs.setdefault(m["group"], []).append(m)
     return gs
 
-calc_body = f"""<div class="calc" id="calc-top"><div class="calc-main">
+SONAR_ISSUE = "https://github.com/Sukonik/5oceans/issues/15"
+calc_body = f""""""
+calc_body = f"""<section class="sonar" id="sonar" aria-labelledby="sn-h"><h2 id="sn-h">{ic("search")} Dolphin Sonar</h2>
+<p class="lead">Ping a listing to fill the calculator. Paste a link from Redfin, Zillow or StreetEasy, and paste the listing text (select the page, copy, paste). Sonar reads the address from the link and the price, taxes, fees and details from the text, right here in your browser.</p>
+<div class="fields"><div class="fld"><label for="sn-url">Listing link</label><div class="inp"><input id="sn-url" type="url" inputmode="url" autocomplete="off" placeholder="https://www.redfin.com/..." maxlength="500"></div><small>Optional. Gives the address and listing ID.</small></div></div>
+<div class="fld" style="margin-top:12px"><label for="sn-text">Listing text</label><textarea id="sn-text" rows="5" maxlength="60000" placeholder="Paste the listing page text here: price, beds and baths, taxes, HOA or maintenance, year built..."></textarea></div>
+<div class="tools-row"><button type="button" class="glass primary" id="sn-go">{ic("search")} Ping</button><button type="button" class="glass" id="sn-clear">{ic("rotate-ccw")} Clear</button></div>
+<div id="sn-out" aria-live="polite"></div><p class="msg" id="sn-msg" role="status"></p>
+<details class="bk"><summary>One-click bookmarklet (desktop browsers)</summary>
+<p class="subn">Drag this to your bookmarks bar. On a listing page you have open, click it: it sends what is on your screen to this calculator. It runs in your browser and the site is not contacted. If a listing site blocks bookmarklets, use paste instead.</p>
+<p><a class="glass" id="sn-bm" href="#" draggable="true">{ic("search")} Dolphin Sonar</a></p></details>
+<p class="subn">Sonar never fetches a page. Listing sites block automated reads and their terms generally forbid scraping, and MLS data is licensed. See the <a href="{SONAR_ISSUE}" rel="noopener">Dolphin Sonar roadmap</a> for licensed and open-data options.</p></section>
+<div class="calc" id="calc-top"><div class="calc-main">
 <div id="modes" class="modes" aria-label="Choose a calculator"></div>
 <h2 id="mode-title"></h2><p id="mode-blurb"></p>
 <div class="tools-row">
@@ -941,7 +962,7 @@ calc_body = f"""<div class="calc" id="calc-top"><div class="calc-main">
 <p class="msg" id="scn-msg" role="status"></p>
 <div id="scn-list"></div><div id="cmp"></div></section>
 {calc_credit}<p class="disclaim">{TOOL_NOTE}</p>
-<script src="../../assets/calc/engine.js"></script><script src="../../assets/calc/app.js"></script>"""
+<script src="../../assets/calc/engine.js"></script><script src="../../assets/calc/sonar.js"></script><script src="../../assets/calc/app.js"></script>"""
 write("tools/real-estate/index.html", "Real Estate Calculator | FiveOceans", 2, f'<section class="section">{calc_body}</section>',
       page_hero('<a href="../../index.html">Home</a> / <a href="../index.html">Tools</a> / Real Estate Calculator', ic("calculator"), "Real Estate Calculator",
                 "Fourteen ways to own, rent or flip a place, each with its own numbers, stress tests and saved scenarios."), "tools")
@@ -977,6 +998,7 @@ shutil.copytree(root / "assets/credit", out / "assets/credit", dirs_exist_ok=Tru
 write("credit/index.html", "Credit Card Tool | FiveOceans", 1, f'<section class="section">{credit_body}</section>',
       page_hero('<a href="../index.html">Home</a> / Credit Card Tool', ic("wallet"), "Credit Card Tool",
                 "Find and build your credit, keep your cards in a packet you own, and see how good and bad debt change your wealth."), "credit")
+INDEX.append(dict(n="Dolphin Sonar", t="Tool", c="Tool", u="tools/real-estate/index.html#sonar", s=words("dolphin sonar listing link redfin zillow streeteasy paste import data extractor bookmarklet")))
 INDEX.append(dict(n="Credit Card Tool", t="Tool", c="Tool", u="credit/index.html", s=words("credit card tool credit score three scores equifax experian transunion utilization debt payoff avalanche snowball good debt bad debt packet")))
 
 (out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")

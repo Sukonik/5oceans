@@ -1,0 +1,23 @@
+name: 🐬 Dolphin Sonar issue reply
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  ping:
+    if: startsWith(github.event.issue.title, '[Sonar ping]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🔎 Extract facts
+        run: node scripts/sonar_issue.mjs "$GITHUB_EVENT_PATH" sonar-reply.md
+      - name: 💬 Reply on the issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file sonar-reply.md
