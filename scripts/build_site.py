@@ -138,7 +138,7 @@ def md_block(text, prefix, heads=False):
             buf = []
             while i < len(lines) and lines[i].startswith(">"):
                 buf.append(lines[i].lstrip("> ").rstrip()); i += 1
-            out.append(f'<aside class="callout">{inline(" ".join(buf), prefix)}</aside>')
+            out.append(f'<div class="callout" role="note">{inline(" ".join(buf), prefix)}</div>')
         elif l.startswith("#"):
             hm = re.match(r"(#+) (.+)", l)
             lvl = len(hm.group(1)); txt = hm.group(2)
@@ -185,9 +185,11 @@ for r in RESOURCES:
     assert r["icon"] in ICONS, (r["slug"], r["icon"])
 RES_GROUPS = {"retirement": ("Retirement & income", "landmark",
                              "Plans, pensions and accounts: what they are, who can use them, when the money is accessible, and what they cost in tax."),
+              "funding": ("Mortgages & grants", "banknote", "Loans, assistance and ways to land the house: how each program works, who qualifies and what it costs."),
               "credit": ("Credit & debt", "wallet", "Scores, reports, cards and debt: how credit works, how to protect and build it, and how to use debt without letting it use you."),
               "property": ("Property & housing", "house",
                            "Home, vacation home, rental, land, timeshare and more: what each one costs, earns and risks.")}
+RES_GROUPS = {k: RES_GROUPS[k] for k in ("retirement", "property", "funding", "credit")}
 ANIMAL_TAGS = {}
 for line in (root / "content/animal-tags.txt").read_text(encoding="utf-8").splitlines():
     if not line.strip() or line.startswith("#"):
@@ -230,10 +232,10 @@ def inline_href(url, prefix):
     return f"{prefix}guides/{GUIDE_SLUG[f_]}/index.html" + (f"#{anchor}" if anchor else "") if f_ in GUIDE_SLUG else REPO + url
 
 
-def card_html(a, prefix):
+def card_html(a, prefix, level=3):
     chips = "".join(f'<span>{inline(f"[{l}]({u})", prefix)}</span>' for l, u in a["links"])
     return (f'<article class="card"><span class="aico">{ic(ANIMAL_ICON[a["slug"]])}</span><p class="eyebrow">{html.escape(a["task"])}</p>'
-            f'<h3><a class="stretch" href="{prefix}animals/{a["slug"]}/index.html">{html.escape(a["name"])}</a></h3>'
+            f'<h{level}><a class="stretch" href="{prefix}animals/{a["slug"]}/index.html">{html.escape(a["name"])}</a></h{level}>'
             f'<p class="desc">{inline(a["desc"], prefix)}</p>{tags_html(a["slug"], prefix)}<div class="chips">{chips}</div></article>')
 
 
@@ -282,7 +284,7 @@ def rows(mode):
 CSS = theme_css + """
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--page);color:var(--ink);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+body{--muted:color-mix(in srgb,var(--ink) 78%,var(--page));margin:0;background:var(--page);color:var(--ink);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--action)}
 :focus-visible{outline:3px solid var(--action);outline-offset:3px;border-radius:6px}
 .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
@@ -329,7 +331,7 @@ header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page)
 summary.glass{list-style:none} summary::-webkit-details-marker{display:none}
 .menu{z-index:40;position:absolute;right:0;top:calc(100% + 8px);width:240px;max-width:calc(100vw - 40px);background:var(--surface);
   border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);border-radius:18px;padding:8px 14px 12px;box-shadow:0 20px 50px rgb(0 0 0/.28)}
-.menu h4{margin:10px 0 2px;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;opacity:.65}
+.menu h4{margin:10px 0 2px;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
 .opt{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;border-radius:10px;padding:0 6px}
 .opt:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .opt input{accent-color:var(--action);width:18px;height:18px;margin:0}
@@ -344,20 +346,20 @@ summary.glass{list-style:none} summary::-webkit-details-marker{display:none}
 h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:400;letter-spacing:-.02em;
   font-size:clamp(2.2rem,5.6vw,4rem);line-height:1.06;margin:.3em 0 .4em;text-wrap:balance}
 h1 em{font-style:italic;color:var(--action)}
-.lede{font-size:clamp(1rem,2vw,1.2rem);max-width:56ch;opacity:.85;margin:0 0 28px}
+.lede{font-size:clamp(1rem,2vw,1.2rem);max-width:56ch;color:var(--muted);margin:0 0 28px}
 .cta{display:flex;gap:12px;flex-wrap:wrap}
 .panel{background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:22px;padding:22px;
   box-shadow:0 30px 60px -20px rgb(0 0 0/.35),inset 0 1px 0 color-mix(in srgb,#fff 40%,transparent)}
-.panel .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+.panel .tag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .panel h2{font:600 1.1rem/1.3 inherit;margin:.4em 0 1em}
 .big-n{font-family:"Iowan Old Style",Georgia,serif;font-size:2.8rem;line-height:1;margin:0;color:var(--action)}
 .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);font-variant-numeric:tabular-nums}
-.small{font-size:.8rem;opacity:.7;margin:.8em 0 0}
+.small{font-size:.8rem;color:var(--muted);margin:.8em 0 0}
 /* sections */
 main{padding-bottom:56px}
 .section{padding-block:48px 0}
 .section>h2{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:clamp(1.5rem,3vw,2.1rem);margin:0 0 6px;letter-spacing:-.01em}
-.section>p{margin:0 0 22px;opacity:.8;max-width:60ch}
+.section>p{margin:0 0 22px;color:var(--muted);max-width:60ch}
 .fam{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
 .big{position:relative;display:flex;flex-direction:column;gap:6px;overflow:hidden;background:var(--surface);color:var(--ink);text-decoration:none;
   border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);border-radius:22px;padding:26px;transition:transform .2s,box-shadow .2s,border-color .2s}
@@ -366,17 +368,17 @@ main{padding-bottom:56px}
 .big:hover{transform:translateY(-3px);border-color:var(--action);box-shadow:0 18px 40px -12px rgb(0 0 0/.3)}
 
 .big h2,.big h3{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:1.7rem;margin:.1em 0;letter-spacing:-.01em}
-.big p{margin:0;opacity:.8}
+.big p{margin:0;color:var(--muted)}
 .big .meta{margin-top:10px;font-size:.85rem;font-weight:600;color:var(--action)}
-.crumb{font-size:.9rem;opacity:.8;margin:0 0 10px}
+.crumb{font-size:.9rem;color:var(--muted);margin:0 0 10px}
 .crumb a{color:inherit}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:16px}
 .card{display:flex;flex-direction:column;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);
   border-radius:18px;padding:22px;overflow-wrap:anywhere;transition:transform .2s,box-shadow .2s,border-color .2s}
 .card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--action) 55%,transparent);box-shadow:0 14px 30px -14px rgb(0 0 0/.35)}
-.card h3{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:1.45rem;margin:.1em 0 .4em;letter-spacing:-.01em}
+.card h2,.card h3{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:1.45rem;margin:.1em 0 .4em;letter-spacing:-.01em}
 .eyebrow{margin:0;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--action)}
-.desc{margin:0 0 16px;font-size:.95rem;opacity:.88}
+.desc{margin:0 0 16px;font-size:.95rem;color:var(--muted)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
 .chips span{font-size:.82rem}
 .chips a{display:inline-block;padding:5px 12px;border-radius:999px;text-decoration:none;
@@ -385,7 +387,7 @@ main{padding-bottom:56px}
 .empty{display:none;opacity:.7}
 footer{border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);padding-block:28px;font-size:.9rem}
 footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
-footer p{margin:0;opacity:.8}
+footer p{margin:0;color:var(--muted)}
 
 /* Sea Glass UI elements */
 .skip{position:absolute;left:12px;top:-60px;z-index:50;padding:10px 16px}
@@ -406,7 +408,7 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
   box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 45%,transparent)}
 @supports(backdrop-filter:blur(1px)){.stats li{backdrop-filter:blur(10px)}}
 .stats b{font:400 1.6rem/1.1 "Iowan Old Style",Georgia,serif;color:var(--action)}
-.stats span{font-size:.78rem;opacity:.75}
+.stats span{font-size:.78rem;color:var(--muted)}
 .tabs{display:inline-flex;gap:2px;padding:4px;border-radius:999px;max-width:100%;overflow-x:auto;scrollbar-width:none;
   background:color-mix(in srgb,var(--surface) 75%,transparent);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);
   box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 45%,transparent)}
@@ -429,15 +431,15 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
   border-radius:18px;padding:6px;box-shadow:0 20px 50px rgb(0 0 0/.3);max-height:70vh;overflow-y:auto;min-width:min(340px,calc(100vw - 32px))}
 .results a{display:flex;flex-direction:column;padding:10px 14px;border-radius:12px;text-decoration:none;color:var(--ink);min-height:44px}
 .results a:hover,.results a:focus-visible{background:color-mix(in srgb,var(--action) 12%,transparent)}
-.results a b{font-weight:600}.results a span{font-size:.8rem;opacity:.7}
-.results p{margin:0;padding:12px 14px;opacity:.75;font-size:.9rem}
+.results a b{font-weight:600}.results a span{font-size:.8rem;color:var(--muted)}
+.results p{margin:0;padding:12px 14px;color:var(--muted);font-size:.9rem}
 .prose{max-width:76ch;overflow-wrap:anywhere}
 .prose p,.prose li{margin:0 0 1em}.prose ul{padding-left:1.2em;margin:0 0 1em}
 .prose h4{margin:1.6em 0 .4em;font-size:1rem}
 .tablewrap{overflow-x:auto;margin:0 0 1.4em;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;background:var(--surface)}
 .prose table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem;font-variant-numeric:tabular-nums}
 .prose th,.prose td{padding:10px 14px;text-align:left;vertical-align:top;border-bottom:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}
-.prose th{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.prose th{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .prose tr:last-child td{border-bottom:0}
 .pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:40px}
 .pager a{flex:1 1 220px}
@@ -456,13 +458,13 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 .rgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:48px;align-items:start}
 .rside{position:sticky;top:88px;display:grid;gap:16px}
 .box{background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:18px;padding:18px 20px}
-.box h2{font:700 .75rem/1 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:.7;margin:0 0 10px}
+.box h2{font:700 .75rem/1 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
 .gl{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);font-size:.92rem}
-.gl:first-of-type{border-top:0}.gl span{opacity:.8}.gl b{font-variant-numeric:tabular-nums;text-align:right}
+.gl:first-of-type{border-top:0}.gl span{color:var(--muted)}.gl b{font-variant-numeric:tabular-nums;text-align:right}
 .srcs{list-style:none;margin:0;padding:0;display:grid;gap:2px}
 .srcs a{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin:0 -10px;border-radius:10px;text-decoration:none;font-size:.92rem}
 .srcs a:hover{background:color-mix(in srgb,var(--action) 10%,transparent)}.srcs .ic{margin-top:.25em}
-.stamp{font-size:.8rem;opacity:.7;margin:10px 0 0}
+.stamp{font-size:.8rem;color:var(--muted);margin:10px 0 0}
 .callout{border-left:3px solid var(--action);background:color-mix(in srgb,var(--action) 9%,transparent);padding:12px 16px;border-radius:0 12px 12px 0;margin:0 0 1.2em}
 .prose h2{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:1.6rem;margin:1.8em 0 .5em;letter-spacing:-.01em;scroll-margin-top:84px}
 .prose h2:first-child{margin-top:0}
@@ -471,9 +473,9 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 .tile{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;text-decoration:none;color:var(--ink);min-height:56px;
   background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);transition:border-color .2s,transform .2s}
 .tile:hover{border-color:var(--action);transform:translateY(-1px)}
-.tile .aico{margin:0;flex:none;width:36px;height:36px}.tile b{display:block;font-weight:600;line-height:1.25}.tile small{display:block;opacity:.7;line-height:1.3}
+.tile .aico{margin:0;flex:none;width:36px;height:36px}.tile b{display:block;font-weight:600;line-height:1.25}.tile small{display:block;color:var(--muted);line-height:1.3}
 .rsec{scroll-margin-top:84px}
-.disclaim{font-size:.85rem;opacity:.75;margin-top:36px;max-width:72ch}
+.disclaim{font-size:.85rem;color:var(--muted);margin-top:36px;max-width:72ch}
 @media(max-width:960px){.rgrid{grid-template-columns:minmax(0,1fr);gap:28px}.rside{position:static;order:-1}}
 
 /* ux pass: type, tables, buttons */
@@ -495,7 +497,7 @@ h2{font-size:clamp(1.35rem,1.1rem + 1.1vw,2rem)}
   .prose tr{background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;padding:6px 14px;margin:0 0 10px}
   .prose td{border:0!important;padding:8px 0}
   .prose td+td{border-top:1px solid color-mix(in srgb,var(--ink) 9%,transparent)!important}
-  .prose td::before{content:attr(data-label);display:block;font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.65;margin-bottom:2px}
+  .prose td::before{content:attr(data-label);display:block;font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
   .prose td:first-child{font-size:1.02rem}
   .prose td:first-child::before{display:none}
 }
@@ -503,13 +505,13 @@ h2{font-size:clamp(1.35rem,1.1rem + 1.1vw,2rem)}
 /* calculator */
 .calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:36px;align-items:start}
 .calc-res{position:sticky;top:88px;max-height:calc(100vh - 104px);overflow-y:auto;padding-right:2px}
-.mgroup{margin:0 0 14px}.mlabel{margin:0 0 6px;font:700 .72rem/1 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+.mgroup{margin:0 0 14px}.mlabel{margin:0 0 6px;font:700 .72rem/1 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .mrow{display:flex;flex-wrap:wrap;gap:8px}
 .mbtn,.sbtn{min-height:44px;padding:8px 16px;border-radius:999px;font:inherit;font-size:.92rem;color:var(--ink);cursor:pointer;line-height:1.2;
   background:color-mix(in srgb,var(--surface) 85%,transparent);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 40%,transparent)}
 .mbtn:hover,.sbtn:hover{border-color:var(--action)}
 .mbtn.on{background:var(--action);color:var(--cta);border-color:transparent;font-weight:600}
-#mode-title{margin:1.2em 0 .2em}#mode-blurb{margin:0 0 14px;max-width:62ch;opacity:.85}
+#mode-title{margin:1.2em 0 .2em}#mode-blurb{margin:0 0 14px;max-width:62ch;color:var(--muted)}
 .tools-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
 .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:14px 16px}
 .fld label{display:block;font-weight:600;font-size:.9rem;margin-bottom:4px}
@@ -517,18 +519,18 @@ h2{font-size:clamp(1.35rem,1.1rem + 1.1vw,2rem)}
 .inp:focus-within{outline:3px solid var(--action);outline-offset:1px}
 .inp input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--ink);padding:10px 12px;outline:none;font-variant-numeric:tabular-nums}
 .af{padding:0 4px 0 12px;opacity:.7;white-space:nowrap}.af.suf{padding:0 12px 0 0;font-size:.85rem}
-.fld small{display:block;font-size:.78rem;opacity:.7;margin-top:3px;line-height:1.3}
+.fld small{display:block;font-size:.78rem;color:var(--muted);margin-top:3px;line-height:1.3}
 .hl{display:grid;gap:2px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:18px;padding:16px 20px;margin-bottom:12px}
-.hl-k{font-size:.85rem;opacity:.75}.hl-v{font:400 clamp(2rem,6vw,2.7rem)/1.1 "Iowan Old Style",Georgia,serif;color:var(--action);overflow-wrap:anywhere}.hl-n{font-size:.82rem;opacity:.75}
+.hl-k{font-size:.85rem;color:var(--muted)}.hl-v{font:400 clamp(2rem,6vw,2.7rem)/1.1 "Iowan Old Style",Georgia,serif;color:var(--action);overflow-wrap:anywhere}.hl-n{font-size:.82rem;color:var(--muted)}
 .rt{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .rt tr{border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}.rt tr:first-child{border-top:0}
 .rt th[scope=row]{text-align:left;font-weight:500;padding:9px 12px 9px 0;vertical-align:top}
-.rt th small{display:block;font-weight:400;opacity:.7;font-size:.76rem;line-height:1.3}
+.rt th small{display:block;font-weight:400;color:var(--muted);font-size:.76rem;line-height:1.3}
 .rt td{text-align:right;font-weight:600;padding:9px 0;vertical-align:top}
 .rt tr.strong th,.rt tr.strong td{font-weight:700}
 .rt td small{display:block;font-size:.76rem;font-weight:500}
 .neg{color:var(--neg)}.pos{color:var(--pos)}
-.sub{margin-top:22px}.sub h3{margin:0 0 4px;font-size:1.05rem}.subn{margin:0 0 8px;font-size:.88rem;opacity:.8}
+.sub{margin-top:22px}.sub h3{margin:0 0 4px;font-size:1.05rem}.subn{margin:0 0 8px;font-size:.88rem;color:var(--muted)}
 .tw{position:relative;overflow-x:auto;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;background:var(--surface);padding:4px 12px}
 .rt.grid th,.rt.grid td{padding:9px 8px;text-align:right;white-space:nowrap}.rt.grid th[scope=row],.rt.grid th:first-child{text-align:left}.rt.grid td.base{color:var(--action)}
 .rt.cmpt th,.rt.cmpt td{padding:9px 10px;text-align:right}.rt.cmpt th:first-child{text-align:left;white-space:normal;min-width:130px}
@@ -537,7 +539,7 @@ h2{font-size:clamp(1.35rem,1.1rem + 1.1vw,2rem)}
 .scn .row .inp{flex:1 1 220px}
 .sc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}
 .scl{flex:1 1 220px;display:flex;gap:10px;align-items:center;cursor:pointer;min-height:44px}.scl input{width:20px;height:20px;accent-color:var(--action)}
-.scl small{display:block;opacity:.7;font-size:.8rem}
+.scl small{display:block;color:var(--muted);font-size:.8rem}
 .msg{min-height:1.4em;font-size:.88rem;color:var(--action)}
 @media(max-width:960px){.calc{grid-template-columns:minmax(0,1fr);gap:24px}.calc-res{position:static;max-height:none;overflow:visible}}
 
@@ -552,7 +554,7 @@ h2{font-size:clamp(1.35rem,1.1rem + 1.1vw,2rem)}
 .cc-panel{padding-top:20px}.cc-panel[hidden]{display:none}
 .cc-panel h2{margin:0 0 6px;font-family:"Iowan Old Style",Georgia,serif;font-weight:400}
 .cc-panel h3{margin:28px 0 8px;font-size:1.1rem}
-.lead{max-width:66ch;margin:0 0 16px;opacity:.88}
+.lead{max-width:66ch;margin:0 0 16px;color:var(--muted)}
 .cc-form{margin:0 0 14px}.fbtn{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
 select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:12px;min-height:44px;padding:10px 12px;width:100%}
 .inp select{border:0;border-radius:0;background:transparent;outline:none}
@@ -563,8 +565,8 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
 .plain{margin:0 0 10px;padding-left:1.2em}
 .tiles3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin:0 0 14px}
 .stile{display:grid;gap:4px;padding:16px;border-radius:16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
-.stile .k{font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.7}
-.stile strong{font:400 2.4rem/1 "Iowan Old Style",Georgia,serif;color:var(--action)}.stile .dim{opacity:.4}.stile small{opacity:.7}
+.stile .k{font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.stile strong{font:400 2.4rem/1 "Iowan Old Style",Georgia,serif;color:var(--action)}.stile .dim{opacity:.4}.stile small{color:var(--muted)}
 .band{display:inline-block;width:max-content;padding:2px 10px;border-radius:999px;font-size:.75rem;font-weight:700;background:color-mix(in srgb,var(--ink) 10%,transparent)}
 .b-poor{background:color-mix(in srgb,var(--neg) 18%,transparent);color:var(--neg)}.b-fair{background:color-mix(in srgb,#d97706 18%,transparent)}
 .b-good,.b-verygood,.b-exceptional{background:color-mix(in srgb,var(--pos) 18%,transparent);color:var(--pos)}
@@ -573,7 +575,7 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
 .callout.high{border-left-color:var(--neg)}.callout.ok{border-left-color:var(--pos)}
 .cardlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
 .ccard{padding:16px;border-radius:16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
-.ccard .ch{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}.ccard .ch span{opacity:.7;font-size:.85rem}
+.ccard .ch{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}.ccard .ch span{color:var(--muted);font-size:.85rem}
 .ub{height:8px;border-radius:99px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden;margin:6px 0 8px}
 .ub i{display:block;height:100%;border-radius:99px}.ub i.lo{background:var(--pos)}.ub i.md{background:#d97706}.ub i.hi{background:var(--neg)}
 .cm{margin:0 0 4px;font-size:.88rem;font-variant-numeric:tabular-nums}.act{display:flex;gap:8px;margin-top:10px}
@@ -583,10 +585,10 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
 .strat.best{border-color:var(--action);box-shadow:0 0 0 1px var(--action)}.strat h4{margin:0;font-size:1.05rem}
 .flag{position:absolute;top:-10px;right:14px;background:var(--action);color:var(--cta);padding:2px 10px;border-radius:99px;font-size:.72rem;font-weight:700}
 .big-n{font:400 2rem/1.1 "Iowan Old Style",Georgia,serif;color:var(--action);overflow-wrap:anywhere}
-.strat dl{display:grid;grid-template-columns:1fr auto;gap:4px 10px;margin:8px 0 0;font-size:.88rem}.strat dt{opacity:.75}.strat dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.strat dl{display:grid;grid-template-columns:1fr auto;gap:4px 10px;margin:8px 0 0;font-size:.88rem}.strat dt{color:var(--muted)}.strat dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
 .vd{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.75rem;font-weight:700}
 .v-bad{background:color-mix(in srgb,var(--neg) 18%,transparent);color:var(--neg)}.v-good{background:color-mix(in srgb,var(--pos) 18%,transparent);color:var(--pos)}.v-judgment{background:color-mix(in srgb,var(--ink) 10%,transparent)}
-.rt td small{display:block;opacity:.7;font-weight:400;text-align:left}
+.rt td small{display:block;color:var(--muted);font-weight:400;text-align:left}
 .guard{margin:0 0 8px;padding-left:14px;border-left:2px solid color-mix(in srgb,var(--ink) 20%,transparent);font-size:.92rem}
 .nav a{padding:8px 11px}
 .picker .lbl{display:none}.search{flex:0 1 210px}
@@ -612,7 +614,7 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
 .dd::after{content:"";position:absolute;left:0;right:0;top:100%;height:16px}
 .dd-item{display:flex;gap:12px;align-items:center;min-height:56px;padding:9px 12px;border-radius:15px;text-decoration:none;color:var(--ink)}
 .dd-item:hover,.dd-item:focus-visible{background:color-mix(in srgb,var(--action) 12%,transparent)}
-.dd-item .aico{margin:0;flex:none;width:38px;height:38px}.dd-item b{display:block;font-weight:600;line-height:1.25}.dd-item small{display:block;opacity:.7;line-height:1.3;font-size:.82rem}
+.dd-item .aico{margin:0;flex:none;width:38px;height:38px}.dd-item b{display:block;font-weight:600;line-height:1.25}.dd-item small{display:block;color:var(--muted);line-height:1.3;font-size:.82rem}
 .dd-all{display:flex;justify-content:space-between;align-items:center;margin:6px 4px 0;padding:11px 10px 6px;min-height:44px;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent);color:var(--action);font-weight:600;font-size:.9rem;text-decoration:none}
 .dd-all:hover{text-decoration:underline}
 @keyframes ddpop{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
@@ -726,8 +728,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <details class="picker" id="picker"><summary class="glass" aria-label="Change theme">{ic("palette")} <span class="lbl">Change theme</span> {ic("chevron-down","chev")}</summary>
 <div class="menu" role="radiogroup" aria-label="Theme"><h4>Light</h4>{rows("light")}<h4>Dark</h4>{rows("dark")}</div></details>
 </div></header>
-{hero}
-<main id="main"><div class="wrap">{body}</div></main>
+<main id="main">{hero}<div class="wrap">{body}</div></main>
 <footer><div class="wrap"><p>FiveOceans · planning demo, fictional figures, not financial advice. Nothing you type is stored or sent.</p>
 <p><a href="{REPO}COLE_HANDOFF.txt">Handoff</a> · <a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> · <a href="https://github.com/Sukonik/5oceans">GitHub</a></p></div></footer>
 <nav class="dock" aria-label="Quick">
@@ -762,7 +763,7 @@ def slug(n):
 
 
 def coll_card(prefix, c):
-    return (f'<a class="big" href="{prefix}{slug(c)}/index.html"><span class="ico">{EMOJI[c]}</span><h3>{c}</h3>'
+    return (f'<a class="big" href="{prefix}{slug(c)}/index.html"><span class="ico">{EMOJI[c]}</span><h2>{c}</h2>'
             f'<p>{BLURB[c]}</p><span class="meta">{len(COLL[c])} animals {ic("arrow-right")}</span></a>')
 
 
@@ -778,13 +779,13 @@ home_hero = f"""<section class="hero"><div class="wrap"><div>
 <p class="lede">Thirty-six animal paths, each tied to a real decision and an official source. Start with salt water or fresh.</p>
 <ul class="stats"><li><b>36</b><span>animal paths</span></li><li><b>6</b><span>water bodies</span></li><li><b>8</b><span>shore-rock themes</span></li></ul>
 <div class="cta" style="margin-top:26px"><a class="glass primary" href="seawater/index.html">{ICWAVE} Explore Seawater</a><a class="glass" href="freshwater/index.html">{ICDROP} Explore Freshwater</a></div></div>
-<aside class="panel" aria-label="Sample result"><span class="tag">{ICSHELL} Hermit Crab · fictional example</span>
+<div class="panel" role="group" aria-label="Sample result"><span class="tag">{ICSHELL} Hermit Crab · fictional example</span>
 <h2>Could a tenant pay part of my housing cost?</h2>
 <p class="big-n">$1,552<span style="font-size:1rem;font-family:inherit;color:var(--ink);opacity:.7"> /month</span></p>
 <p class="small" style="margin-top:4px">what the owner still pays after rent</p>
 <div class="row"><span>Carrying cost</span><span>$3,300</span></div>
 <div class="row"><span>Rent after vacancy &amp; management</span><span>−$1,748</span></div>
-<p class="small">Illustrative numbers. Before income tax.</p></aside></div></section>"""
+<p class="small">Illustrative numbers. Before income tax.</p></div></div></section>"""
 
 fam_cards = "".join(
     f'<a class="big" href="{k}/index.html"><span class="ico">{e}</span><h2>{n}</h2><p>{d}</p>'
@@ -798,7 +799,7 @@ def tabs(prefix, here):
 write("index.html", "FiveOceans", 0,
       f'<section class="section" id="water"><h2>Choose your water</h2><p>Six collections, six animals each. Every one links to a guide and a direct official resource.</p>'
       f'<div class="fam">{fam_cards}</div></section>'
-      f'<section class="section"><h2>Explore the resources</h2><p>Two shelves behind every path: money plans and property.</p><div class="fam">'
+      f'<section class="section"><h2>Explore the resources</h2><p>Four shelves behind every path: money plans, property, mortgages and grants, and credit.</p><div class="fam">'
       + "".join(f'<a class="big" href="resources/index.html#{k}"><span class="ico">{ic(v[1])}</span><h3>{v[0]}</h3><p>{v[2]}</p>'
                 f'<span class="meta">{sum(1 for r in RESOURCES if r["group"] == k)} guides {ic("arrow-right")}</span></a>' for k, v in RES_GROUPS.items())
       + '</div></section>'
@@ -814,7 +815,7 @@ for k, (e, n, cs, d) in FAMILIES.items():
           page_hero(f'<a href="../index.html">Home</a> / {n}', e, f"{n} paths", d), k)
     for c in cs:
         write(f"{slug(c)}/index.html", f"{c} | FiveOceans", 1,
-              f'<section class="section"><div class="grid">{"".join(card_html(a, "../") for a in COLL[c])}</div></section>',
+              f'<section class="section"><div class="grid">{"".join(card_html(a, "../", 2) for a in COLL[c])}</div></section>',
               page_hero(f'<a href="../index.html">Home</a> / <a href="../{k}/index.html">{n}</a> / {c}',
                         EMOJI[c], f"{c}", BLURB[c], tabs("../", c)), k)
 
@@ -900,7 +901,7 @@ for r in RESOURCES:
         main += ('<section class="rsec" style="margin-top:32px"><h2 style="font-family:Iowan Old Style,Georgia,serif;font-weight:400">Related resources</h2><ul class="tiles">'
                  + "".join(tile(f'../{x}/index.html', RES[x]["icon"], RES[x]["title"], short(RES[x]["summary"])) for x in r["related"]) + "</ul></section>")
     main += DISCLAIM
-    body = f'<div class="section"><div class="rgrid"><div>{main}</div><aside class="rside">{gl}{sl}</aside></div></div>'
+    body = f'<div class="section"><div class="rgrid"><div>{main}</div><div class="rside">{gl}{sl}</div></div></div>'
     write(f'resources/{r["slug"]}/index.html', f'{r["title"]} | FiveOceans', 2, body, hero, "resources")
 
 # guide pages
@@ -924,11 +925,11 @@ for slugg, fn in GUIDE_FILES.items():
     side = (f'<div class="box"><h2>On this page</h2><ul class="srcs">{toc}</ul></div>'
             f'<div class="box"><h2>Resources</h2><ul class="srcs"><li><a href="../../resources/index.html#{grp}">{ic("arrow-right")}<span>{RES_GROUPS[grp][0]}</span></a></li></ul></div>')
     main = (f'<div class="prose">{md_block(rest, "../../", heads=True)}</div>' + DISCLAIM)
-    body = f'<div class="section"><div class="rgrid"><div>{main}</div><aside class="rside">{side}</aside></div></div>'
+    body = f'<div class="section"><div class="rgrid"><div>{main}</div><div class="rside">{side}</div></div></div>'
     write(f"guides/{slugg}/index.html", f"{title} | FiveOceans", 2, body, hero, "resources")
 
 gcards = "".join(
-    f'<article class="card"><span class="aico">{ic(GUIDE_ICON[k])}</span><h3><a class="stretch" href="{k}/index.html">{html.escape(GUIDE_META[k][0])}</a></h3>'
+    f'<article class="card"><span class="aico">{ic(GUIDE_ICON[k])}</span><h2><a class="stretch" href="{k}/index.html">{html.escape(GUIDE_META[k][0])}</a></h2>'
     f'<p class="desc">{html.escape(GUIDE_META[k][1][:150])}…</p></article>' for k in GUIDE_FILES)
 write("guides/index.html", "Reference guides | FiveOceans", 1,
       f'<section class="section"><div class="grid">{gcards}</div></section>',
@@ -980,8 +981,8 @@ calc_credit = ("<p class=\"disclaim\">The formulas (loan payments, cap rate, cas
                "and the saved-scenario and stress-test approach from <a href=\"https://github.com/Sukonik/payout-lab\" rel=\"noopener\">Payout Lab</a>.</p>")
 
 mode_chips = "".join(f'<span>{html.escape(m["label"])}</span>' for m in MODE_LIST)
-tool_cards = f'<article class="card"><span class="aico">{ic("search")}</span><h3><a class="stretch" href="real-estate/index.html#sonar">Dolphin Sonar</a></h3><p class="desc">Fill the Real Estate Calculator from a listing link and its text, with a bookmarklet and a GitHub issue bot.</p></article>' + f'<article class="card"><span class="aico">{ic("wallet")}</span><h3><a class="stretch" href="../credit/index.html">Credit Card Tool</a></h3><p class="desc">Record your three credit scores, keep your cards in a private packet, and compare good and bad debt for wealth building.</p></article>' + "".join(
-    f'<article class="card"><span class="aico">{ic(ic_)}</span><h3><a class="stretch" href="{sl}/index.html">{html.escape(t)}</a></h3>'
+tool_cards = f'<article class="card"><span class="aico">{ic("search")}</span><h2><a class="stretch" href="real-estate/index.html#sonar">Dolphin Sonar</a></h2><p class="desc">Fill the Real Estate Calculator from a listing link and its text, with a bookmarklet and a GitHub issue bot.</p></article>' + f'<article class="card"><span class="aico">{ic("wallet")}</span><h2><a class="stretch" href="../credit/index.html">Credit Card Tool</a></h2><p class="desc">Record your three credit scores, keep your cards in a private packet, and compare good and bad debt for wealth building.</p></article>' + "".join(
+    f'<article class="card"><span class="aico">{ic(ic_)}</span><h2><a class="stretch" href="{sl}/index.html">{html.escape(t)}</a></h2>'
     f'<p class="desc">{html.escape(d)}</p>' + (f'<div class="chips">{mode_chips}</div>' if sl == "real-estate" else "") + "</article>"
     for sl, t, ic_, d in TOOLS)
 write("tools/index.html", "Tools | FiveOceans", 1,
@@ -1017,7 +1018,7 @@ calc_body = f"""<section class="sonar" id="sonar" aria-labelledby="sn-h"><h2 id=
 <a class="glass" href="#results" id="jump">{ic("arrow-down")} Jump to results</a></div>
 <form id="fields" class="fields" onsubmit="return false" aria-label="Inputs"></form>
 </div>
-<aside class="calc-res" aria-live="polite" aria-label="Results"><div id="results"></div></aside></div>
+<section class="calc-res" aria-live="polite" aria-label="Results"><div id="results"></div></section></div>
 <section class="scn" aria-labelledby="scn-h"><h2 id="scn-h">Saved scenarios</h2>
 <p class="subn">Save a scenario to this browser, compare up to three, or move them as a file. Nothing is uploaded.</p>
 <div class="row"><div class="inp"><input id="scn-name" type="text" placeholder="Name this scenario" aria-label="Scenario name" maxlength="60"></div>
@@ -1038,7 +1039,7 @@ bridge_body = f"""<div class="calc" id="calc-top"><div class="calc-main">
 <div class="tools-row"><button type="button" class="glass" id="b-reset">{ic("rotate-ccw")} Reset</button>
 <a class="glass" href="#b-results">{ic("arrow-down")} Jump to results</a></div>
 <form id="b-fields" class="fields" onsubmit="return false" aria-label="Inputs"></form></div>
-<aside class="calc-res" aria-live="polite" aria-label="Results"><div id="b-results"></div></aside></div>
+<section class="calc-res" aria-live="polite" aria-label="Results"><div id="b-results"></div></section></div>
 <p class="disclaim">{TOOL_NOTE} See <a href="../../resources/governmental-457b/index.html">Governmental 457(b)</a>, <a href="../../resources/roth-ira/index.html">Roth IRA</a> and <a href="../../resources/treasuries/index.html">Treasury bills</a> for where bridge money can live.</p>
 <script src="../../assets/calc/engine.js"></script><script src="../../assets/calc/bridge.js"></script>"""
 write("tools/savings-bridge/index.html", "Savings Bridge | FiveOceans", 2, f'<section class="section">{bridge_body}</section>',

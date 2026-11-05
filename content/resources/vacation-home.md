@@ -4,7 +4,7 @@ group: property
 icon: tent
 calc: vacation
 summary: A home you use part of the year. The tax treatment depends on how many days you use it yourself and how many you rent it, and insurance and financing differ from a primary home.
-related: investment-property, primary-home, waterfront-flood-insurance, timeshare
+related: investment-property, primary-home, waterfront-flood-insurance, timeshare, conventional-loans
 glance:
 - Treated as a residence if personal days exceed | Greater of 14 days or 10% of rental days
 - Rented fewer than 15 days | No rental income reported, no rental expenses

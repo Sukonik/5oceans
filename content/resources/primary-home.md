@@ -4,7 +4,7 @@ group: property
 icon: house
 calc: home
 summary: The home you live in most of the year. It carries the strongest tax breaks, the cheapest financing and the main decision of whether to stay, right-size or move.
-related: vacation-home, duplex-house-hacking, renting, waterfront-flood-insurance
+related: vacation-home, duplex-house-hacking, renting, waterfront-flood-insurance, mortgage-basics, fha-loans, down-payment-assistance, housing-counseling
 glance:
 - Home-sale tax exclusion | $250,000 ($500,000 joint)
 - Tests | Own 2 of 5 years, live in it 2 of 5 years

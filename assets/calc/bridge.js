@@ -25,7 +25,7 @@
     ];
     $('b-results').innerHTML = '<div class="hl"><span class="hl-k">Monthly draw it supports</span><strong class="hl-v">' + f(b.draw) + '</strong><span class="hl-n">' + (ok ? 'Covers your ' + f(vals.gap) + ' gap' : 'Short of your ' + f(vals.gap) + ' gap') + '</span></div><table class="rt"><caption class="sr">Results</caption><tbody>' +
       rows.map(function (r, i) { return '<tr' + (i === 0 || i === 3 ? ' class="strong"' : '') + '><th scope="row">' + r[0] + '<small>' + r[2] + '</small></th><td>' + r[1] + '</td></tr>'; }).join('') + '</tbody></table>' +
-      '<aside class="callout">Uses effective monthly rates in inflation-adjusted dollars. It stops at the first pension date. Model Social Security and later-life spending separately, and add health and tax assumptions to your gap.</aside>';
+      '<div class="callout">Uses effective monthly rates in inflation-adjusted dollars. It stops at the first pension date. Model Social Security and later-life spending separately, and add health and tax assumptions to your gap.</div>';
   }
   document.addEventListener('DOMContentLoaded', function () {
     var box = $('b-fields');

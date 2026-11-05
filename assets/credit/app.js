@@ -97,9 +97,9 @@
       var rows = [['Lowest', s.low], ['Middle', s.middle == null ? '–' : s.middle], ['Highest', s.high], ['Spread', s.spread + ' points']];
       var t = el('table', 'rt'); t.innerHTML = '<caption class="sr">Score summary</caption><tbody>' + rows.map(function (r) { return '<tr><th scope="row">' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('') + '</tbody>';
       box.appendChild(t);
-      if (!s.complete) box.appendChild(el('aside', 'callout', 'Add the missing bureau to see your middle score. Lenders on a mortgage commonly look at the middle of three scores.'));
+      if (!s.complete) box.appendChild(el('div', 'callout', 'Add the missing bureau to see your middle score. Lenders on a mortgage commonly look at the middle of three scores.'));
       var base = s.middle != null ? s.middle : s.low, ft = CR.fhaTier(base);
-      box.appendChild(el('aside', 'callout', '<b>Mortgage check (FHA).</b> At ' + base + ': ' + esc(ft.text) + ' Other loan types and lenders set their own minimums, and lenders add other tests. <a href="https://www.hud.gov/sites/default/files/hudclips/documents/2026-11hsgml.pdf" rel="noopener">HUD Mortgagee Letter 2026-11</a> · <a href="../tools/real-estate/index.html#home">Run the home numbers</a>'));
+      box.appendChild(el('div', 'callout', '<b>Mortgage check (FHA).</b> At ' + base + ': ' + esc(ft.text) + ' Other loan types and lenders set their own minimums, and lenders add other tests. <a href="https://www.hud.gov/sites/default/files/hudclips/documents/2026-11hsgml.pdf" rel="noopener">HUD Mortgagee Letter 2026-11</a> · <a href="../tools/real-estate/index.html#home">Run the home numbers</a>'));
     }
     if (state.scores.length) {
       var h = el('details', 'hist'); h.innerHTML = '<summary>History (' + state.scores.length + ')</summary>';
@@ -113,7 +113,7 @@
     }
     var adv = $('s-advice'); adv.innerHTML = '';
     var tips = CR.creditAdvice(state.cards, s); adv.appendChild(el('h3', '', 'Next steps'));
-    tips.forEach(function (t) { adv.appendChild(el('aside', 'callout ' + t.level, esc(t.text))); });
+    tips.forEach(function (t) { adv.appendChild(el('div', 'callout ' + t.level, esc(t.text))); });
   }
 
   /* ---------- CARDS ---------- */
@@ -171,7 +171,7 @@
     var dd = el('div', 'tw'), dt = el('table', 'rt cmpt'); dt.innerHTML = '<caption class="sr">Due dates</caption><thead><tr><th scope="col">Card</th><th scope="col">Payment due</th><th scope="col">Minimum</th></tr></thead>';
     var db = el('tbody'); due.forEach(function (c) { var k = CR.daysUntil(c.due), tr = el('tr'); tr.innerHTML = '<td>' + esc(c.name) + '</td><td>in ' + k + ' day' + (k === 1 ? '' : 's') + ' (day ' + c.due + ')</td><td>' + money(CR.minPayment(c)) + '</td>'; db.appendChild(tr); });
     dt.appendChild(db); dd.appendChild(dt); box.appendChild(el('h3', '', 'Payments due soonest')); box.appendChild(dd);
-    box.appendChild(el('aside', 'callout', 'Pay at least the minimum by the due date every time. A late payment is the most damaging item on a credit report. Autopay for the minimum is a safe floor.'));
+    box.appendChild(el('div', 'callout', 'Pay at least the minimum by the due date every time. A late payment is the most damaging item on a credit report. Autopay for the minimum is a safe floor.'));
   }
 
   /* ---------- STRATEGY ---------- */
@@ -224,7 +224,7 @@
       grid.appendChild(c);
     }); box.appendChild(grid);
     var bad = r.classes.filter(function (c) { return c.kind === 'bad'; }).length;
-    box.appendChild(el('aside', 'callout', bad ? '<b>Reading this.</b> ' + bad + ' of your debts cost more than the ' + s.ret + '% you expect to earn. Paying those off is a guaranteed return equal to their rate. Cheaper, asset-backed debt can stay while you invest.' : '<b>Reading this.</b> None of your debts cost more than your expected return, so investing the extra can come out ahead, if you can stomach the risk and the return you assumed is realistic.'));
+    box.appendChild(el('div', 'callout', bad ? '<b>Reading this.</b> ' + bad + ' of your debts cost more than the ' + s.ret + '% you expect to earn. Paying those off is a guaranteed return equal to their rate. Cheaper, asset-backed debt can stay while you invest.' : '<b>Reading this.</b> None of your debts cost more than your expected return, so investing the extra can come out ahead, if you can stomach the risk and the return you assumed is realistic.'));
     ['Take any employer match first. It is an immediate return no debt payoff beats.', 'Keep an emergency fund before aggressive moves. A surprise bill on a card undoes the plan.', 'Investment returns are not guaranteed; debt payments are. A lower assumed return favours paying debt.', 'Never carry a card balance to chase rewards. The interest outweighs them.', 'Good debt is still debt. Leverage magnifies losses as well as gains. Keep payments you could carry if income dropped.'].forEach(function (g) { var l = el('p', 'guard', esc(g)); box.appendChild(l); });
   }
 

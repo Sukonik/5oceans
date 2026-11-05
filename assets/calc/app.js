@@ -47,13 +47,25 @@
     var f = $('fields'); f.innerHTML = '';
     cur.fields.forEach(function (fd) {
       var id = 'f-' + fd.id, w = el('div', 'fld'), l = el('label', '', esc(fd.label)); l.htmlFor = id;
-      var wrap = el('div', 'inp'), i = el('input'); i.id = id; i.type = 'text'; i.inputMode = 'decimal'; i.autocomplete = 'off'; i.value = String(vals[fd.id]);
+      var wrap = el('div', 'inp'), hint = el('small', '', esc(fd.hint || '')); hint.id = id + '-h';
+      if (fd.kind === 'select') {
+        var sel = el('select'); sel.id = id; sel.setAttribute('aria-describedby', id + '-h');
+        fd.options.forEach(function (o, i) { var op = el('option', '', esc(o)); op.value = String(i); sel.appendChild(op); });
+        sel.value = String(vals[fd.id] | 0);
+        sel.addEventListener('change', function () {
+          vals[fd.id] = +sel.value;
+          if (fd.id === 'program' && RE.PROGRAMS && RE.PROGRAMS[vals.program] && cur.fields.some(function (x) { return x.id === 'downPct'; })) { vals.downPct = RE.PROGRAMS[vals.program].down; buildFields(); $('f-program').focus(); }
+          render();
+        });
+        wrap.appendChild(sel); w.appendChild(l); w.appendChild(wrap); w.appendChild(hint); f.appendChild(w); return;
+      }
+      var i = el('input'); i.id = id; i.type = 'text'; i.inputMode = 'decimal'; i.autocomplete = 'off'; i.value = String(vals[fd.id]);
       i.dataset.f = fd.id; i.setAttribute('aria-describedby', id + '-h');
       var pre = fd.kind === 'money' ? '$' : '', suf = fd.kind === 'pct' ? '%' : (fd.unit || '');
       if (pre) wrap.appendChild(el('span', 'af pre', pre)); wrap.appendChild(i); if (suf) wrap.appendChild(el('span', 'af suf', esc(suf)));
       i.addEventListener('input', function () { vals[fd.id] = parse(i.value); render(); });
       i.addEventListener('blur', function () { i.value = String(vals[fd.id]); });
-      var hint = el('small', '', esc(fd.hint || '')); hint.id = id + '-h'; w.appendChild(l); w.appendChild(wrap); w.appendChild(hint);
+      w.appendChild(l); w.appendChild(wrap); w.appendChild(hint);
       f.appendChild(w);
     });
   }
@@ -68,7 +80,7 @@
       body.appendChild(tr);
     });
     tb.appendChild(body); box.appendChild(tb);
-    (out.warn || []).forEach(function (w) { box.appendChild(el('aside', 'callout', esc(w))); });
+    (out.warn || []).forEach(function (w) { box.appendChild(el('div', 'callout', esc(w))); });
     var st = RE.stressTests(cur.id, vals);
     if (st.length) {
       var s = el('div', 'sub'); s.appendChild(el('h3', '', 'Stress test'));
@@ -133,7 +145,7 @@
   function snFmt(k, v) { return MONEYK[k] ? usd.format(v) : k === 'year' ? String(v) : (Math.round(v * 10) / 10).toLocaleString('en-US'); }
   function snRender(p, auto) {
     var box = $('sn-out'); box.innerHTML = ''; snPing = p;
-    if (!p.found.length && !p.address) { box.appendChild(el('aside', 'callout', 'Nothing detected. Paste the part of the listing that shows the price, beds and baths, taxes and fees. Include the link too if you have it.')); return; }
+    if (!p.found.length && !p.address) { box.appendChild(el('div', 'callout', 'Nothing detected. Paste the part of the listing that shows the price, beds and baths, taxes and fees. Include the link too if you have it.')); return; }
     var head = p.address ? esc(p.address) : 'Listing', site = p.site ? ' on ' + esc(p.site) : '';
     box.appendChild(el('p', 'sn-head', '<b>' + head + '</b>' + site + (p.listingId ? ' <small>ID ' + esc(p.listingId) + '</small>' : '')));
     if (p.found.length) {
