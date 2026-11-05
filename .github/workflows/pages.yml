@@ -28,6 +28,7 @@ jobs:
           node tests/credit.test.mjs
           node tests/sonar.test.mjs
           node tests/sonar_issue.test.mjs
+          node tests/sonar_fetch.test.mjs
       - name: 🛠️ Build site
         run: python scripts/build_site.py
       - uses: actions/configure-pages@v5

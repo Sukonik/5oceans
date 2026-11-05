@@ -69,14 +69,18 @@ Formulas are standard and written for this site. Ideas came from [Rental Propert
 
 ### 🐬 Dolphin Sonar: listing link data extractor
 
-Ping a listing and the calculator fills itself. Four ways in:
+Ping a listing and the calculator fills itself. Five ways in:
 
 1. **Link:** paste a Redfin, Zillow or StreetEasy link. The address, city, state, ZIP, unit and listing ID are read from the link.
 2. **Text:** paste the listing page text. Price, beds, baths, square feet, year built, HOA, common charges, co-op maintenance, property tax, rent estimate, units and property type are detected in your browser. Sonar suggests a calculator (house, condo, co-op, multi-family, land) and fills the numbers it found.
 3. **Bookmarklet** (desktop): drag it to your bookmarks bar; on a listing page you have open, click it. It sends the visible facts to the calculator once, in the address bar, then clears them.
 4. **GitHub issue:** open a **Dolphin Sonar ping** issue ([form](https://github.com/Sukonik/5oceans/issues/new?template=sonar-listing.yml)), paste the link and text, and the Dolphin Sonar action replies with the detected facts and a calculator link. The issue body is treated as data only.
 
-**Why it does not crawl.** A browser cannot fetch those pages from another site, and Redfin, Zillow and StreetEasy block automated reads; their terms are reported to forbid scraping, and Zillow has acted against scrapers. MLS data is licensed too: OneKey MLS (New York) delivers data through MLS Grid to brokers and registered vendors, and IDX is a display permission, not a general license. So Sonar reads only what you give it. Real listing feeds (a licensed OneKey partnership, or your own API key) and open public data (flood zone, HUD rents, tax lots) are planned in [#16](https://github.com/Sukonik/5oceans/issues/16) and [#17](https://github.com/Sukonik/5oceans/issues/17). Engine: [`assets/calc/sonar.js`](assets/calc/sonar.js); tests: [`tests/sonar.test.mjs`](tests/sonar.test.mjs) and [`tests/sonar_issue.test.mjs`](tests/sonar_issue.test.mjs).
+5. **Polite link reader** (CLI and issue bot): `node scripts/sonar_fetch.mjs <url>` reads one link and runs it through Sonar. It is built to be a good web citizen: it **obeys robots.txt**, identifies itself (`FiveOceansSonar/1.0`), reads one URL at a time with a pause between requests, refuses private network addresses, and **stops at the first refusal** (HTTP 401, 403, 429, 503 or a bot check) without trying to get around it. It **refuses listing portals** whose terms generally forbid automated access (Zillow, Redfin, StreetEasy, Realtor.com, Trulia, Homes.com, Apartments.com, LoopNet, Compass, Craigslist, OneKey MLS and similar). So it works on pages that allow it, such as an agent's own site, a county page, or the [fictional sample listing](https://sukonik.github.io/5oceans/tools/real-estate/sample-listing/). The issue bot uses it automatically when you give a link without text.
+
+**Tools we looked at.** [Scrapling](https://github.com/D4Vinci/Scrapling) advertises getting past anti-bot protections; we do not use that on any site that is trying to keep bots out. [AutoScraper](https://github.com/alirezamika/autoscraper) and [mlscraper](https://github.com/lorey/mlscraper) learn extraction rules from examples and are good candidates for pages that allow reading ([#15](https://github.com/Sukonik/5oceans/issues/15)). [Galer](https://github.com/dwisiswant0/galer) extracts URLs through Chrome and is not needed here.
+
+**Why the big portals are not scraped.** A browser cannot fetch those pages from another site, and Redfin, Zillow and StreetEasy block automated reads; their terms are reported to forbid scraping, and Zillow has acted against scrapers. MLS data is licensed too: OneKey MLS (New York) delivers data through MLS Grid to brokers and registered vendors, and IDX is a display permission, not a general license. So Sonar reads only what you give it. Real listing feeds (a licensed OneKey partnership, or your own API key) and open public data (flood zone, HUD rents, tax lots) are planned in [#16](https://github.com/Sukonik/5oceans/issues/16) and [#17](https://github.com/Sukonik/5oceans/issues/17). Engine: [`assets/calc/sonar.js`](assets/calc/sonar.js); tests: [`tests/sonar.test.mjs`](tests/sonar.test.mjs) and [`tests/sonar_issue.test.mjs`](tests/sonar_issue.test.mjs).
 
 ## 💳 Credit Card Tool
 
@@ -196,7 +200,8 @@ python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 docs/handoff/      planning handoff and Blue Glass plan
 assets/icons/      vendored Lucide SVGs and license
 assets/calc/       calculator engine and UI scripts
-tests/             calculator, credit and Sonar tests (node tests/*.test.mjs)
+tests/             calculator, credit, Sonar and link-reader tests (node tests/*.test.mjs)
+scripts/           site builder, Sonar issue bot and polite link reader
 .github/ISSUE_TEMPLATE/  Dolphin Sonar ping issue form
 assets/credit/     credit tool engine and UI scripts
 content/resources/ one markdown file per resource page
@@ -222,6 +227,7 @@ site/              generated output (not committed)
 | v0.10 | Tools menu, 14-mode Real Estate Calculator, Savings Bridge, saved scenarios, text/table/button responsive pass |
 | v0.11 | Credit Card Tool (scores, cards, debt strategy, packet), five credit and debt resource pages, nav and dock refresh |
 | v0.12 | Dolphin Sonar listing link data extractor (paste, bookmarklet, GitHub issue action), tool roadmaps in Issues |
+| v0.13 | Dolphin Sonar polite link reader (robots.txt, portal refusal, SSRF guard), fictional sample listing |
 
 ## 🧭 Roadmap
 

@@ -940,7 +940,7 @@ calc_body = f"""<section class="sonar" id="sonar" aria-labelledby="sn-h"><h2 id=
 <details class="bk"><summary>One-click bookmarklet (desktop browsers)</summary>
 <p class="subn">Drag this to your bookmarks bar. On a listing page you have open, click it: it sends what is on your screen to this calculator. It runs in your browser and the site is not contacted. If a listing site blocks bookmarklets, use paste instead.</p>
 <p><a class="glass" id="sn-bm" href="#" draggable="true">{ic("search")} Dolphin Sonar</a></p></details>
-<p class="subn">Sonar never fetches a page. Listing sites block automated reads and their terms generally forbid scraping, and MLS data is licensed. See the <a href="{SONAR_ISSUE}" rel="noopener">Dolphin Sonar roadmap</a> for licensed and open-data options.</p></section>
+<p class="subn">This page never fetches anything. Listing portals block automated reads, their terms generally forbid scraping, and MLS data is licensed, so Sonar does not scrape them. A separate polite link reader, which obeys robots.txt and never works around a block, runs in the <a href="https://github.com/Sukonik/5oceans/issues/new?template=sonar-listing.yml" rel="noopener">GitHub issue form</a> for pages that allow it. Practice on the <a href="sample-listing/index.html">fictional sample listing</a>. Roadmap: <a href="{SONAR_ISSUE}" rel="noopener">Dolphin Sonar</a>.</p></section>
 <div class="calc" id="calc-top"><div class="calc-main">
 <div id="modes" class="modes" aria-label="Choose a calculator"></div>
 <h2 id="mode-title"></h2><p id="mode-blurb"></p>
@@ -1000,6 +1000,16 @@ write("credit/index.html", "Credit Card Tool | FiveOceans", 1, f'<section class=
                 "Find and build your credit, keep your cards in a packet you own, and see how good and bad debt change your wealth."), "credit")
 INDEX.append(dict(n="Dolphin Sonar", t="Tool", c="Tool", u="tools/real-estate/index.html#sonar", s=words("dolphin sonar listing link redfin zillow streeteasy paste import data extractor bookmarklet")))
 INDEX.append(dict(n="Credit Card Tool", t="Tool", c="Tool", u="credit/index.html", s=words("credit card tool credit score three scores equifax experian transunion utilization debt payoff avalanche snowball good debt bad debt packet")))
+
+# fictional sample listing for practising Sonar
+sample_body = """<section class="section"><div class="prose"><p class="callout">This is a <b>fictional</b> listing made for practising <a href="../index.html#sonar">Dolphin Sonar</a>. Copy this page's text into the Sonar box, or open a Sonar issue with this page's link.</p>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SingleFamilyResidence","name":"9 Shell Lane (fictional)","numberOfBedrooms":3,"numberOfBathroomsTotal":2,"floorSize":{"@type":"QuantitativeValue","value":1700},"yearBuilt":1990,"address":{"@type":"PostalAddress","streetAddress":"9 Shell Lane","addressLocality":"Long Beach","addressRegion":"NY","postalCode":"11561"},"offers":{"@type":"Offer","price":"699000","priceCurrency":"USD"}}</script>
+<h2>9 Shell Lane, Long Beach, NY 11561</h2>
+<p><strong>Listed price: $699,000</strong></p>
+<ul><li>3 beds, 2 baths, 1,700 sq ft</li><li>Year built: 1990</li><li>Property taxes: $8,400 / yr</li><li>HOA fee $60 / month</li><li>Rental estimate $3,600/mo</li></ul>
+<p>A made-up single-family home two blocks from the water, used only to test the Real Estate Calculator. Nothing here is real.</p></div></section>"""
+write("tools/real-estate/sample-listing/index.html", "Sample listing (fictional) | FiveOceans", 3, sample_body,
+      page_hero('<a href="../../../index.html">Home</a> / <a href="../../index.html">Tools</a> / <a href="../index.html">Real Estate Calculator</a> / Sample listing', ic("house"), "Sample listing", "A fictional listing for practising Dolphin Sonar."), "tools")
 
 (out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")
 (out / ".nojekyll").write_text("")
