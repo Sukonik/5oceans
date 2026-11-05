@@ -3,6 +3,7 @@
 // The issue body is data. It is parsed with regular expressions only and never executed or passed to a shell.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { pingLink } from './sonar_fetch.mjs';
 const S = createRequire(import.meta.url)('../assets/calc/sonar.js');
 
 const [, , eventPath, outPath] = process.argv;
@@ -12,7 +13,12 @@ const field = (name) => { const m = body.match(new RegExp('###\\s*' + name + '\\
 const url = field('Listing link').slice(0, 500), text = field('Listing text');
 const site = process.env.SITE_URL || `https://${(ev.repository?.owner?.login || 'sukonik').toLowerCase()}.github.io/${ev.repository?.name || '5oceans'}/`;
 
-const p = S.parseListing({ url, text, jsonld: '' });
+let p = S.parseListing({ url, text, jsonld: '' }), note = '';
+if (url && p.found.length < 3 && process.env.SONAR_FETCH !== '0') {
+  const { read } = await pingLink(url);
+  if (read.ok) { p = S.parseListing({ url, text: text + '\n' + read.text, jsonld: read.jsonld }); note = `I read the link politely (robots.txt allowed it) and found ${p.found.length} facts.`; }
+  else note = read.reason;
+}
 const sug = S.suggestMode(p);
 const usd = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const money = new Set(['price', 'hoaMo', 'commonMo', 'maintMo', 'taxYr', 'rent']);
@@ -28,6 +34,7 @@ if (!p.found.length && !p.address) {
   md += `Suggested calculator: **${sug}**.\n\n[Open the Real Estate Calculator with these numbers](${link})\n\n`;
   md += 'Check every number against the listing. The calculator link carries the pasted text in the address bar once and then clears it.\n';
 }
+if (note) md += `\n**Link reader:** ${note}\n`;
 md += '\n---\n_Sonar never fetches a listing page. It reads only what was pasted here. Posted by the Dolphin Sonar action._\n';
 writeFileSync(outPath, md);
 console.log(`facts: ${p.found.length}, suggested: ${sug}`);
