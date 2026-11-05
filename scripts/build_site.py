@@ -83,7 +83,7 @@ header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page)
 @supports(backdrop-filter:blur(1px)){header{backdrop-filter:blur(12px) saturate(1.3)}}
 @media(prefers-reduced-transparency:reduce){header{background:var(--page);backdrop-filter:none}}
 .bar{display:flex;align-items:center;gap:12px;min-height:64px;flex-wrap:wrap;padding-block:8px}
-.brand{white-space:nowrap;display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.01em;text-decoration:none;color:var(--ink);font-size:1.1rem}
+.brand{white-space:nowrap;min-height:44px;display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.01em;text-decoration:none;color:var(--ink);font-size:1.1rem}
 .nav{display:flex;gap:2px;margin-left:12px}
 .nav a{padding:8px 14px;border-radius:999px;text-decoration:none;color:var(--ink);font-weight:500;font-size:.95rem;opacity:.85}
 .nav a:hover,.nav a[aria-current]{background:color-mix(in srgb,var(--ink) 8%,transparent);opacity:1}
@@ -104,9 +104,9 @@ header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page)
 .search input::placeholder{color:color-mix(in srgb,var(--ink) 55%,transparent)}
 .search::before{content:"⌕";position:absolute;left:15px;top:50%;transform:translateY(-52%);font-size:1.2rem;opacity:.6;pointer-events:none}
 /* picker */
-.picker{position:relative}
+.picker{position:relative;z-index:5}
 summary.glass{list-style:none} summary::-webkit-details-marker{display:none}
-.menu{position:absolute;right:0;top:calc(100% + 8px);width:240px;max-width:calc(100vw - 40px);background:var(--surface);
+.menu{z-index:40;position:absolute;right:0;top:calc(100% + 8px);width:240px;max-width:calc(100vw - 40px);background:var(--surface);
   border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);border-radius:18px;padding:8px 14px 12px;box-shadow:0 20px 50px rgb(0 0 0/.28)}
 .menu h4{margin:10px 0 2px;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;opacity:.65}
 .opt{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;border-radius:10px;padding:0 6px}
@@ -165,10 +165,51 @@ main{padding-bottom:56px}
 footer{border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);padding-block:28px;font-size:.9rem}
 footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
 footer p{margin:0;opacity:.8}
+
+/* Sea Glass UI elements */
+.skip{position:absolute;left:12px;top:-60px;z-index:50;padding:10px 16px}
+.skip:focus{top:10px}
+.glass{position:relative;overflow:hidden}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(115deg,transparent 35%,color-mix(in srgb,#fff 38%,transparent) 50%,transparent 65%);
+  transform:translateX(-120%);transition:transform .7s}
+.glass:hover::after{transform:translateX(120%)}
+kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-radius:7px;opacity:.7;
+  background:color-mix(in srgb,var(--ink) 8%,transparent);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+.search input{padding-right:42px}
+.search kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:600 .72rem/1 inherit;padding:4px 7px;border-radius:7px;opacity:.7;
+  background:color-mix(in srgb,var(--ink) 8%,transparent);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);pointer-events:none}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0;padding:0;list-style:none}
+.stats li{display:flex;flex-direction:column;padding:10px 18px;border-radius:16px;
+  background:color-mix(in srgb,var(--surface) 70%,transparent);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 45%,transparent)}
+@supports(backdrop-filter:blur(1px)){.stats li{backdrop-filter:blur(10px)}}
+.stats b{font:400 1.6rem/1.1 "Iowan Old Style",Georgia,serif;color:var(--action)}
+.stats span{font-size:.78rem;opacity:.75}
+.tabs{display:inline-flex;gap:2px;padding:4px;border-radius:999px;max-width:100%;overflow-x:auto;scrollbar-width:none;
+  background:color-mix(in srgb,var(--surface) 75%,transparent);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 45%,transparent)}
+.tabs::-webkit-scrollbar{display:none}
+@supports(backdrop-filter:blur(1px)){.tabs{backdrop-filter:blur(10px)}}
+.tabs a{white-space:nowrap;min-height:40px;display:inline-flex;align-items:center;padding:0 16px;border-radius:999px;text-decoration:none;color:var(--ink);font-size:.92rem;font-weight:500}
+.tabs a:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.tabs a[aria-current]{background:var(--action);color:var(--cta);font-weight:600;box-shadow:0 4px 12px color-mix(in srgb,var(--action) 40%,transparent)}
+.hero .tabs{margin-top:22px}
+.wave{display:block;width:100%;height:36px;margin-top:-1px;color:var(--page)}
+.chips a{backdrop-filter:blur(6px)}
+.dock{display:none}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
-@media(max-width:720px){.bar{gap:8px}.brand{flex:1 0 auto}.nav{order:3;width:100%;margin:0;overflow-x:auto}.search{order:4;flex:1 1 100%}
-  .menu{position:fixed;left:20px;right:20px;top:auto;width:auto;max-width:none;margin-top:8px}.picker .lbl{display:none}}
+@media(max-width:720px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
+  .menu{width:min(280px,calc(100vw - 32px));max-height:min(70vh,520px);overflow-y:auto}.picker .lbl{display:none}
+  body{padding-bottom:84px}.wrap{padding-inline:16px}.hero .wrap{padding-block:36px 56px}
+  .dock{display:flex;position:fixed;z-index:30;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));gap:2px;padding:6px;border-radius:999px;
+    background:color-mix(in srgb,var(--surface) 86%,transparent);border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);
+    box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 50%,transparent),0 14px 34px rgb(0 0 0/.3)}
+  @supports(backdrop-filter:blur(1px)){.dock{backdrop-filter:blur(14px) saturate(1.4)}}
+  .dock a{flex:1;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:999px;text-decoration:none;color:var(--ink);font-size:.72rem;font-weight:600}
+  .dock a span{font-size:1.25rem;line-height:1}.dock a[aria-current]{background:var(--action);color:var(--cta)}
+  .stats li{flex:1 1 calc(33% - 10px);padding:10px 12px}.cta .glass{flex:1 1 100%;justify-content:center}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.card,.menu,.glass,.big,.panel{border:1px solid CanvasText}}
 """
@@ -185,6 +226,7 @@ r.addEventListener('change',()=>{document.documentElement.dataset.theme=r.value;
 try{localStorage.setItem('fiveoceans-theme',r.value)}catch(e){}});});
 pk.addEventListener('keydown',e=>{if(e.key==='Escape'&&pk.open){pk.open=false;pk.querySelector('summary').focus()}});
 document.addEventListener('click',e=>{if(!pk.contains(e.target))pk.open=false});
+document.addEventListener('keydown',e=>{const t=e.target.tagName;if((e.key==='/'||(e.key==='k'&&(e.ctrlKey||e.metaKey)))&&t!=='INPUT'&&t!=='TEXTAREA'){e.preventDefault();q.focus()}});
 """
 
 
@@ -199,18 +241,24 @@ def render(title, prefix, body, hero="", cur=""):
 if(ids.indexOf(t)<0)t=matchMedia('(prefers-color-scheme: dark)').matches?'basalt':'chalk';
 document.documentElement.dataset.theme=t}})();</script>
 <style>{CSS}</style></head><body>
+<a class="glass skip" href="#main">Skip to content</a>
 <header><div class="wrap bar">
 <a class="brand" href="{prefix}index.html">🌊 FiveOceans</a>
 <nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a></nav>
 <span class="spacer"></span>
-<div class="search"><label for="q" hidden>Search</label><input id="q" type="search" placeholder="Search 457(b), ERS, duplex…" autocomplete="off"></div>
+<div class="search"><label for="q" hidden>Search</label><input id="q" type="search" placeholder="Search 457(b), ERS…" autocomplete="off"><kbd aria-hidden="true">/</kbd></div>
 <details class="picker" id="picker"><summary class="glass" aria-label="Change theme">🎨 <span class="lbl">Change theme</span> ▾</summary>
 <div class="menu" role="radiogroup" aria-label="Theme"><h4>Light</h4>{rows("light")}<h4>Dark</h4>{rows("dark")}</div></details>
 </div></header>
 {hero}
-<main><div class="wrap">{body}</div></main>
+<main id="main"><div class="wrap">{body}</div></main>
 <footer><div class="wrap"><p>🌊 FiveOceans · planning demo, fictional figures, not financial advice. Nothing you type is stored or sent.</p>
 <p><a href="{REPO}COLE_HANDOFF.txt">Handoff</a> · <a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> · <a href="https://github.com/Sukonik/5oceans">GitHub</a></p></div></footer>
+<nav class="dock" aria-label="Quick">
+<a href="{prefix}index.html"{ac("home")}><span>🏠</span>Home</a>
+<a href="{prefix}seawater/index.html"{ac("seawater")}><span>🧂</span>Seawater</a>
+<a href="{prefix}freshwater/index.html"{ac("freshwater")}><span>🚰</span>Fresh</a>
+</nav>
 <script>{JS}</script></body></html>"""
 
 
@@ -241,16 +289,17 @@ def coll_card(prefix, c):
             f'<p>{BLURB[c]}</p><span class="meta">{len(COLL[c])} animals →</span></a>')
 
 
-def page_hero(crumb, emoji, h, lede):
+def page_hero(crumb, emoji, h, lede, extra=""):
     return (f'<section class="hero compact"><div class="wrap"><div><p class="crumb">{crumb}</p>'
-            f'<span class="kicker">{emoji} FiveOceans</span><h1>{h}</h1><p class="lede">{lede}</p></div></div></section>')
+            f'<span class="kicker">{emoji} FiveOceans</span><h1>{h}</h1><p class="lede">{lede}</p>{extra}</div></div></section>')
 
 
 home_hero = """<section class="hero"><div class="wrap"><div>
 <span class="kicker">🌊 Retirement planning, near the water</span>
 <h1>Where near the water would you like to live, and <em>when can you afford to work less?</em></h1>
 <p class="lede">Thirty-six animal paths, each tied to a real decision and an official source. Start with salt water or fresh.</p>
-<div class="cta"><a class="glass primary" href="seawater/index.html">🧂 Explore Seawater</a><a class="glass" href="freshwater/index.html">🚰 Explore Freshwater</a></div></div>
+<ul class="stats"><li><b>36</b><span>animal paths</span></li><li><b>6</b><span>water bodies</span></li><li><b>8</b><span>shore-rock themes</span></li></ul>
+<div class="cta" style="margin-top:26px"><a class="glass primary" href="seawater/index.html">🧂 Explore Seawater</a><a class="glass" href="freshwater/index.html">🚰 Explore Freshwater</a></div></div>
 <aside class="panel" aria-label="Sample result"><span class="tag">🐚 Hermit Crab · fictional example</span>
 <h2>Could a tenant pay part of my housing cost?</h2>
 <p class="big-n">$1,552<span style="font-size:1rem;font-family:inherit;color:var(--ink);opacity:.7"> /month</span></p>
@@ -262,9 +311,15 @@ home_hero = """<section class="hero"><div class="wrap"><div>
 fam_cards = "".join(
     f'<a class="big" href="{k}/index.html"><span class="ico">{e}</span><h2>{n}</h2><p>{d}</p>'
     f'<span class="meta">{" · ".join(c)} →</span></a>' for k, (e, n, c, d) in FAMILIES.items())
+def tabs(prefix, here):
+    allc = [c for _, (_, _, cs, _) in FAMILIES.items() for c in cs]
+    return '<nav class="tabs" aria-label="Water bodies">' + "".join(
+        f'<a href="{prefix}{slug(c)}/index.html"' + (' aria-current="page"' if c == here else "") + f'>{EMOJI[c]} {c}</a>' for c in allc) + '</nav>'
+
+
 write("index.html", "FiveOceans", 0,
       f'<section class="section"><h2>Choose your water</h2><p>Six collections, six animals each. Every one links to a guide and a direct official resource.</p>'
-      f'<div class="fam">{fam_cards}</div></section>', home_hero)
+      f'<div class="fam">{fam_cards}</div></section>', home_hero, "home")
 
 for k, (e, n, cs, d) in FAMILIES.items():
     write(f"{k}/index.html", f"{n} | FiveOceans", 1,
@@ -275,6 +330,6 @@ for k, (e, n, cs, d) in FAMILIES.items():
               f'<section class="section"><div class="grid">{"".join(COLL[c])}</div>'
               f'<p class="empty" id="empty">No animals here match that search.</p></section>',
               page_hero(f'<a href="../index.html">Home</a> / <a href="../{k}/index.html">{n}</a> / {c}',
-                        EMOJI[c], f"{c}", BLURB[c]), k)
+                        EMOJI[c], f"{c}", BLURB[c], tabs("../", c)), k)
 (out / ".nojekyll").write_text("")
 print(f"built {len(list(out.rglob('index.html')))} pages, {total} animals")
