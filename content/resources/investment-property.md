@@ -2,6 +2,7 @@
 title: Investment (rental) property
 group: property
 icon: key-round
+calc: investment
 summary: A home you buy mainly to rent. The numbers that decide it are vacancy, financing, upkeep and the owner's own time, not the headline rent.
 related: duplex-house-hacking, vacation-home, land, waterfront-flood-insurance
 glance:

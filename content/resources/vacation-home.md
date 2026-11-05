@@ -2,6 +2,7 @@
 title: Vacation or second home
 group: property
 icon: tent
+calc: vacation
 summary: A home you use part of the year. The tax treatment depends on how many days you use it yourself and how many you rent it, and insurance and financing differ from a primary home.
 related: investment-property, primary-home, waterfront-flood-insurance, timeshare
 glance:

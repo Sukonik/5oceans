@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build the static GitHub Pages demo from docs/handoff/FiveOcean.md."""
-import html, json, re, sys, pathlib
+import html, json, re, shutil, sys, pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
 src = (root / "docs/handoff/FiveOcean.md").read_text(encoding="utf-8")
@@ -123,7 +123,7 @@ def md_block(text, prefix, heads=False):
             cells = [[c.strip() for c in r.strip().strip("|").split("|")] for r in rows]
             head, bodyr = cells[0], cells[2:]
             out.append('<div class="tablewrap"><table><thead><tr>' + "".join(f"<th>{inline(c, prefix)}</th>" for c in head)
-                       + "</tr></thead><tbody>" + "".join("<tr>" + "".join(f"<td>{inline(c, prefix)}</td>" for c in r) + "</tr>" for r in bodyr)
+                       + "</tr></thead><tbody>" + "".join("<tr>" + "".join(f'<td data-label="{html.escape(head[i].replace("**", "") if i < len(head) else "")}">{inline(c, prefix)}</td>' for i, c in enumerate(r)) + "</tr>" for r in bodyr)
                        + "</tbody></table></div>")
         elif li.match(l):
             items = []
@@ -265,7 +265,8 @@ THEMES = [  # slug, label, mode, page, surface, ink, action, glow, cta-text
 theme_css = "".join(
     f'[data-theme="{t[0]}"]{{color-scheme:{t[2]};--page:{t[3]};--surface:{t[4]};--ink:{t[5]};'
     f'--action:{t[6]};--glow:{t[7]};--cta:{t[8]};--wash:{"26%" if t[2] == "light" else "42%"};'
-    f'--wash2:{"16%" if t[2] == "light" else "30%"}}}' for t in THEMES)
+    f'--wash2:{"16%" if t[2] == "light" else "30%"};--neg:{"#b3261e" if t[2] == "light" else "#ff9a8f"};'
+    f'--pos:{"#1b6b3a" if t[2] == "light" else "#8be0a7"}}}' for t in THEMES)
 
 
 def rows(mode):
@@ -469,8 +470,73 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 .tile:hover{border-color:var(--action);transform:translateY(-1px)}
 .tile .aico{margin:0;flex:none;width:36px;height:36px}.tile b{display:block;font-weight:600;line-height:1.25}.tile small{display:block;opacity:.7;line-height:1.3}
 .rsec{scroll-margin-top:84px}
-.disclaim{font-size:.85rem;opacity:.75;margin-top:36px}
+.disclaim{font-size:.85rem;opacity:.75;margin-top:36px;max-width:72ch}
 @media(max-width:960px){.rgrid{grid-template-columns:minmax(0,1fr);gap:28px}.rside{position:static;order:-1}}
+
+/* ux pass: type, tables, buttons */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-size:clamp(1rem,.96rem + .2vw,1.0625rem)}
+p,li{text-wrap:pretty}
+h1,h2,h3{text-wrap:balance}
+h2{font-size:clamp(1.35rem,1.1rem + 1.1vw,2rem)}
+.lede{line-height:1.55}
+.glass{white-space:normal;text-align:center;line-height:1.25;padding:10px clamp(14px,3vw,20px)}
+.cta{gap:10px}
+.tablewrap{-webkit-overflow-scrolling:touch}
+.prose td:first-child{font-weight:600}
+@media(max-width:640px){
+  .cta .glass,.hero .cta .glass{flex:1 1 100%;justify-content:center}
+  .prose .tablewrap{border:0;background:transparent;overflow:visible}
+  .prose table,.prose thead,.prose tbody,.prose tr,.prose td{display:block;width:100%;min-width:0}
+  .prose thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .prose tr{background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;padding:6px 14px;margin:0 0 10px}
+  .prose td{border:0!important;padding:8px 0}
+  .prose td+td{border-top:1px solid color-mix(in srgb,var(--ink) 9%,transparent)!important}
+  .prose td::before{content:attr(data-label);display:block;font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.65;margin-bottom:2px}
+  .prose td:first-child{font-size:1.02rem}
+  .prose td:first-child::before{display:none}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* calculator */
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:36px;align-items:start}
+.calc-res{position:sticky;top:88px;max-height:calc(100vh - 104px);overflow-y:auto;padding-right:2px}
+.mgroup{margin:0 0 14px}.mlabel{margin:0 0 6px;font:700 .72rem/1 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:.65}
+.mrow{display:flex;flex-wrap:wrap;gap:8px}
+.mbtn,.sbtn{min-height:44px;padding:8px 16px;border-radius:999px;font:inherit;font-size:.92rem;color:var(--ink);cursor:pointer;line-height:1.2;
+  background:color-mix(in srgb,var(--surface) 85%,transparent);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 40%,transparent)}
+.mbtn:hover,.sbtn:hover{border-color:var(--action)}
+.mbtn.on{background:var(--action);color:var(--cta);border-color:transparent;font-weight:600}
+#mode-title{margin:1.2em 0 .2em}#mode-blurb{margin:0 0 14px;max-width:62ch;opacity:.85}
+.tools-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:14px 16px}
+.fld label{display:block;font-weight:600;font-size:.9rem;margin-bottom:4px}
+.inp{display:flex;align-items:center;min-height:44px;border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:12px;background:var(--surface);overflow:hidden}
+.inp:focus-within{outline:3px solid var(--action);outline-offset:1px}
+.inp input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--ink);padding:10px 12px;outline:none;font-variant-numeric:tabular-nums}
+.af{padding:0 4px 0 12px;opacity:.7;white-space:nowrap}.af.suf{padding:0 12px 0 0;font-size:.85rem}
+.fld small{display:block;font-size:.78rem;opacity:.7;margin-top:3px;line-height:1.3}
+.hl{display:grid;gap:2px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:18px;padding:16px 20px;margin-bottom:12px}
+.hl-k{font-size:.85rem;opacity:.75}.hl-v{font:400 clamp(2rem,6vw,2.7rem)/1.1 "Iowan Old Style",Georgia,serif;color:var(--action);overflow-wrap:anywhere}.hl-n{font-size:.82rem;opacity:.75}
+.rt{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.rt tr{border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}.rt tr:first-child{border-top:0}
+.rt th[scope=row]{text-align:left;font-weight:500;padding:9px 12px 9px 0;vertical-align:top}
+.rt th small{display:block;font-weight:400;opacity:.7;font-size:.76rem;line-height:1.3}
+.rt td{text-align:right;font-weight:600;padding:9px 0;vertical-align:top}
+.rt tr.strong th,.rt tr.strong td{font-weight:700}
+.rt td small{display:block;font-size:.76rem;font-weight:500}
+.neg{color:var(--neg)}.pos{color:var(--pos)}
+.sub{margin-top:22px}.sub h3{margin:0 0 4px;font-size:1.05rem}.subn{margin:0 0 8px;font-size:.88rem;opacity:.8}
+.tw{overflow-x:auto;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;background:var(--surface);padding:4px 12px}
+.rt.grid th,.rt.grid td{padding:9px 8px;text-align:right;white-space:nowrap}.rt.grid th[scope=row],.rt.grid th:first-child{text-align:left}.rt.grid td.base{color:var(--action)}
+.rt.cmpt th,.rt.cmpt td{padding:9px 10px;text-align:right}.rt.cmpt th:first-child{text-align:left;white-space:normal;min-width:130px}
+.scn{margin-top:44px}
+.scn .row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.scn .row .inp{flex:1 1 220px}
+.sc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}
+.scl{flex:1 1 220px;display:flex;gap:10px;align-items:center;cursor:pointer;min-height:44px}.scl input{width:20px;height:20px;accent-color:var(--action)}
+.scl small{display:block;opacity:.7;font-size:.8rem}
+.msg{min-height:1.4em;font-size:.88rem;color:var(--action)}
+@media(max-width:960px){.calc{grid-template-columns:minmax(0,1fr);gap:24px}.calc-res{position:static;max-height:none;overflow:visible}}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
 @media(max-width:720px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
@@ -525,7 +591,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <a class="glass skip" href="#main">Skip to content</a>
 <header><div class="wrap bar">
 <a class="brand" href="{prefix}index.html">{ic("waves-horizontal")} FiveOceans</a>
-<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a></nav>
+<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a><a href="{prefix}tools/index.html"{ac("tools")}>Tools</a></nav>
 <span class="spacer"></span>
 <div class="search"><label for="q" hidden>Search</label>{ic("search")}<input id="q" type="search" placeholder="Search 457(b), ERS…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
 <details class="picker" id="picker"><summary class="glass" aria-label="Change theme">{ic("palette")} <span class="lbl">Change theme</span> {ic("chevron-down","chev")}</summary>
@@ -540,6 +606,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <a href="{prefix}seawater/index.html"{ac("seawater")}>{ic("waves-horizontal")}<span>Seawater</span></a>
 <a href="{prefix}freshwater/index.html"{ac("freshwater")}>{ic("droplets")}<span>Fresh</span></a>
 <a href="{prefix}resources/index.html"{ac("resources")}>{ic("landmark")}<span>Resources</span></a>
+<a href="{prefix}tools/index.html"{ac("tools")}>{ic("calculator")}<span>Tools</span></a>
 </nav>
 <script>const P={prefix!r};{JS}</script></body></html>"""
 
@@ -606,6 +673,10 @@ write("index.html", "FiveOceans", 0,
       f'<section class="section"><h2>Explore the resources</h2><p>Two shelves behind every path: money plans and property.</p><div class="fam">'
       + "".join(f'<a class="big" href="resources/index.html#{k}"><span class="ico">{ic(v[1])}</span><h3>{v[0]}</h3><p>{v[2]}</p>'
                 f'<span class="meta">{sum(1 for r in RESOURCES if r["group"] == k)} guides {ic("arrow-right")}</span></a>' for k, v in RES_GROUPS.items())
+      + '</div></section>'
+      + f'<section class="section"><h2>Run the numbers</h2><p>Simple calculators that work in your browser.</p><div class="fam">'
+      + f'<a class="big" href="tools/real-estate/index.html"><span class="ico">{ic("calculator")}</span><h3>Real Estate Calculator</h3><p>Home, rental, condo, co-op, land, flipper, income houses and more.</p><span class="meta">14 calculators {ic("arrow-right")}</span></a>'
+      + f'<a class="big" href="tools/savings-bridge/index.html"><span class="ico">{ic("piggy-bank")}</span><h3>Savings Bridge</h3><p>Will your savings carry you to your first pension payment?</p><span class="meta">Open the tool {ic("arrow-right")}</span></a>'
       + '</div></section>', home_hero, "home")
 
 for k, (e, n, cs, d) in FAMILIES.items():
@@ -674,6 +745,10 @@ for r in RESOURCES:
     btns = "".join(
         f'<a class="glass{" primary" if n == 0 else ""}" href="{html.escape(u)}" rel="noopener">{html.escape(l)} {ic("arrow-up-right")}</a>'
         for n, (l, u) in enumerate(srcs[:2]))
+    if r.get("calc"):
+        btns += f'<a class="glass" href="../../tools/real-estate/index.html#{r["calc"]}">{ic("calculator")} Run the numbers</a>'
+    if r.get("bridge"):
+        btns += f'<a class="glass" href="../../tools/savings-bridge/index.html">{ic("calculator")} Savings bridge</a>'
     crumb = (f'<a href="../../index.html">Home</a> / <a href="../index.html">Resources</a> / '
              f'<a href="../index.html#{r["group"]}">{grp[0]}</a> / {html.escape(r["title"])}')
     hero = (f'<section class="hero compact"><div class="wrap"><div><p class="crumb">{crumb}</p>'
@@ -751,6 +826,85 @@ for r in RESOURCES:
 for k, fn in GUIDE_FILES.items():
     INDEX.append(dict(n=GUIDE_META[k][0], t="Reference guide", c="Guide", u=f"guides/{k}/index.html",
                       s=words((root / "docs/handoff" / fn).read_text(encoding="utf-8"))))
+
+# ---------------- tools ----------------
+shutil.copytree(root / "assets/calc", out / "assets/calc", dirs_exist_ok=True)
+sys.path.insert(0, str(root / "scripts"))
+MODE_LIST = json.loads((root / "assets/calc/modes.json").read_text(encoding="utf-8"))
+TOOLS = [
+    ("real-estate", "Real Estate Calculator", "calculator",
+     "Fourteen calculators in one: home, home with a rental, condo, co-op, house hacker, vacation home, land, investment property, pure rental income, flipper, renter, and three income-house types."),
+    ("savings-bridge", "Savings Bridge", "piggy-bank",
+     "How much a monthly deposit grows by the day you stop working, what monthly draw it supports, and the deposit needed to close a gap before your pension starts."),
+]
+TOOL_ICON = {t[0]: t[2] for t in TOOLS}
+TOOL_NOTE = ("Illustrative estimates. Nothing you type is sent anywhere or stored unless you press Save. "
+             "Not financial, tax or legal advice.")
+calc_credit = ("<p class=\"disclaim\">The formulas (loan payments, cap rate, cash-on-cash, DSCR, gross rent multiplier, break-even occupancy, the 70% rule and the IRS "
+               "14-day vacation-home test) are standard and written for this site. Design ideas came from "
+               "<a href=\"https://github.com/berkcankapusuzoglu/Rental-Property-Deal-Analyzer\" rel=\"noopener\">Rental Property Deal Analyzer</a> (MIT), "
+               "<a href=\"https://github.com/jbechtel-97/dealflowpro-mcp-server\" rel=\"noopener\">DealFlowPro MCP server</a> (MIT), "
+               "<a href=\"https://github.com/moonnstarr/RealEstateInvestmentCal\" rel=\"noopener\">RealEstateInvestmentCal</a> and "
+               "<a href=\"https://github.com/biegehydra/real-estate-calculations\" rel=\"noopener\">real-estate-calculations</a> (AGPL; no code copied), "
+               "and the saved-scenario and stress-test approach from <a href=\"https://github.com/Sukonik/payout-lab\" rel=\"noopener\">Payout Lab</a>.</p>")
+
+mode_chips = "".join(f'<span>{html.escape(m["label"])}</span>' for m in MODE_LIST)
+tool_cards = "".join(
+    f'<article class="card"><span class="aico">{ic(ic_)}</span><h3><a class="stretch" href="{sl}/index.html">{html.escape(t)}</a></h3>'
+    f'<p class="desc">{html.escape(d)}</p>' + (f'<div class="chips">{mode_chips}</div>' if sl == "real-estate" else "") + "</article>"
+    for sl, t, ic_, d in TOOLS)
+write("tools/index.html", "Tools | FiveOceans", 1,
+      f'<section class="section"><div class="grid">{tool_cards}</div><p class="disclaim">{TOOL_NOTE}</p></section>',
+      page_hero('<a href="../index.html">Home</a> / Tools', ic("calculator"), "Tools",
+                "Simple calculators that run in your browser. Pick a tool, change the numbers and see the result at once."), "tools")
+
+def group_modes():
+    gs = {}
+    for m in MODE_LIST:
+        gs.setdefault(m["group"], []).append(m)
+    return gs
+
+calc_body = f"""<div class="calc" id="calc-top"><div class="calc-main">
+<div id="modes" class="modes" aria-label="Choose a calculator"></div>
+<h2 id="mode-title"></h2><p id="mode-blurb"></p>
+<div class="tools-row">
+<button type="button" class="glass" id="ex-btn" hidden>{ic("sliders-horizontal")} Load the handbook example</button>
+<button type="button" class="glass" id="reset-btn">{ic("rotate-ccw")} Reset</button>
+<button type="button" class="glass" id="copy-btn">{ic("copy")} Copy results</button>
+<a class="glass" href="#results" id="jump">{ic("arrow-down")} Jump to results</a></div>
+<form id="fields" class="fields" onsubmit="return false" aria-label="Inputs"></form>
+</div>
+<aside class="calc-res" aria-live="polite" aria-label="Results"><div id="results"></div></aside></div>
+<section class="scn" aria-labelledby="scn-h"><h2 id="scn-h">Saved scenarios</h2>
+<p class="subn">Save a scenario to this browser, compare up to three, or move them as a file. Nothing is uploaded.</p>
+<div class="row"><div class="inp"><input id="scn-name" type="text" placeholder="Name this scenario" aria-label="Scenario name" maxlength="60"></div>
+<button type="button" class="glass primary" id="save-btn">{ic("save")} Save</button>
+<button type="button" class="glass" id="export-btn">{ic("download")} Export file</button>
+<label class="glass" for="import-file" style="cursor:pointer">{ic("upload")} Import file</label>
+<input id="import-file" type="file" accept="application/json,.json" class="sr"></div>
+<p class="msg" id="scn-msg" role="status"></p>
+<div id="scn-list"></div><div id="cmp"></div></section>
+{calc_credit}<p class="disclaim">{TOOL_NOTE}</p>
+<script src="../../assets/calc/engine.js"></script><script src="../../assets/calc/app.js"></script>"""
+write("tools/real-estate/index.html", "Real Estate Calculator | FiveOceans", 2, f'<section class="section">{calc_body}</section>',
+      page_hero('<a href="../../index.html">Home</a> / <a href="../index.html">Tools</a> / Real Estate Calculator', ic("calculator"), "Real Estate Calculator",
+                "Fourteen ways to own, rent or flip a place, each with its own numbers, stress tests and saved scenarios."), "tools")
+
+bridge_body = f"""<div class="calc" id="calc-top"><div class="calc-main">
+<p class="subn" style="max-width:62ch">Save a little each month while you work, then draw it down to bridge the years before a pension or Social Security starts. Defaults use the handbook example.</p>
+<div class="tools-row"><button type="button" class="glass" id="b-reset">{ic("rotate-ccw")} Reset</button>
+<a class="glass" href="#b-results">{ic("arrow-down")} Jump to results</a></div>
+<form id="b-fields" class="fields" onsubmit="return false" aria-label="Inputs"></form></div>
+<aside class="calc-res" aria-live="polite" aria-label="Results"><div id="b-results"></div></aside></div>
+<p class="disclaim">{TOOL_NOTE} See <a href="../../resources/governmental-457b/index.html">Governmental 457(b)</a>, <a href="../../resources/roth-ira/index.html">Roth IRA</a> and <a href="../../resources/treasuries/index.html">Treasury bills</a> for where bridge money can live.</p>
+<script src="../../assets/calc/engine.js"></script><script src="../../assets/calc/bridge.js"></script>"""
+write("tools/savings-bridge/index.html", "Savings Bridge | FiveOceans", 2, f'<section class="section">{bridge_body}</section>',
+      page_hero('<a href="../../index.html">Home</a> / <a href="../index.html">Tools</a> / Savings Bridge', ic("piggy-bank"), "Savings Bridge",
+                "Will your savings carry you from the day you stop working to the day your pension starts?"), "tools")
+for sl, t, ic_, d in TOOLS:
+    INDEX.append(dict(n=t, t="Tool", c="Tool", u=f"tools/{sl}/index.html", s=words(t + " " + d + " calculator mortgage rent")))
+for m in MODE_LIST:
+    INDEX.append(dict(n=m["label"] + " calculator", t=m["blurb"][:90], c="Tool", u=f'tools/real-estate/index.html#{m["id"]}', s=words(m["label"] + " " + m["blurb"] + " calculator")))
 
 (out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")
 (out / ".nojekyll").write_text("")

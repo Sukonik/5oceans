@@ -2,6 +2,7 @@
 title: Roth IRA
 group: retirement
 icon: piggy-bank
+bridge: yes
 summary: An individual account funded with after-tax dollars. Qualified withdrawals are tax-free, and the money you contributed can come out any time.
 related: traditional-ira, savers-credit-match, 401k-403b
 glance:
