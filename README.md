@@ -89,7 +89,7 @@ Ten new **Mortgages & grants** resource pages: [Mortgage basics](https://sukonik
 Ping a listing and the calculator fills itself. Five ways in:
 
 1. **Link:** paste a Redfin, Zillow or StreetEasy link. The address, city, state, ZIP, unit and listing ID are read from the link.
-2. **Text:** paste the listing page text. Price, beds, baths, square feet, year built, HOA, common charges, co-op maintenance, property tax, rent estimate, units and property type are detected in your browser. Sonar suggests a calculator (house, condo, co-op, multi-family, land) and fills the numbers it found.
+2. **Text:** paste the listing page text. About **70 kinds of facts in 11 categories** are detected in your browser (see [the full list](docs/sonar-fields.md)): price, payment estimate, down payment, rate and term; taxes, insurance, HOA, co-op maintenance and flip tax; beds, baths, square feet, year, stories, lot, garage and basement; features and flags (accessory unit, as-is, waterfront); days on market, sale-to-list and offer odds; price history and cuts; rent estimates and past rental listings; walk, bike and quiet scores and schools; flood and climate risk; and the listing source and MLS number. Sonar adds **What Sonar noticed** (tax rate, price cuts, days on market vs local average, rental yield, flood warnings), suggests a calculator (house, home with a rental, condo, co-op, multi-family, land) and fills price, down payment, rate, term, taxes, insurance, HOA or maintenance, rent and units. It never reads agent names, phone numbers or emails.
 3. **Bookmarklet** (desktop): drag it to your bookmarks bar; on a listing page you have open, click it. It sends the visible facts to the calculator once, in the address bar, then clears them.
 4. **GitHub issue:** open a **Dolphin Sonar ping** issue ([form](https://github.com/Sukonik/5oceans/issues/new?template=sonar-listing.yml)), paste the link and text, and the Dolphin Sonar action replies with the detected facts and a calculator link. The issue body is treated as data only.
 
@@ -247,6 +247,7 @@ site/              generated output (not committed)
 | v0.13 | Dolphin Sonar polite link reader (robots.txt, portal refusal, SSRF guard), fictional sample listing |
 | v0.14 | Tools menu: themed bubble dropdown on desktop, bubble above the dock on phones |
 | v0.15 | Funding the house: loan-program selector (conventional, FHA, VA, USDA), assistance line, 10 mortgage and grant pages; accessibility sweep (landmarks, heading order, contrast) |
+| v0.16 | Dolphin Sonar reads about 70 kinds of facts in 11 categories (price and payment, costs, property, lot, features, market, price history, rental, location, risk, listing source) with insights; Redfin-, Zillow- and StreetEasy-style test fixtures |
 
 ## 🧭 Roadmap
 
