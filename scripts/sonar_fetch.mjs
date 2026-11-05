@@ -86,7 +86,7 @@ export function extract(html) {
   const jsonld = [...html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1].trim()).join('\n').slice(0, 20000);
   const meta = (n) => { const m = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${n}["'][^>]*content=["']([^"']*)["']`, 'i')) || html.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:property|name)=["']${n}["']`, 'i')); return m ? decode(m[1]) : ''; };
   const price = meta('product:price:amount') || meta('og:price:amount'), title = decode((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [, ''])[1]).trim();
-  const body = decode(html.replace(/<(script|style|noscript|svg)[\s\S]*?<\/\1>/gi, ' ').replace(/<br\s*\/?>|<\/(p|div|li|tr|h\d|td|th|section|span)>/gi, '\n').replace(/<[^>]+>/g, ' '));
+  const body = decode(html.replace(/<(script|style|noscript|svg)[\s\S]*?<\/\1>/gi, ' ').replace(/<br\s*\/?>|<\/(p|div|li|tr|h\d|td|th|section|span|nav|header|footer|ul|ol|article|aside|main|dd|dt|label|button|table)>/gi, '\n').replace(/<[^>]+>/g, ' '));
   const og = meta('og:description');
   const text = [...(price ? ['Price: $' + price] : []), ...(og && S.KEEP.test(og) ? [og] : []), S.selectLines(body, 30000)].filter(Boolean).join('\n');
   return { title, jsonld, text };

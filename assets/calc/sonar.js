@@ -106,14 +106,14 @@
   }
 
   /* ---------- picking the useful lines (shared idea with the bookmarklet) ---------- */
-  const KEEP = /\$|\d|\bbd\b|\bbeds?\b|\bbaths?\b|\bba\b|sq\.?\s?ft|ft²|hoa|tax|maintenance|common charge|built|rent|zestimate|units?\b|\blot\b|co-?op|condo|duplex|triplex|multi|acre|garage|parking|basement|days on|market|sale-to-list|chance|walk|bike|quiet|calm|transit|flood|fire|heat|sun|county|apn|style|stories|source|mls|listing|updated|listed|removed|price|payment|principal|insurance|down|loan|fixed|property type|zoning|pets|doorman|elevator|school|fireplace|cathedral|hardwood|central air|finished|as-is|tlc|mother|in-law|accessory|separate entrance|beach|water|new construction/i;
+  const KEEP = /^(?:for sale|for rent|pending|contingent|sold|coming soon|off market)$|\$|\d|\bbd\b|\bbeds?\b|\bbaths?\b|\bba\b|sq\.?\s?ft|ft²|hoa|tax|maintenance|common charge|built|rent|zestimate|units?\b|\blot\b|co-?op|condo|duplex|triplex|multi|acre|garage|parking|basement|days on|market|sale-to-list|chance|walk|bike|quiet|calm|transit|flood|fire|heat|sun|county|apn|style|stories|source|mls|listing|updated|listed|removed|price|payment|principal|insurance|down|loan|fixed|property type|zoning|pets|doorman|elevator|school|fireplace|cathedral|hardwood|central air|finished|as-is|tlc|mother|in-law|accessory|separate entrance|beach|water|new construction/i;
   function selectLines(text, maxChars) {
     const lines = String(text || '').split('\n').map((x) => x.replace(/\s+/g, ' ').trim()), out = []; let n = 0;
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i]; if (!l || l.length > 2000 || !KEEP.test(l)) continue;
       out.push(l); n += l.length + 1;
       const nx = lines[i + 1]; // a label line is followed by its value on the next line
-      if (nx && nx.length < 70 && !/[0-9$]/.test(l) && /^[$0-9(\u2014\u2013-]/.test(nx)) { out.push(nx); n += nx.length + 1; i++; }
+      if (nx && nx.length < 70 && l.length < 40 && !/[0-9$]/.test(l)) { out.push(nx); n += nx.length + 1; i++; }
       if (n > (maxChars || 30000)) break;
     }
     return out.join('\n');
@@ -140,7 +140,7 @@
     const t = String(raw || '').slice(0, 80000).replace(/ /g, ' ').replace(/[®™]/g, ''), flat = t.replace(/\s+/g, ' '), r = {};
     const m1 = (re, s) => { const m = (s == null ? flat : s).match(re); return m; };
     // status
-    let m = m1(/\b(For sale|For rent|Pending|Contingent|Sold|Coming soon|Off market|Active)\b/i); if (m) r.status = title(m[1].toLowerCase());
+    let m = t.match(/^\s*(For sale|For rent|Pending|Contingent|Sold|Coming soon|Off market|Active)\s*$/im); if (m) r.status = title(m[1].toLowerCase());
     const isRental = /^for rent/i.test(r.status || '');
     // price: explicit label, then headline amount (not a monthly figure), then calculator
     const money = [...flat.matchAll(/\$\s?(\d[\d,]*(?:\.\d+)?)\s*([MmKk])?(?![\w]*\s*\/\s*mo)(?!\s*(?:per month|a month|\/month))/g)].map((x) => ({ v: amount(x[1], x[2]), i: x.index })).filter((x) => x.v >= 10000);
@@ -341,7 +341,7 @@
   function bookmarkletSource(calcUrl) {
     const K = '/' + KEEP.source + '/i';
     return "javascript:(function(){var K=" + K + ";var A=(document.body.innerText||'').split('\\n').map(function(s){return s.replace(/\\s+/g,' ').trim()}),L=[],n=0;" +
-      "for(var i=0;i<A.length;i++){var l=A[i];if(!l||l.length>2000||!K.test(l))continue;L.push(l);n+=l.length+1;var x=A[i+1];if(x&&x.length<70&&!/[0-9$]/.test(l)&&/^[$0-9(\\u2014\\u2013-]/.test(x)){L.push(x);n+=x.length+1;i++}if(n>30000)break}" +
+      "for(var i=0;i<A.length;i++){var l=A[i];if(!l||l.length>2000||!K.test(l))continue;L.push(l);n+=l.length+1;var x=A[i+1];if(x&&x.length<70&&l.length<40&&!/[0-9$]/.test(l)){L.push(x);n+=x.length+1;i++}if(n>30000)break}" +
       "var J=[].slice.call(document.querySelectorAll('script[type=\"application/ld+json\"]')).map(function(s){return s.textContent}).join('\\n').slice(0,6000);" +
       "var b=btoa(unescape(encodeURIComponent(JSON.stringify({u:location.href,t:L.join('\\n'),j:J})))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');" +
       "window.open(" + JSON.stringify(calcUrl) + "+'#sonar='+b,'_blank')})();";
