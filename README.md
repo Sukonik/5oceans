@@ -8,6 +8,8 @@ FiveOceans (Five Oceans) is a retirement planner that combines planning tools, t
 
 ## 🐠 How it works
 
+The site is organized as **🧂 Seawater** vs **🚰 Freshwater**, and each water body has its own page: `/seawater/`, `/freshwater/`, `/coastalsea/`, `/centralsea/`, `/deepsea/`, `/spring/`, `/lake/`, `/river/`.
+
 Six plan collections, 36 animal "paths", each tied to a real decision and an official source:
 
 | | Collection | Type |

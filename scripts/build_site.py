@@ -22,7 +22,7 @@ def inline(t):
 
 part = src.split("## Animal directory", 1)[1]
 cols = re.split(r"\n## ", "\n" + part)[1:]
-sections, total = [], 0
+COLL, total = {}, 0
 for c in cols:
     name, body = c.split("\n", 1)
     cards = []
@@ -34,8 +34,7 @@ for c in cols:
             f"<h3>{html.escape(aname)}</h3>"
             + "".join(f"<p>{inline(p)}</p>" for p in paras) + "</article>")
     total += len(cards)
-    sections.append(f'<section><h2>{EMOJI.get(name.strip(), "🐟")} {html.escape(name.strip())}</h2>'
-                    f'<div class="grid">{"".join(cards)}</div></section>')
+    COLL[name.strip()] = cards
 if total != 36:
     sys.exit(f"expected 36 animals, found {total}")
 
@@ -59,9 +58,10 @@ theme_rows = "".join(
 light_rows = "".join(f"{r}</label>" for r, t in zip(theme_rows.split("</label>"), THEMES) if t[2] == "light")
 dark_rows = "".join(f"{r}</label>" for r, t in zip(theme_rows.split("</label>"), THEMES) if t[2] == "dark")
 
-page = f"""<!doctype html><html lang="en" data-theme="chalk"><head><meta charset="utf-8">
+def render(title, prefix, body):
+    return f"""<!doctype html><html lang="en" data-theme="chalk"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FiveOceans</title>
+<title>{title}</title>
 <script>
 (function(){{var ids={[t[0] for t in THEMES]!r},t=null;
 try{{t=localStorage.getItem('fiveoceans-theme')}}catch(e){{}}
@@ -95,27 +95,32 @@ summary::-webkit-details-marker{{display:none}}
 .opt{{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}}
 .opt input{{accent-color:var(--action);width:18px;height:18px}}
 .sw{{width:22px;height:22px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink) 40%,transparent)}}
+.nav{{display:flex;gap:6px}} .nav a{{padding:10px 12px;border-radius:8px;text-decoration:none;font-weight:600}} .nav a:hover{{background:var(--surface)}}
+.fam{{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin:1.5rem 0}}
+.big{{display:block;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:14px;padding:20px;text-decoration:none;color:var(--ink)}}
+.big h2{{margin:.2em 0}} .big:hover{{border-color:var(--action)}}
+.crumb{{font-size:.9rem}}
 .search{{flex:1 1 220px;max-width:440px;min-width:0}} input[type=search]{{width:100%}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}}
 .card{{background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:12px;padding:4px 16px 8px;
   overflow-wrap:anywhere}}
 .card h3{{margin:.8em 0 .2em}} .note{{font-size:.9rem;opacity:.8}}
-@media(max-width:640px){{.brand{{flex:1}} .search{{order:3;flex-basis:100%;max-width:none}} .menu{{position:fixed;left:16px;right:16px;top:auto;margin-top:8px}}}}
+@media(max-width:640px){{.brand{{flex:1}} .nav{{order:2;width:100%}} .search{{order:3;flex-basis:100%;max-width:none}} .menu{{position:fixed;left:16px;right:16px;top:auto;margin-top:8px}}}}
 @media(prefers-reduced-motion:reduce){{*{{transition:none!important;animation:none!important}}}}
 @media(forced-colors:active){{.card,.menu,.btn,summary{{border:1px solid CanvasText}}}}
 </style></head><body>
 <header>
-<a class="brand" href="#">🌊 FiveOceans</a>
+<a class="brand" href="{prefix}index.html">🌊 FiveOceans</a>
+<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html">🧂 Seawater</a><a href="{prefix}freshwater/index.html">🚰 Freshwater</a></nav>
 <div class="search"><label for="q" class="sr" hidden>Search</label>
 <input id="q" type="search" placeholder="🔎 Search: 457(b), ERS, duplex…" autocomplete="off"></div>
 <details class="picker" id="picker"><summary aria-label="Change theme">🎨 Change theme ▾</summary>
 <div class="menu" role="radiogroup" aria-label="Theme"><h4>☀️ Light</h4>{light_rows}<h4>🌙 Dark</h4>{dark_rows}</div></details>
 </header>
 <main>
-<h1>Where near the water would you like to live, and when can you afford to work less?</h1>
-<p class="note">Planning demo, 36 animal paths. Illustrative only; not financial advice. Nothing you type is stored or sent.</p>
-{"".join(sections)}
+{body}
 <p class="note">📚 <a href="{REPO}COLE_HANDOFF.txt">Handoff</a> ·
+<a href="{prefix}index.html">Home</a> ·
 <a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> ·
 <a href="https://github.com/Sukonik/5oceans">GitHub</a></p>
 </main><script>
@@ -130,6 +135,40 @@ try{{localStorage.setItem('fiveoceans-theme',r.value)}}catch(e){{}}}});}});
 pk.addEventListener('keydown',e=>{{if(e.key==='Escape'&&pk.open){{pk.open=false;pk.querySelector('summary').focus()}}}});
 document.addEventListener('click',e=>{{if(!pk.contains(e.target))pk.open=false}});
 </script></body></html>"""
-(out / "index.html").write_text(page, encoding="utf-8")
+
+FAMILIES = {
+    "seawater": ("🧂", "Seawater", ["CoastalSea", "CentralSea", "DeepSea"],
+                 "Shoreline and open-water paths: housing near the coast, income bridges and insurance."),
+    "freshwater": ("🚰", "Freshwater", ["Spring", "Lake", "River"],
+                   "Spring, lake and river paths: inland water, family and care decisions."),
+}
+BLURB = {"CoastalSea": "Right-size, rent, and stay near the shore.", "CentralSea": "Mid-water decisions between coast and deep.",
+         "DeepSea": "Deeper planning: longer horizons and complex pairings.",
+         "Spring": "Starting points near the source.", "Lake": "Calm, steady planning.", "River": "Moving income and benefits downstream."}
+
+def write(path, title, depth, body):
+    f = out / path
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(render(title, "../" * depth, body), encoding="utf-8")
+
+def slug(n): return n.lower()
+
+fam_cards = "".join(
+    f'<a class="big" href="{k}/index.html"><div>{e}</div><h2>{n}</h2><p>{d}</p>'
+    f'<p class="note">{" · ".join(c)}</p></a>' for k, (e, n, c, d) in FAMILIES.items())
+write("index.html", "FiveOceans", 0,
+      '<h1>Where near the water would you like to live, and when can you afford to work less?</h1>'
+      '<p class="note">Planning demo, 36 animal paths. Illustrative only; not financial advice. Nothing you type is stored or sent.</p>'
+      f'<div class="fam">{fam_cards}</div>')
+for k, (e, n, cs, d) in FAMILIES.items():
+    links = "".join(
+        f'<a class="big" href="../{slug(c)}/index.html"><div>{EMOJI[c]}</div><h2>{c}</h2>'
+        f'<p>{BLURB[c]}</p><p class="note">{len(COLL[c])} animals</p></a>' for c in cs)
+    write(f"{k}/index.html", f"{n} | FiveOceans", 1,
+          f'<p class="crumb"><a href="../index.html">Home</a> / {n}</p><h1>{e} {n}</h1><p>{d}</p><div class="fam">{links}</div>')
+    for c in cs:
+        write(f"{slug(c)}/index.html", f"{c} | FiveOceans", 1,
+              f'<p class="crumb"><a href="../index.html">Home</a> / <a href="../{k}/index.html">{n}</a> / {c}</p>'
+              f'<h1>{EMOJI[c]} {c}</h1><p>{BLURB[c]}</p><div class="grid">{"".join(COLL[c])}</div>')
 (out / ".nojekyll").write_text("")
-print(f"built site/index.html with {total} animals")
+print(f"built {len(list(out.rglob('index.html')))} pages, {total} animals")
