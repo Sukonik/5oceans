@@ -31,6 +31,11 @@ FiveOceans' interface is built from three named layers, specified in the [Blue G
 | 🪟 | **Sea Glass UI** | Visual treatment: translucent buttons, header search and theme trigger with a thin highlight and soft blur | Scoped CSS, informed by [Glassy UI](https://github.com/alexburlis/glassyui), [Ein UI](https://github.com/einui/einui) and [Vue Web Liquid Glass](https://github.com/mkj0kjay/vue-web-liquid-glass) |
 | 💎 | **Blue Glass UI** | The two assembled: glass controls over solid, readable panels for dollar amounts, quotes and eligibility rules | React + TypeScript + Vite (planned) |
 
+### ⭐ Key foundations
+
+- 🧩 **[Mantine](https://github.com/mantinedev/mantine)** is the backbone of Blue Manta Ray UI: responsive layout, theming, form management and financial tables.
+- 🧱 **[Radix Primitives](https://github.com/radix-ui/primitives)** supplies the accessible behavior: radio-group theme menu, search dialog and mobile drawer, including dismissal and focus restoration. Use one primitive per interaction and never nest a Mantine modal or menu inside a Radix one.
+
 ### 🪨 Eight shore-rock themes
 
 | ☀️ Light | 🌙 Dark |
