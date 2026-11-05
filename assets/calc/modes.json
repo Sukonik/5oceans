@@ -1,0 +1,86 @@
+[
+ {
+  "id": "home",
+  "group": "Live in it",
+  "label": "Home",
+  "blurb": "A primary home: the full monthly cost, cash to close and how much income a lender expects."
+ },
+ {
+  "id": "home-rental",
+  "group": "Live in it",
+  "label": "Home with a rental",
+  "blurb": "Live in the home and rent a unit, ADU or basement. Shows what you still pay after rent, and a bad year."
+ },
+ {
+  "id": "condo",
+  "group": "Live in it",
+  "label": "Condo",
+  "blurb": "Condo costs hinge on dues and assessments. Shows the all-in monthly figure and what share is dues."
+ },
+ {
+  "id": "coop",
+  "group": "Live in it",
+  "label": "Co-op",
+  "blurb": "A co-op is shares in a building. Monthly maintenance covers the building's taxes and often its mortgage; selling may trigger a flip tax."
+ },
+ {
+  "id": "house-hacker",
+  "group": "Live in it",
+  "label": "House hacker",
+  "blurb": "Buy a 2 to 4 unit property, live in one unit and rent the rest. Shows your housing cost now and the numbers if you later move out."
+ },
+ {
+  "id": "vacation",
+  "group": "Second homes and land",
+  "label": "Vacation home",
+  "blurb": "A second home you use part of the year and may rent. Includes the IRS 14-day test and cost per personal day."
+ },
+ {
+  "id": "land",
+  "group": "Second homes and land",
+  "label": "Land and build",
+  "blurb": "Buy a lot and build. Counts the months with no rent and the cost of delays."
+ },
+ {
+  "id": "investment",
+  "group": "Earn from it",
+  "label": "Investment property",
+  "blurb": "Buy and hold a rental. Cap rate, cash-on-cash, DSCR, break-even occupancy and a multi-year gain."
+ },
+ {
+  "id": "pure-rental",
+  "group": "Earn from it",
+  "label": "Pure rental income",
+  "blurb": "Rentals as retirement income. How many units reach your monthly target, and how fragile it is."
+ },
+ {
+  "id": "flipper",
+  "group": "Earn from it",
+  "label": "House flipper",
+  "blurb": "Buy, renovate and sell. Profit, return on cash, the 70% rule and what a lower sale price does."
+ },
+ {
+  "id": "renter",
+  "group": "Renter",
+  "label": "Renter + business + investments",
+  "blurb": "You rent and invest. Compares your net worth with buying a home and investing the rest, over time."
+ },
+ {
+  "id": "influencer-house",
+  "group": "Income houses",
+  "label": "Influencer house (commercial mansion)",
+  "blurb": "A large home that earns from creator rooms, content-studio rentals and brand events."
+ },
+ {
+  "id": "hacker-house",
+  "group": "Income houses",
+  "label": "Hacker house (tech house, GitHub edition)",
+  "blurb": "A shared house for builders: bedrooms, coworking passes and hackathons, with fast internet and shared costs."
+ },
+ {
+  "id": "music-mansion",
+  "group": "Income houses",
+  "label": "Music producer mansion with rentals",
+  "blurb": "A mansion with recording rooms rented by the hour, residency bedrooms and shoot or event bookings."
+ }
+]

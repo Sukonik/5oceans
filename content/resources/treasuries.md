@@ -2,6 +2,7 @@
 title: Treasury bills, I bonds and TIPS
 group: retirement
 icon: coins
+bridge: yes
 summary: Government-backed savings you can match to the months you will spend them: short bills for a known gap, I bonds for a long reserve, TIPS for inflation-linked principal.
 related: roth-ira, hsa, governmental-457b
 glance:

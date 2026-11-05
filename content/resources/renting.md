@@ -2,6 +2,7 @@
 title: Renting and staying flexible
 group: property
 icon: map
+calc: renter
 summary: Renting costs more per month in some places and less in others, but it keeps cash free and lets you try a city before you commit.
 related: primary-home, timeshare, vacation-home
 glance:

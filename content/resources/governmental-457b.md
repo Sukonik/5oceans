@@ -2,6 +2,7 @@
 title: Governmental 457(b)
 group: retirement
 icon: landmark
+bridge: yes
 summary: A deferred-compensation plan for state and local government employees, often the most flexible way to reach retirement money after you leave a job before 59½.
 related: 401k-403b, ny-ers, roth-ira, social-security
 glance:

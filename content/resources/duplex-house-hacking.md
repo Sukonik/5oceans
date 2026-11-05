@@ -2,6 +2,7 @@
 title: Duplex or multi-unit home
 group: property
 icon: layout-grid
+calc: house-hacker
 summary: Buy a two-to-four-unit home, live in one unit and rent the others so the rent offsets your housing cost.
 related: investment-property, adu, primary-home, waterfront-flood-insurance
 glance:

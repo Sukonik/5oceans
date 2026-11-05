@@ -51,6 +51,17 @@ Every animal carries tags that link straight to its resource pages, for example 
 
 Content lives in [`content/resources/`](content/resources/) as one markdown file per resource, with front matter for title, group, icon, summary, related animals, glance facts and sources. Figures for 2026 (contribution limits, income phase-outs, HSA limits) come from IRS and agency pages checked on November 5, 2026; each page links its sources. The six reference guides from the handoff are rendered as on-site pages too, so no link on the live site sends a visitor to GitHub for content.
 
+## 🧮 Tools
+
+| Tool | What it does |
+|---|---|
+| 🏠 [Real Estate Calculator](https://sukonik.github.io/5oceans/tools/real-estate/) | 14 calculators in one, each deep-linkable: **Home** · **Home with a rental** · **Condo** · **Co-op** · **House hacker** · **Vacation home** (with the IRS 14-day test) · **Land and build** · **Investment property** (cap rate, cash-on-cash, DSCR, GRM, break-even occupancy) · **Pure rental income** · **House flipper** (70% rule) · **Renter + business + investments** (rent vs buy) · **Influencer house** · **Hacker house** · **Music producer mansion** |
+| 🏦 [Savings Bridge](https://sukonik.github.io/5oceans/tools/savings-bridge/) | Monthly deposits to a balance at the day you stop working, the monthly draw it supports, and the deposit that closes a gap before a pension starts |
+
+Every calculator has a **stress test** (income down 10%, vacancy up 10 points, rate up 1 point, costs up 10%) and rental modes add a vacancy-and-rate grid. You can **save scenarios** to your browser, **compare up to three** with a "what changed" line, and **export or import** them as a file. All math runs in your browser; nothing is uploaded. The engine is pure JavaScript in [`assets/calc/engine.js`](assets/calc/engine.js) and is tested by [`tests/calc.test.mjs`](tests/calc.test.mjs) against the handbook fixtures ($1,552 owner cost, $29,040 bad year, $83,669 savings balance, $181,847 needed). CI runs those tests before every deploy.
+
+Formulas are standard and written for this site. Ideas came from [Rental Property Deal Analyzer](https://github.com/berkcankapusuzoglu/Rental-Property-Deal-Analyzer) (MIT), [DealFlowPro MCP server](https://github.com/jbechtel-97/dealflowpro-mcp-server) (MIT), [RealEstateInvestmentCal](https://github.com/moonnstarr/RealEstateInvestmentCal), [real-estate-calculations](https://github.com/biegehydra/real-estate-calculations) (AGPL, so no code was copied) and the saved-scenario and stress-test approach of [Payout Lab](https://github.com/Sukonik/payout-lab).
+
 ## 🧂 Site map
 
 Seawater vs Freshwater, with a page for every water body:
@@ -63,6 +74,7 @@ Seawater vs Freshwater, with a page for every water body:
 | 🏖️ 🌊 🦑 | [`/coastalsea/`](https://sukonik.github.io/5oceans/coastalsea/) · [`/centralsea/`](https://sukonik.github.io/5oceans/centralsea/) · [`/deepsea/`](https://sukonik.github.io/5oceans/deepsea/) |
 | 💧 🏞️ 🐊 | [`/spring/`](https://sukonik.github.io/5oceans/spring/) · [`/lake/`](https://sukonik.github.io/5oceans/lake/) · [`/river/`](https://sukonik.github.io/5oceans/river/) |
 
+| 🧮 Tools (3 pages) | [`/tools/`](https://sukonik.github.io/5oceans/tools/), [`/tools/real-estate/`](https://sukonik.github.io/5oceans/tools/real-estate/), [`/tools/savings-bridge/`](https://sukonik.github.io/5oceans/tools/savings-bridge/) |
 | 📚 Resources (23) | [`/resources/`](https://sukonik.github.io/5oceans/resources/), one page each, e.g. [`/resources/governmental-457b/`](https://sukonik.github.io/5oceans/resources/governmental-457b/) · [`/resources/timeshare/`](https://sukonik.github.io/5oceans/resources/timeshare/) |
 | 📖 Guides (6) | [`/guides/`](https://sukonik.github.io/5oceans/guides/): decisions, programs, investments, insurance, taxes, real estate |
 | 🐠 Animals (36) | `/animals/<name>/`, e.g. [`/animals/hermit-crab/`](https://sukonik.github.io/5oceans/animals/hermit-crab/) · [`/animals/yeti-crab/`](https://sukonik.github.io/5oceans/animals/yeti-crab/) |
@@ -144,13 +156,15 @@ Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshot
 python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 ```
 
-- 🛠️ `scripts/build_site.py` generates 76 static pages and a search index and fails if the roster isn't exactly 36 animals.
+- 🛠️ `scripts/build_site.py` generates 79 static pages and a search index and fails if the roster isn't exactly 36 animals.
 - 🚀 `.github/workflows/pages.yml` deploys `site/` on every push to `main`.
 - ⚙️ One-time setup: **Settings → Pages → Source: GitHub Actions**.
 
 ```text
 docs/handoff/      planning handoff and Blue Glass plan
 assets/icons/      vendored Lucide SVGs and license
+assets/calc/       calculator engine and UI scripts
+tests/             calculator tests (node tests/calc.test.mjs)
 content/resources/ one markdown file per resource page
 content/animal-tags.txt  which resources each animal is tagged with
 scripts/           site generator
@@ -171,6 +185,7 @@ site/              generated output (not committed)
 | v0.7 | Minimal line icons (Lucide) replace emoji across the site |
 | v0.8 | Resources hub with 23 resource pages (retirement and property), six on-site guide pages, resource-aware search |
 | v0.9 | Resource tags on every animal card and page, searchable, driven by `content/animal-tags.txt` |
+| v0.10 | Tools menu, 14-mode Real Estate Calculator, Savings Bridge, saved scenarios, text/table/button responsive pass |
 
 ## 🧭 Roadmap
 
