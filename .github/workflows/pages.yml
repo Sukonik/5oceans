@@ -23,7 +23,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: 🧪 Test calculators
-        run: node tests/calc.test.mjs
+        run: |
+          node tests/calc.test.mjs
+          node tests/credit.test.mjs
       - name: 🛠️ Build site
         run: python scripts/build_site.py
       - uses: actions/configure-pages@v5

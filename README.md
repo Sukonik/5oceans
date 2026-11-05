@@ -38,7 +38,7 @@ Six plan collections, 36 animal "paths". Each animal is a branded planning path 
 
 Two shelves behind the animal paths, each resource with its own page, an at-a-glance box, the rules that matter, mistakes to avoid and the official sources:
 
-| 💰 Retirement & income (13) | 🏠 Property & housing (10) |
+| 💰 Retirement & income (13) · 💳 Credit & debt (5) | 🏠 Property & housing (10) |
 |---|---|
 | Governmental 457(b) · 401(k) and 403(b) · Roth IRA · Traditional IRA | Primary home · Vacation or second home · Investment (rental) property |
 | NY ERS · NY teachers' pensions (NYSTRS and NYC TRS) · FERS and TSP | Duplex or multi-unit home · Accessory dwelling unit (ADU) · Land and building |
@@ -62,6 +62,21 @@ Every calculator has a **stress test** (income down 10%, vacancy up 10 points, r
 
 Formulas are standard and written for this site. Ideas came from [Rental Property Deal Analyzer](https://github.com/berkcankapusuzoglu/Rental-Property-Deal-Analyzer) (MIT), [DealFlowPro MCP server](https://github.com/jbechtel-97/dealflowpro-mcp-server) (MIT), [RealEstateInvestmentCal](https://github.com/moonnstarr/RealEstateInvestmentCal), [real-estate-calculations](https://github.com/biegehydra/real-estate-calculations) (AGPL, so no code was copied) and the saved-scenario and stress-test approach of [Payout Lab](https://github.com/Sukonik/payout-lab).
 
+## 💳 Credit Card Tool
+
+A new top-level tab, [`/credit/`](https://sukonik.github.io/5oceans/credit/), for finding and building credit and using debt well. It works like [Payout Lab](https://github.com/Sukonik/payout-lab): **your information is a small file you own**. There are no accounts and no servers.
+
+| Tab | What it does |
+|---|---|
+| **Scores** | Record your three scores (Equifax, Experian, TransUnion) with the model and date; see lowest, middle, highest and spread; an FHA mortgage check from HUD's current tiers; history; next steps. **Paste and detect** reads scores out of an issuer email or dashboard text, in your browser, for you to confirm. A guide to the free routes: weekly reports at AnnualCreditReport.com, free issuer scores, free freezes. |
+| **Cards** | A private ledger of limits, balances, APR, statement and due days, fees and rewards. Overall and per-card utilization, how much to pay before each statement closes to reach a target utilization, due dates soonest first, interest if you carry a balance. |
+| **Debt strategy** | Classifies each debt as bad (costs more than your expected return), good (cheap and tied to an asset or income) or a judgment call, then compares three ways to use the same monthly money over your chosen years: **pay debt first**, **invest first**, or a **smart split**. Shows net worth, interest paid and debt-free date. |
+| **Packet** | Save a packet file (`.json`, plain text, **not encrypted**), save a copy to this device, open a packet on any device. Nothing is saved unless you press a button. |
+
+**Why it cannot pull your three scores automatically.** Bureaus release scores only to you or to a lender you authorize, through a contracted reseller and a server. A static, private site cannot do that legitimately, and the file should not pass through a stranger's server. The tool instead makes the free routes easy and keeps the data on your device. A future bureau integration would need a licensed vendor, explicit consent and a backend, and would be a separate decision.
+
+The credit engine is [`assets/credit/engine.js`](assets/credit/engine.js), tested by [`tests/credit.test.mjs`](tests/credit.test.mjs) (FICO bands, FHA tiers, three-score summary, utilization, strategy cases, packet validation). Five new resource pages cover **Credit scores**, **Credit reports, disputes and freezes**, **Credit cards and utilization**, **Good debt and bad debt** and **Paying off debt**.
+
 ## 🧂 Site map
 
 Seawater vs Freshwater, with a page for every water body:
@@ -74,8 +89,9 @@ Seawater vs Freshwater, with a page for every water body:
 | 🏖️ 🌊 🦑 | [`/coastalsea/`](https://sukonik.github.io/5oceans/coastalsea/) · [`/centralsea/`](https://sukonik.github.io/5oceans/centralsea/) · [`/deepsea/`](https://sukonik.github.io/5oceans/deepsea/) |
 | 💧 🏞️ 🐊 | [`/spring/`](https://sukonik.github.io/5oceans/spring/) · [`/lake/`](https://sukonik.github.io/5oceans/lake/) · [`/river/`](https://sukonik.github.io/5oceans/river/) |
 
+| 💳 Credit Card Tool | [`/credit/`](https://sukonik.github.io/5oceans/credit/) |
 | 🧮 Tools (3 pages) | [`/tools/`](https://sukonik.github.io/5oceans/tools/), [`/tools/real-estate/`](https://sukonik.github.io/5oceans/tools/real-estate/), [`/tools/savings-bridge/`](https://sukonik.github.io/5oceans/tools/savings-bridge/) |
-| 📚 Resources (23) | [`/resources/`](https://sukonik.github.io/5oceans/resources/), one page each, e.g. [`/resources/governmental-457b/`](https://sukonik.github.io/5oceans/resources/governmental-457b/) · [`/resources/timeshare/`](https://sukonik.github.io/5oceans/resources/timeshare/) |
+| 📚 Resources (28) | [`/resources/`](https://sukonik.github.io/5oceans/resources/), one page each, e.g. [`/resources/governmental-457b/`](https://sukonik.github.io/5oceans/resources/governmental-457b/) · [`/resources/timeshare/`](https://sukonik.github.io/5oceans/resources/timeshare/) |
 | 📖 Guides (6) | [`/guides/`](https://sukonik.github.io/5oceans/guides/): decisions, programs, investments, insurance, taxes, real estate |
 | 🐠 Animals (36) | `/animals/<name>/`, e.g. [`/animals/hermit-crab/`](https://sukonik.github.io/5oceans/animals/hermit-crab/) · [`/animals/yeti-crab/`](https://sukonik.github.io/5oceans/animals/yeti-crab/) |
 
@@ -156,7 +172,7 @@ Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshot
 python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 ```
 
-- 🛠️ `scripts/build_site.py` generates 79 static pages and a search index and fails if the roster isn't exactly 36 animals.
+- 🛠️ `scripts/build_site.py` generates 85 static pages and a search index and fails if the roster isn't exactly 36 animals.
 - 🚀 `.github/workflows/pages.yml` deploys `site/` on every push to `main`.
 - ⚙️ One-time setup: **Settings → Pages → Source: GitHub Actions**.
 
@@ -164,7 +180,8 @@ python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 docs/handoff/      planning handoff and Blue Glass plan
 assets/icons/      vendored Lucide SVGs and license
 assets/calc/       calculator engine and UI scripts
-tests/             calculator tests (node tests/calc.test.mjs)
+tests/             calculator and credit tests (node tests/*.test.mjs)
+assets/credit/     credit tool engine and UI scripts
 content/resources/ one markdown file per resource page
 content/animal-tags.txt  which resources each animal is tagged with
 scripts/           site generator
@@ -186,6 +203,7 @@ site/              generated output (not committed)
 | v0.8 | Resources hub with 23 resource pages (retirement and property), six on-site guide pages, resource-aware search |
 | v0.9 | Resource tags on every animal card and page, searchable, driven by `content/animal-tags.txt` |
 | v0.10 | Tools menu, 14-mode Real Estate Calculator, Savings Bridge, saved scenarios, text/table/button responsive pass |
+| v0.11 | Credit Card Tool (scores, cards, debt strategy, packet), five credit and debt resource pages, nav and dock refresh |
 
 ## 🧭 Roadmap
 
