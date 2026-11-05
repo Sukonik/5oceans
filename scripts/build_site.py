@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build the static GitHub Pages demo from docs/handoff/FiveOcean.md."""
-import html, re, sys, pathlib
+import html, json, re, sys, pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
 src = (root / "docs/handoff/FiveOcean.md").read_text(encoding="utf-8")
@@ -11,41 +11,125 @@ EMOJI = {"CoastalSea": "🏖️", "CentralSea": "🌊", "DeepSea": "🦑",
          "Spring": "💧", "Lake": "🏞️", "River": "🐊"}
 
 
-def inline(t):
+def slugify(h):
+    h = re.sub(r"[^\w\s-]", "", h.lower())
+    return re.sub(r"\s", "-", h.strip())
+
+
+def norm(t):
+    return re.sub(r"[^a-z0-9 ]", "", t.lower()).strip()
+
+
+# --- guides: slug -> (title, markdown body) per file
+GUIDES = {}
+for f in (root / "docs/handoff").glob("*.md"):
+    if f.name == "FiveOcean.md" or f.name.startswith("Blue"):
+        continue
+    lines = f.read_text(encoding="utf-8").splitlines()
+    heads = [(i, len(m.group(1)), m.group(2)) for i, l in enumerate(lines) if (m := re.match(r"(#{2,4}) (.+)", l))]
+    secs = {}
+    for n, (i, lvl, title) in enumerate(heads):
+        end = len(lines)
+        for j, l2, _ in heads[n + 1:]:
+            if l2 <= lvl:
+                end = j
+                break
+        secs[slugify(title)] = (title, "\n".join(lines[i + 1:end]))
+    GUIDES[f.name] = secs
+
+# --- animals
+part = src.split("## Animal directory", 1)[1]
+cols = re.split(r"\n## ", "\n" + part)[1:]
+COLL, ANIMALS, BY_SLUG = {}, [], {}
+for c in cols:
+    name, body = c.split("\n", 1)
+    COLL[name.strip()] = []
+    for a_ in re.split(r"\n### ", "\n" + body)[1:]:
+        aname, abody = a_.split("\n", 1)
+        paras = [x.strip() for x in abody.strip().split("\n\n") if x.strip()]
+        m = re.match(r"\*\*(.+?)\.?\*\*\s*(.*)", paras[0], re.S)
+        task, desc = (m.group(1), m.group(2)) if m else ("", paras[0])
+        links = re.findall(r"\[([^\]]+)\]\(([^)]+)\)", paras[-1]) if len(paras) > 1 else []
+        an = dict(name=aname.strip(), slug=slugify(aname), coll=name.strip(), task=task, desc=desc, links=links)
+        ANIMALS.append(an)
+        COLL[name.strip()].append(an)
+        BY_SLUG[an["slug"]] = an
+total = len(ANIMALS)
+if total != 36 or len(BY_SLUG) != 36:
+    sys.exit(f"expected 36 unique animals, found {total}/{len(BY_SLUG)}")
+
+
+def inline(t, prefix=""):
     t = html.escape(t)
     t = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
+    t = re.sub(r"(?<![\w*])\*([^*\n]+?)\*(?![\w*])", r"<em>\1</em>", t)
 
     def link(m):
-        url = m.group(2)
-        if not url.startswith("http"):
-            url = REPO + url
-        return f'<a href="{url}" rel="noopener">{m.group(1)}</a>'
+        label, url = m.group(1), html.unescape(m.group(2))
+        if url.startswith("http"):
+            return f'<a href="{html.escape(url)}" rel="noopener">{label}</a>'
+        f_, _, anchor = url.partition("#")
+        if f_ == "FiveOcean.md" and anchor in BY_SLUG:
+            return f'<a href="{prefix}animals/{anchor}/index.html">{label}</a>'
+        return f'<a href="{REPO}{url}" rel="noopener">{label}</a>'
     return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link, t)
 
 
-def card(aname, abody):
-    paras = [p.strip() for p in abody.strip().split("\n\n") if p.strip()]
-    m = re.match(r"\*\*(.+?)\.?\*\*\s*(.*)", paras[0], re.S)
-    task, desc = (m.group(1), m.group(2)) if m else ("", paras[0])
-    links = ""
-    if len(paras) > 1:
-        parts = [x.strip() for x in paras[-1].split("·")]
-        links = "".join(f"<span>{inline(x)}</span>" for x in parts)
-    return (f'<article class="card" data-s="{html.escape((aname + " " + abody).lower())}">'
-            f'<p class="eyebrow">{html.escape(task)}</p><h3>{html.escape(aname)}</h3>'
-            f'<p class="desc">{inline(desc)}</p><div class="chips">{links}</div></article>')
+def md_block(text, prefix):
+    out, lines, i = [], text.strip().splitlines(), 0
+    li = re.compile(r"(- |\d+\. )")
+    while i < len(lines):
+        l = lines[i]
+        if l.startswith("|"):
+            rows = []
+            while i < len(lines) and lines[i].startswith("|"):
+                rows.append(lines[i]); i += 1
+            cells = [[c.strip() for c in r.strip().strip("|").split("|")] for r in rows]
+            head, bodyr = cells[0], cells[2:]
+            out.append('<div class="tablewrap"><table><thead><tr>' + "".join(f"<th>{inline(c, prefix)}</th>" for c in head)
+                       + "</tr></thead><tbody>" + "".join("<tr>" + "".join(f"<td>{inline(c, prefix)}</td>" for c in r) + "</tr>" for r in bodyr)
+                       + "</tbody></table></div>")
+        elif li.match(l):
+            items = []
+            while i < len(lines) and li.match(lines[i]):
+                items.append(li.sub("", lines[i], 1)); i += 1
+            out.append("<ul>" + "".join(f"<li>{inline(x, prefix)}</li>" for x in items) + "</ul>")
+        elif not l.strip():
+            i += 1
+        elif l.startswith("#"):
+            out.append(f"<h4>{html.escape(l.lstrip('# '))}</h4>"); i += 1
+        else:
+            para = []
+            while i < len(lines) and lines[i].strip() and not lines[i].startswith(("|", "#")) and not li.match(lines[i]):
+                para.append(lines[i]); i += 1
+            out.append(f"<p>{inline(' '.join(para), prefix)}</p>")
+    return "".join(out)
 
 
-part = src.split("## Animal directory", 1)[1]
-cols = re.split(r"\n## ", "\n" + part)[1:]
-COLL, total = {}, 0
-for c in cols:
-    name, body = c.split("\n", 1)
-    cards = [card(*a.split("\n", 1)) for a in re.split(r"\n### ", "\n" + body)[1:]]
-    total += len(cards)
-    COLL[name.strip()] = cards
-if total != 36:
-    sys.exit(f"expected 36 animals, found {total}")
+def card_html(a, prefix):
+    chips = "".join(f'<span>{inline(f"[{l}]({u})", prefix)}</span>' for l, u in a["links"])
+    return (f'<article class="card"><p class="eyebrow">{html.escape(a["task"])}</p>'
+            f'<h3><a class="stretch" href="{prefix}animals/{a["slug"]}/index.html">{html.escape(a["name"])}</a></h3>'
+            f'<p class="desc">{inline(a["desc"], prefix)}</p><div class="chips">{chips}</div></article>')
+
+
+def guide_text(a):
+    gl = next((u for _, u in a["links"] if not u.startswith("http")), None)
+    if not gl:
+        return ""
+    f_, _, anc = gl.partition("#")
+    sec = GUIDES.get(f_, {}).get(anc)
+    return f"{sec[0]} {sec[1]}" if sec else ""
+
+
+def words(t):
+    return " ".join(sorted(set(norm(re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", t)).split())))
+
+
+INDEX = [dict(n=a["name"], t=a["task"], c=a["coll"], u=f'animals/{a["slug"]}/index.html',
+              s=words(" ".join([a["name"], a["task"], a["desc"], a["coll"]] + [l for l, _ in a["links"]] + [guide_text(a)])))
+         for a in ANIMALS]
+
 
 THEMES = [  # slug, label, mode, page, surface, ink, action, glow, cta-text
     ("chalk", "Chalk", "light", "#F4F7F8", "#FFFFFF", "#102D40", "#00638A", "#FF866B", "#FFFFFF"),
@@ -198,6 +282,30 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 .wave{display:block;width:100%;height:36px;margin-top:-1px;color:var(--page)}
 .chips a{backdrop-filter:blur(6px)}
 .dock{display:none}
+
+/* animal pages, results */
+.card{position:relative}
+.card h3 a.stretch{color:inherit;text-decoration:none}
+.card h3 a.stretch::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.chips{position:relative;z-index:1}
+.results{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:45;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);
+  border-radius:18px;padding:6px;box-shadow:0 20px 50px rgb(0 0 0/.3);max-height:70vh;overflow-y:auto;min-width:min(340px,calc(100vw - 32px))}
+.results a{display:flex;flex-direction:column;padding:10px 14px;border-radius:12px;text-decoration:none;color:var(--ink);min-height:44px}
+.results a:hover,.results a:focus-visible{background:color-mix(in srgb,var(--action) 12%,transparent)}
+.results a b{font-weight:600}.results a span{font-size:.8rem;opacity:.7}
+.results p{margin:0;padding:12px 14px;opacity:.75;font-size:.9rem}
+.prose{max-width:76ch}
+.prose p,.prose li{margin:0 0 1em}.prose ul{padding-left:1.2em;margin:0 0 1em}
+.prose h4{margin:1.6em 0 .4em;font-size:1rem}
+.tablewrap{overflow-x:auto;margin:0 0 1.4em;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;background:var(--surface)}
+.prose table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem;font-variant-numeric:tabular-nums}
+.prose th,.prose td{padding:10px 14px;text-align:left;vertical-align:top;border-bottom:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}
+.prose th{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.prose tr:last-child td{border-bottom:0}
+.pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:40px}
+.pager a{flex:1 1 220px}
+.pager .next{justify-content:flex-end;text-align:right}
+.src{margin-top:8px;font-size:.9rem}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
 @media(max-width:720px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
@@ -215,17 +323,23 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
 """
 
 JS = """
-const q=document.getElementById('q'),pk=document.getElementById('picker');
+const q=document.getElementById('q'),pk=document.getElementById('picker'),res=document.getElementById('results');
 const norm=s=>s.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
-q.addEventListener('input',()=>{const v=norm(q.value);let any=false;
-document.querySelectorAll('.card').forEach(c=>{const h=!!v&&!norm(c.dataset.s).includes(v);c.hidden=h;if(!h)any=true});
-const e=document.getElementById('empty');if(e)e.style.display=!any&&v?'block':'none';});
+let INDEX=null;
+const load=()=>INDEX?Promise.resolve(INDEX):fetch(P+'search-index.json').then(r=>r.json()).then(d=>INDEX=d);
+q.addEventListener('focus',load);
+q.addEventListener('input',()=>{const v=norm(q.value);if(!v){res.hidden=true;return}
+load().then(()=>{if(norm(q.value)!==v)return;const tk=v.split(' ');
+const hits=INDEX.filter(a=>tk.every(t=>(' '+a.s).includes(' '+t))).sort((a,b)=>(norm(b.n).startsWith(v))-(norm(a.n).startsWith(v))).slice(0,8);
+res.innerHTML=hits.length?hits.map(a=>'<a href="'+P+a.u+'"><b>'+a.n+'</b><span>'+a.t+' \\u00b7 '+a.c+'</span></a>').join(''):'<p>No match. Try \\u201c457b\\u201d, \\u201cERS\\u201d or \\u201cduplex\\u201d.</p>';res.hidden=false})});
+q.addEventListener('keydown',e=>{if(e.key==='Enter'){const a=res.querySelector('a');if(a)location.href=a.href}
+if(e.key==='Escape'){q.value='';res.hidden=true}});
 const cur=document.documentElement.dataset.theme;
 document.querySelectorAll('input[name=theme]').forEach(r=>{r.checked=r.value===cur;
 r.addEventListener('change',()=>{document.documentElement.dataset.theme=r.value;
 try{localStorage.setItem('fiveoceans-theme',r.value)}catch(e){}});});
 pk.addEventListener('keydown',e=>{if(e.key==='Escape'&&pk.open){pk.open=false;pk.querySelector('summary').focus()}});
-document.addEventListener('click',e=>{if(!pk.contains(e.target))pk.open=false});
+document.addEventListener('click',e=>{if(!pk.contains(e.target))pk.open=false;if(!e.target.closest('.search'))res.hidden=true});
 document.addEventListener('keydown',e=>{const t=e.target.tagName;if((e.key==='/'||(e.key==='k'&&(e.ctrlKey||e.metaKey)))&&t!=='INPUT'&&t!=='TEXTAREA'){e.preventDefault();q.focus()}});
 """
 
@@ -246,7 +360,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <a class="brand" href="{prefix}index.html">🌊 FiveOceans</a>
 <nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a></nav>
 <span class="spacer"></span>
-<div class="search"><label for="q" hidden>Search</label><input id="q" type="search" placeholder="Search 457(b), ERS…" autocomplete="off"><kbd aria-hidden="true">/</kbd></div>
+<div class="search"><label for="q" hidden>Search</label><input id="q" type="search" placeholder="Search 457(b), ERS…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
 <details class="picker" id="picker"><summary class="glass" aria-label="Change theme">🎨 <span class="lbl">Change theme</span> ▾</summary>
 <div class="menu" role="radiogroup" aria-label="Theme"><h4>Light</h4>{rows("light")}<h4>Dark</h4>{rows("dark")}</div></details>
 </div></header>
@@ -259,7 +373,7 @@ document.documentElement.dataset.theme=t}})();</script>
 <a href="{prefix}seawater/index.html"{ac("seawater")}><span>🧂</span>Seawater</a>
 <a href="{prefix}freshwater/index.html"{ac("freshwater")}><span>🚰</span>Fresh</a>
 </nav>
-<script>{JS}</script></body></html>"""
+<script>const P={prefix!r};{JS}</script></body></html>"""
 
 
 FAMILIES = {
@@ -327,9 +441,42 @@ for k, (e, n, cs, d) in FAMILIES.items():
           page_hero(f'<a href="../index.html">Home</a> / {n}', e, f"{n} paths", d), k)
     for c in cs:
         write(f"{slug(c)}/index.html", f"{c} | FiveOceans", 1,
-              f'<section class="section"><div class="grid">{"".join(COLL[c])}</div>'
-              f'<p class="empty" id="empty">No animals here match that search.</p></section>',
+              f'<section class="section"><div class="grid">{"".join(card_html(a, "../") for a in COLL[c])}</div></section>',
               page_hero(f'<a href="../index.html">Home</a> / <a href="../{k}/index.html">{n}</a> / {c}',
                         EMOJI[c], f"{c}", BLURB[c], tabs("../", c)), k)
+
+SRC_FAM = {c: k for k, (_, _, cs, _) in FAMILIES.items() for c in cs}
+for i, a in enumerate(ANIMALS):
+    fam = SRC_FAM[a["coll"]]
+    famn = FAMILIES[fam][1]
+    srcs = [(l, u) for l, u in a["links"] if u.startswith("http")]
+    gl = next(((l, u) for l, u in a["links"] if not u.startswith("http")), None)
+    sec = None
+    if gl:
+        f_, _, anc = gl[1].partition("#")
+        sec = GUIDES.get(f_, {}).get(anc)
+    btns = "".join(
+        f'<a class="glass{" primary" if n == 0 else ""}" href="{html.escape(u)}" rel="noopener">{html.escape(l)} ↗</a>'
+        for n, (l, u) in enumerate(srcs))
+    if sec:
+        btns += '<a class="glass" href="#guide">Read the guide ↓</a>'
+    crumb = (f'<a href="../../index.html">Home</a> / <a href="../../{fam}/index.html">{famn}</a> / '
+             f'<a href="../../{slug(a["coll"])}/index.html">{a["coll"]}</a> / {html.escape(a["name"])}')
+    hero = (f'<section class="hero compact"><div class="wrap"><div><p class="crumb">{crumb}</p>'
+            f'<span class="kicker">{EMOJI[a["coll"]]} {html.escape(a["task"])}</span><h1>{html.escape(a["name"])}</h1>'
+            f'<p class="lede">{inline(a["desc"], "../../")}</p><div class="cta">{btns}</div></div></div></section>')
+    body = ""
+    if sec:
+        body += (f'<section class="section" id="guide"><h2>{html.escape(sec[0])}</h2><div class="prose">{md_block(sec[1], "../../")}</div>'
+                 f'<p class="src"><a href="{REPO}{gl[1]}" rel="noopener">Open the full guide on GitHub →</a></p></section>')
+    sib = [x for x in COLL[a["coll"]] if x is not a]
+    body += (f'<section class="section"><h2>More in {a["coll"]}</h2><div class="grid">'
+             f'{"".join(card_html(x, "../../") for x in sib)}</div></section>')
+    prv, nxt = ANIMALS[i - 1], ANIMALS[(i + 1) % len(ANIMALS)]
+    body += ('<nav class="pager" aria-label="Animals">'
+             f'<a class="glass" href="../{prv["slug"]}/index.html">← {html.escape(prv["name"])}</a>'
+             f'<a class="glass next" href="../{nxt["slug"]}/index.html">{html.escape(nxt["name"])} →</a></nav>')
+    write(f'animals/{a["slug"]}/index.html', f'{a["name"]} | FiveOceans', 2, body, hero, fam)
+(out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")
 (out / ".nojekyll").write_text("")
 print(f"built {len(list(out.rglob('index.html')))} pages, {total} animals")
