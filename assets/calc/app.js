@@ -141,24 +141,40 @@
 
   /* ---------- Dolphin Sonar ---------- */
   var SN = window.SONAR, snPing = null;
-  var MONEYK = { price: 1, hoaMo: 1, commonMo: 1, maintMo: 1, taxYr: 1, rent: 1 };
-  function snFmt(k, v) { return MONEYK[k] ? usd.format(v) : k === 'year' ? String(v) : (Math.round(v * 10) / 10).toLocaleString('en-US'); }
+  function snFmt(f) {
+    var v = f.value, k = f.kind;
+    if (typeof v !== 'number') return esc(v);
+    if (k === 'money') return usd.format(v);
+    if (k === 'pct') return (Math.round(v * 10) / 10) + '%';
+    if (k === 'year') return String(v);
+    if (k === 'int') return Math.round(v).toLocaleString('en-US');
+    return (Math.round(v * 100) / 100).toLocaleString('en-US');
+  }
   function snRender(p, auto) {
     var box = $('sn-out'); box.innerHTML = ''; snPing = p;
     if (!p.found.length && !p.address) { box.appendChild(el('div', 'callout', 'Nothing detected. Paste the part of the listing that shows the price, beds and baths, taxes and fees. Include the link too if you have it.')); return; }
     var head = p.address ? esc(p.address) : 'Listing', site = p.site ? ' on ' + esc(p.site) : '';
-    box.appendChild(el('p', 'sn-head', '<b>' + head + '</b>' + site + (p.listingId ? ' <small>ID ' + esc(p.listingId) + '</small>' : '')));
-    if (p.found.length) {
-      var t = el('table', 'rt'); t.innerHTML = '<caption class="sr">Detected facts</caption><tbody>' + p.found.map(function (f) { return '<tr><th scope="row">' + esc(f.label) + '</th><td>' + snFmt(f.key, f.value) + '</td></tr>'; }).join('') + '</tbody>';
-      box.appendChild(t);
+    var groups = {}; p.found.forEach(function (f) { groups[f.group] = (groups[f.group] || 0) + 1; });
+    box.appendChild(el('p', 'sn-head', '<b>' + head + '</b>' + site + (p.listingId ? ' <small>ID ' + esc(p.listingId) + '</small>' : '') + '<br><small>' + p.found.length + ' facts found in ' + Object.keys(groups).length + ' categories</small>'));
+    if (p.insights && p.insights.length) {
+      var ins = el('div', 'sn-ins'); ins.appendChild(el('h3', '', 'What Sonar noticed'));
+      p.insights.forEach(function (i) { ins.appendChild(el('div', 'callout' + (i.tone === 'warn' ? ' high' : i.tone === 'good' ? ' ok' : ''), esc(i.text))); });
+      box.appendChild(ins);
     }
+    var open = { 'Price and payment': 1, 'Monthly costs': 1, 'Property': 1 };
+    SN.GROUPS.forEach(function (g) {
+      var rows = p.found.filter(function (f) { return f.group === g; }); if (!rows.length) return;
+      var d = el('details', 'sn-grp'); if (open[g]) d.open = true;
+      d.innerHTML = '<summary>' + esc(g) + ' <span class="cnt">' + rows.length + '</span></summary><table class="rt"><caption class="sr">' + esc(g) + '</caption><tbody>' + rows.map(function (f) { return '<tr><th scope="row">' + esc(f.label) + '</th><td>' + snFmt(f) + '</td></tr>'; }).join('') + '</tbody></table>';
+      box.appendChild(d);
+    });
     var row = el('div', 'sn-row'), lab = el('label', '', 'Send to'), sel = el('select'); sel.id = 'sn-mode'; lab.htmlFor = 'sn-mode';
     var sug = SN.suggestMode(p);
     Object.keys(RE.MODES).forEach(function (id) { var o = el('option', '', esc(RE.MODES[id].label)); o.value = id; if (id === sug) o.selected = true; sel.appendChild(o); });
     var go = el('button', 'glass primary', 'Fill the calculator'); go.type = 'button';
     go.onclick = function () { snApply(sel.value); };
     row.appendChild(lab); row.appendChild(sel); row.appendChild(go); box.appendChild(row);
-    box.appendChild(el('p', 'subn', 'Suggested calculator: <b>' + esc(RE.MODES[sug].label) + '</b>. Check every number against the listing. Nothing was fetched or sent anywhere.'));
+    box.appendChild(el('p', 'subn', 'Suggested calculator: <b>' + esc(RE.MODES[sug].label) + '</b>. Check every number against the listing. Nothing was fetched or sent anywhere, and agent names and contact details are never read.'));
     if (auto) snApply(sug);
   }
   function snApply(modeId) {

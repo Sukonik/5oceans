@@ -82,14 +82,14 @@ async function body(res) {
 }
 
 const decode = (s) => s.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&#(\d+);/g, (m, d) => String.fromCharCode(+d));
-const KEEP = /\$|\bbeds?\b|\bbd\b|\bbaths?\b|\bba\b|sq\.?\s?ft|hoa|tax|maintenance|common charge|year built|built in|rent|zestimate|units?\b|\blot\b|co-?op|condo|duplex|triplex|multi-?family|vacant land/i;
 export function extract(html) {
   const jsonld = [...html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1].trim()).join('\n').slice(0, 20000);
   const meta = (n) => { const m = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${n}["'][^>]*content=["']([^"']*)["']`, 'i')) || html.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:property|name)=["']${n}["']`, 'i')); return m ? decode(m[1]) : ''; };
   const price = meta('product:price:amount') || meta('og:price:amount'), title = decode((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [, ''])[1]).trim();
-  const text = decode(html.replace(/<(script|style|noscript|svg)[\s\S]*?<\/\1>/gi, ' ').replace(/<br\s*\/?>|<\/(p|div|li|tr|h\d|td|th|section)>/gi, '\n').replace(/<[^>]+>/g, ' ')).split('\n').map((s) => s.replace(/\s+/g, ' ').trim()).filter((s) => s && s.length < 300 && KEEP.test(s));
-  const lines = [...(price ? ['Price: $' + price] : []), ...(meta('og:description') && KEEP.test(meta('og:description')) ? [meta('og:description')] : []), ...text].slice(0, 200);
-  return { title, jsonld, text: lines.join('\n') };
+  const body = decode(html.replace(/<(script|style|noscript|svg)[\s\S]*?<\/\1>/gi, ' ').replace(/<br\s*\/?>|<\/(p|div|li|tr|h\d|td|th|section|span)>/gi, '\n').replace(/<[^>]+>/g, ' '));
+  const og = meta('og:description');
+  const text = [...(price ? ['Price: $' + price] : []), ...(og && S.KEEP.test(og) ? [og] : []), S.selectLines(body, 30000)].filter(Boolean).join('\n');
+  return { title, jsonld, text };
 }
 
 let lastAt = 0;

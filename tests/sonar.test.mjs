@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
 import { createRequire } from 'node:module';
 const S = createRequire(import.meta.url)('../assets/calc/sonar.js');
 let n = 0; const ok = (name, fn) => { fn(); n++; console.log('ok', name); };
@@ -67,5 +69,65 @@ ok('bookmarklet payload round-trips', () => {
   const back = S.decodeHash('#sonar=' + b); assert.equal(back.url, d.u); assert.equal(back.text, d.t);
   assert.equal(S.decodeHash('#investment'), null); assert.equal(S.decodeHash('#sonar=%%%'), null);
   assert.match(S.bookmarkletSource('https://x.test/tools/real-estate/'), /^javascript:\(function\(\)\{/);
+});
+
+const fx = (n) => readFileSync(new URL('./fixtures/' + n + '.txt', import.meta.url), 'utf8');
+ok('Redfin-style listing: 50+ fields across every category', () => {
+  const p = S.parseListing({ url: 'https://www.redfin.com/NY/Seabright-Beach/12-Shell-Cove-Rd-11500/home/1', text: fx('redfin-style') }), f = p.facts;
+  assert.ok(p.found.length >= 50, 'fields ' + p.found.length);
+  assert.deepEqual([f.price, f.estMonthly, f.downPct, f.downAmt, f.rate, f.term], [925000, 6380, 20, 185000, 7.13, 30]);
+  assert.deepEqual([f.pi, f.taxMo, f.taxYr, f.insMo, f.hoaMo], [4990, 1180, 14160, 210, 0]);
+  assert.deepEqual([f.beds, f.baths, f.fullBaths, f.halfBaths, f.sqft, f.year, f.stories], [4, 2.5, 2, 1, 2410, 1968, 2]);
+  assert.deepEqual([f.lotSqft, f.garage, f.basement, f.county, f.apn, f.pricePerSqft], [6000, 2, 'Finished', 'Nassau County', '60080 00030', 384]);
+  assert.deepEqual([f.dom, f.domSite, f.avgDom, f.saleToList, f.offerAt, f.offerChance, f.views, f.saves], [78, 77, 35, 100.8, 930000, 75, 490, 17]);
+  assert.deepEqual([f.peakPrice, f.reducedPct, f.priceCuts, f.pastRent, f.rent, f.rentSource], [1150000, 19.6, 2, 6000, 6000, 'Past rental listing']);
+  assert.match(f.flood, /Major/); assert.equal(f.sun, '93/100'); assert.match(f.walk, /0\.4\/10/); assert.match(f.quiet, /8\.8\/10/); assert.ok(f.schools.length >= 3);
+  assert.deepEqual([f.mlsNo, f.brokerage, f.listingUpdated], ['1000000', 'Example Realty Greater NY LLC', 'Oct 17, 2026']); assert.match(f.mls, /OneKey/);
+  assert.ok(f.features.includes('Finished basement') && f.features.includes('Fireplace')); assert.ok(f.flags.some((x) => /accessory unit/i.test(x)));
+  const groups = new Set(p.found.map((x) => x.group)); S.GROUPS.forEach((g) => assert.ok(groups.has(g), 'missing group ' + g));
+  assert.equal(S.suggestMode(p), 'home-rental');
+});
+ok('implausible rental history ($18,000 on a $925,000 home) is ignored', () => { assert.equal(S.parseListing({ text: fx('redfin-style') }).facts.pastRent, 6000); });
+ok('never captures agent names, phone numbers or emails', () => {
+  const all = JSON.stringify(S.parseListing({ url: '', text: fx('redfin-style') + '\nContact: 555-010-0000 agent@example.com' }));
+  for (const bad of ['Agent Example', '555-010-0000', 'agent@example.com', 'Contact']) assert.ok(!all.includes(bad), bad);
+});
+ok('Zillow-style listing', () => {
+  const f = S.parseListing({ url: 'https://www.zillow.com/homedetails/12-Maple-Court-Springfield-NY-10001/99_zpid/', text: fx('zillow-style') }).facts;
+  assert.deepEqual([f.price, f.estValue, f.estMonthly, f.pi, f.taxMo, f.taxYr, f.insMo, f.hoaMo, f.miMo], [625000, 641000, 4310, 3205, 610, 7320, 145, 45, 0]);
+  assert.deepEqual([f.beds, f.baths, f.sqft, f.year, f.parking, f.pricePerSqft, f.rent, f.dom, f.views, f.saves], [4, 3, 2100, 1985, 2, 298, 3450, 12, 480, 31]);
+  assert.equal(f.lotAcres, 0.25); assert.equal(f.lotSqft, 10890); assert.equal(f.lastSoldPrice, 480000); assert.match(f.flood, /Minor/); assert.equal(f.walk, '45/100'); assert.equal(f.transit, '38/100');
+  assert.ok(f.features.includes('Finished basement') && f.features.includes('Fireplace') && !f.features.includes('Pool'));
+  assert.ok(f.flags.some((x) => /accessory/i.test(x)) && f.flags.some((x) => /as-is/i.test(x)));
+});
+ok('StreetEasy-style co-op', () => {
+  const p = S.parseListing({ url: 'https://streeteasy.com/building/the-example/4b', text: fx('streeteasy-style') }), f = p.facts;
+  assert.deepEqual([p.type, f.price, f.maintMo, f.flipTaxPct, f.financingPct, f.beds, f.baths, f.sqft, f.year, f.dom], ['coop', 1150000, 2350, 2, 80, 2, 2, 1150, 1925, 34]);
+  assert.equal(S.suggestMode(p), 'coop'); assert.ok(f.features.includes('Doorman') && f.features.includes('Elevator'));
+  assert.match(p.insights.map((x) => x.text).join(' '), /Co-op maintenance/);
+});
+ok('insights: flood warning, price cut, days on market, rental yield, no-HOA', () => {
+  const txt = S.parseListing({ text: fx('redfin-style') }).insights.map((x) => x.text).join(' | ');
+  assert.match(txt, /Flood risk is major/); assert.match(txt, /19\.6% below/); assert.match(txt, /78 days on market/); assert.match(txt, /gross yield/); assert.match(txt, /No HOA/); assert.match(txt, /accessory unit/);
+});
+ok('mapping fills price, tax, insurance, down payment, rate, term and rent', () => {
+  const p = S.parseListing({ text: fx('redfin-style') });
+  const home = S.toValues(p, 'home', ['price', 'taxPct', 'insYr', 'hoaMo', 'downPct', 'rate', 'term']);
+  assert.deepEqual([home.price, home.insYr, home.downPct, home.rate, home.term], [925000, 2520, 20, 7.13, 30]); assert.equal(Math.round(home.taxPct * 100) / 100, 1.53);
+  const rent = S.toValues(p, 'home-rental', ['price', 'taxMo', 'insMo', 'rent', 'downPct', 'rate']); assert.deepEqual([rent.price, rent.taxMo, rent.insMo, rent.rent, rent.downPct, rent.rate], [925000, 1180, 210, 6000, 20, 7.13]);
+  const inv = S.toValues(p, 'investment', ['price', 'taxYr', 'insYr', 'rent']); assert.deepEqual([inv.taxYr, inv.insYr, inv.rent], [14160, 2520, 6000]);
+});
+ok('bookmarklet runs on a page, keeps label and value lines, and the result parses to 40+ fields', () => {
+  const out = {}; const lines = fx('redfin-style').split('\n');
+  const ctx = { document: { body: { innerText: lines.join('\n') }, querySelectorAll: () => [] }, location: { href: 'https://www.redfin.com/NY/Seabright-Beach/12-Shell-Cove-Rd-11500/home/1' }, btoa: (x) => Buffer.from(x, 'binary').toString('base64'), unescape, encodeURIComponent, JSON, window: { open: (u) => { out.url = u; } } };
+  vm.runInNewContext(S.bookmarkletSource('https://x.test/tools/real-estate/').replace(/^javascript:/, ''), ctx);
+  const d = S.decodeHash('#' + out.url.split('#')[1]); assert.ok(d.text.length < 30000);
+  assert.match(d.text, /Property taxes\n\$1,180/); assert.match(d.text, /HOA dues\n\$0/);
+  const p = S.parseListing(d); assert.ok(p.found.length >= 40, 'fields ' + p.found.length); assert.equal(p.facts.price, 925000); assert.equal(p.facts.taxMo, 1180);
+  assert.ok(p.facts.flags.some((x) => /accessory unit/i.test(x)), 'long description paragraph is kept'); assert.equal(S.suggestMode(p), 'home-rental');
+});
+ok('the field catalog in docs stays in sync with the code', () => {
+  const doc = readFileSync(new URL('../docs/sonar-fields.md', import.meta.url), 'utf8');
+  for (const [k, v] of Object.entries(S.FIELDS)) { assert.ok(doc.includes('| ' + v[0] + ' |'), 'docs missing ' + v[0]); assert.ok(doc.includes('`' + k + '`'), 'docs missing key ' + k); }
 });
 console.log(n + ' sonar checks passed');

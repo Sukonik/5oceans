@@ -594,12 +594,19 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
 .picker .lbl{display:none}.search{flex:0 1 210px}
 
 /* sonar */
+.sample-text{font-size:.88rem;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:14px;padding:14px 18px;overflow-wrap:anywhere}
+.sample-text div{min-height:1.3em}
 .sonar{margin:0 0 36px;padding:20px 22px;border-radius:20px;background:var(--surface);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);
   box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 35%,transparent)}
 .sonar h2{margin:0 0 6px;font-family:"Iowan Old Style",Georgia,serif;font-weight:400;display:flex;gap:10px;align-items:center}
 .sonar h2 .ic{color:var(--action)}
 .sn-head{margin:14px 0 6px}.sn-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
 .sn-row select{flex:1 1 220px;max-width:340px}.sn-row label{font-weight:600;font-size:.9rem}
+.sn-ins{margin:12px 0}.sn-ins h3{margin:0 0 8px;font-size:1.05rem}.sn-ins .callout{margin:0 0 8px}
+.sn-grp{margin:0 0 10px;padding:4px 16px;border-radius:14px;background:color-mix(in srgb,var(--page) 55%,var(--surface));border:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.sn-grp summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center;gap:10px;background:none;border:0;padding:0}
+.sn-grp .cnt{font-size:.75rem;font-weight:700;padding:1px 9px;border-radius:99px;background:color-mix(in srgb,var(--action) 14%,transparent);color:var(--action)}
+.sn-grp .rt{margin-bottom:8px}
 .bk{margin:14px 0 0}.bk summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center;background:none;border:0;padding:0}
 
 /* tools dropdown bubble */
@@ -999,7 +1006,7 @@ def group_modes():
 SONAR_ISSUE = "https://github.com/Sukonik/5oceans/issues/15"
 calc_body = f""""""
 calc_body = f"""<section class="sonar" id="sonar" aria-labelledby="sn-h"><h2 id="sn-h">{ic("search")} Dolphin Sonar</h2>
-<p class="lead">Ping a listing to fill the calculator. Paste a link from Redfin, Zillow or StreetEasy, and paste the listing text (select the page, copy, paste). Sonar reads the address from the link and the price, taxes, fees and details from the text, right here in your browser.</p>
+<p class="lead">Ping a listing to fill the calculator. Paste a link from Redfin, Zillow or StreetEasy, and paste the listing text (select the page, copy, paste). Sonar reads the address from the link and about 70 kinds of facts from the text, right here in your browser: price, payment and rate, taxes, HOA and maintenance, beds and baths, lot, features, days on market, price and rental history, walk and quiet scores, flood and climate risk, and the listing source. It never reads agent names or contact details.</p>
 <div class="fields"><div class="fld"><label for="sn-url">Listing link</label><div class="inp"><input id="sn-url" type="url" inputmode="url" autocomplete="off" placeholder="https://www.redfin.com/..." maxlength="500"></div><small>Optional. Gives the address and listing ID.</small></div></div>
 <div class="fld" style="margin-top:12px"><label for="sn-text">Listing text</label><textarea id="sn-text" rows="5" maxlength="60000" placeholder="Paste the listing page text here: price, beds and baths, taxes, HOA or maintenance, year built..."></textarea></div>
 <div class="tools-row"><button type="button" class="glass primary" id="sn-go">{ic("search")} Ping</button><button type="button" class="glass" id="sn-clear">{ic("rotate-ccw")} Clear</button></div>
@@ -1068,13 +1075,12 @@ write("credit/index.html", "Credit Card Tool | FiveOceans", 1, f'<section class=
 INDEX.append(dict(n="Dolphin Sonar", t="Tool", c="Tool", u="tools/real-estate/index.html#sonar", s=words("dolphin sonar listing link redfin zillow streeteasy paste import data extractor bookmarklet")))
 INDEX.append(dict(n="Credit Card Tool", t="Tool", c="Tool", u="credit/index.html", s=words("credit card tool credit score three scores equifax experian transunion utilization debt payoff avalanche snowball good debt bad debt packet")))
 
-# fictional sample listing for practising Sonar
-sample_body = """<section class="section"><div class="prose"><p class="callout">This is a <b>fictional</b> listing made for practising <a href="../index.html#sonar">Dolphin Sonar</a>. Copy this page's text into the Sonar box, or open a Sonar issue with this page's link.</p>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SingleFamilyResidence","name":"9 Shell Lane (fictional)","numberOfBedrooms":3,"numberOfBathroomsTotal":2,"floorSize":{"@type":"QuantitativeValue","value":1700},"yearBuilt":1990,"address":{"@type":"PostalAddress","streetAddress":"9 Shell Lane","addressLocality":"Long Beach","addressRegion":"NY","postalCode":"11561"},"offers":{"@type":"Offer","price":"699000","priceCurrency":"USD"}}</script>
-<h2>9 Shell Lane, Long Beach, NY 11561</h2>
-<p><strong>Listed price: $699,000</strong></p>
-<ul><li>3 beds, 2 baths, 1,700 sq ft</li><li>Year built: 1990</li><li>Property taxes: $8,400 / yr</li><li>HOA fee $60 / month</li><li>Rental estimate $3,600/mo</li></ul>
-<p>A made-up single-family home two blocks from the water, used only to test the Real Estate Calculator. Nothing here is real.</p></div></section>"""
+# fictional sample listing for practising Sonar (same layout as a real listing page, all values made up)
+_sample_lines = [l for l in (root / "tests/fixtures/redfin-style.txt").read_text(encoding="utf-8").splitlines()
+                 if l.strip() and "Agent Example" not in l and not l.startswith("Contact")]
+sample_body = ("""<section class="section"><div class="prose"><div class="callout" role="note">This is a <b>fictional</b> listing made for practising <a href="../index.html#sonar">Dolphin Sonar</a>. Copy the text below into the Sonar box, run the bookmarklet on this page, or open a Sonar issue with this page's link. Every value is made up.</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SingleFamilyResidence","name":"12 Shell Cove Rd (fictional)","numberOfBedrooms":4,"numberOfBathroomsTotal":2.5,"floorSize":{"@type":"QuantitativeValue","value":2410},"yearBuilt":1968,"address":{"@type":"PostalAddress","streetAddress":"12 Shell Cove Rd","addressLocality":"Seabright Beach","addressRegion":"NY","postalCode":"11500"},"offers":{"@type":"Offer","price":"925000","priceCurrency":"USD"}}</script>
+<div class="sample-text">""" + "".join(f"<div>{html.escape(l)}</div>" for l in _sample_lines) + """</div></div></section>""")
 write("tools/real-estate/sample-listing/index.html", "Sample listing (fictional) | FiveOceans", 3, sample_body,
       page_hero('<a href="../../../index.html">Home</a> / <a href="../../index.html">Tools</a> / <a href="../index.html">Real Estate Calculator</a> / Sample listing', ic("house"), "Sample listing", "A fictional listing for practising Dolphin Sonar."), "tools")
 
