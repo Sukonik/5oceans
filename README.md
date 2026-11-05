@@ -83,6 +83,10 @@ What the live demo already ships, in plain CSS:
 
 Glass is progressive: it falls back to opaque surfaces when `backdrop-filter`, reduced transparency or forced colors apply.
 
+### 🔣 Icons
+
+The site uses minimal 1.75px line icons from [Lucide](https://github.com/lucide-icons/lucide) (ISC license, copy in [`assets/icons/LICENSE-lucide.txt`](assets/icons/LICENSE-lucide.txt)). The 35 icons the site needs are vendored in [`assets/icons/`](assets/icons/) and built into an inline SVG sprite, so there's no icon font or runtime request. They inherit the theme color. To add one, copy its SVG from Lucide into that folder and reference it with `ic("name")` in `scripts/build_site.py`. Each water body and each of the 36 animals has an assigned icon (fish, bird, turtle, shell and so on, grouped by kind).
+
 ## 🪨 Eight shore-rock themes
 
 | ☀️ Light | 🌙 Dark |
@@ -111,7 +115,7 @@ Planning handoff in [`docs/handoff/`](docs/handoff/):
 
 ### 🔗 Design sources
 
-[Mantine](https://github.com/mantinedev/mantine) · [Radix Primitives](https://github.com/radix-ui/primitives) · [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) · [Glassy UI](https://github.com/alexburlis/glassyui) · [Ein UI](https://github.com/einui/einui) · [Vue Web Liquid Glass](https://github.com/mkj0kjay/vue-web-liquid-glass) · [GoldenSunLaw theme picker](https://github.com/Sukonik/GoldenSunLaw/blob/main/js/main.js) · [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
+[Mantine](https://github.com/mantinedev/mantine) · [Radix Primitives](https://github.com/radix-ui/primitives) · [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) · [Lucide icons](https://github.com/lucide-icons/lucide) · [Glassy UI](https://github.com/alexburlis/glassyui) · [Ein UI](https://github.com/einui/einui) · [Vue Web Liquid Glass](https://github.com/mkj0kjay/vue-web-liquid-glass) · [GoldenSunLaw theme picker](https://github.com/Sukonik/GoldenSunLaw/blob/main/js/main.js) · [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
 
 Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshots; ship original or licensed imagery. Upstream code imported later needs its source revision and license notices documented.
 
@@ -127,6 +131,7 @@ python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 
 ```text
 docs/handoff/      planning handoff and Blue Glass plan
+assets/icons/      vendored Lucide SVGs and license
 scripts/           site generator
 .github/workflows/ Pages deploy
 site/              generated output (not committed)
@@ -142,6 +147,7 @@ site/              generated output (not committed)
 | v0.4 | Oceanic redesign: hero, glass controls, cleaner cards |
 | v0.5 | Sea Glass elements (tabs, stats, dock, key hints), responsive UX pass, expanded README |
 | v0.6 | 36 animal pages with guide content, site-wide search |
+| v0.7 | Minimal line icons (Lucide) replace emoji across the site |
 
 ## 🧭 Roadmap
 

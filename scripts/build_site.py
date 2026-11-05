@@ -7,8 +7,33 @@ src = (root / "docs/handoff/FiveOcean.md").read_text(encoding="utf-8")
 out = root / "site"
 out.mkdir(exist_ok=True)
 REPO = "https://github.com/Sukonik/5oceans/blob/main/docs/handoff/"
-EMOJI = {"CoastalSea": "🏖️", "CentralSea": "🌊", "DeepSea": "🦑",
-         "Spring": "💧", "Lake": "🏞️", "River": "🐊"}
+ICON_DIR = root / "assets/icons"
+ICONS = {}
+for f in sorted(ICON_DIR.glob("*.svg")):
+    m = re.search(r"<svg[^>]*>(.*)</svg>", f.read_text(encoding="utf-8"), re.S)
+    ICONS[f.stem] = m.group(1).strip()
+SPRITE = ('<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>'
+          + "".join(f'<symbol id="i-{k}" viewBox="0 0 24 24">{v}</symbol>' for k, v in ICONS.items()) + "</defs></svg>")
+
+
+def ic(name, cls=""):
+    assert name in ICONS, name
+    return f'<svg class="ic {cls}" aria-hidden="true" focusable="false"><use href="#i-{name}"/></svg>'
+
+
+EMOJI = {"CoastalSea": ic("tree-palm"), "CentralSea": ic("sailboat"), "DeepSea": ic("anchor"),
+         "Spring": ic("droplet"), "Lake": ic("mountain"), "River": ic("waves-arrow-down")}
+ANIMAL_ICON = {
+    "hermit-crab": "shell", "sea-lion": "paw-print", "royal-tern": "bird", "green-sea-turtle": "turtle",
+    "peacock-flounder": "fish", "red-cushion-sea-star": "sparkle", "blue-whale": "fish", "giant-squid": "bubbles",
+    "giant-manta-ray": "fish-symbol", "wandering-albatross": "bird", "sailfish": "fish", "great-white-shark": "fish",
+    "yeti-crab": "shrimp", "goblin-shark": "fish", "colossal-squid": "bubbles", "dumbo-octopus": "bubbles",
+    "sea-pig": "worm", "black-seadevil": "fishing-hook", "rhesus-macaque-monkey": "paw-print",
+    "west-indian-manatee": "fish-symbol", "black-bear": "paw-print", "bobcat": "cat", "alligator": "worm",
+    "largemouth-bass": "fish", "painted-turtle": "turtle", "common-loon": "bird", "hippopotamus": "paw-print",
+    "swan": "bird", "pike": "fish", "capybara": "rat", "giant-otter": "squirrel", "scarlet-ibis": "bird",
+    "pink-river-dolphin": "fish", "green-anaconda": "worm", "electric-eel": "zap", "spider-monkey": "paw-print",
+}
 
 
 def slugify(h):
@@ -108,7 +133,7 @@ def md_block(text, prefix):
 
 def card_html(a, prefix):
     chips = "".join(f'<span>{inline(f"[{l}]({u})", prefix)}</span>' for l, u in a["links"])
-    return (f'<article class="card"><p class="eyebrow">{html.escape(a["task"])}</p>'
+    return (f'<article class="card"><span class="aico">{ic(ANIMAL_ICON[a["slug"]])}</span><p class="eyebrow">{html.escape(a["task"])}</p>'
             f'<h3><a class="stretch" href="{prefix}animals/{a["slug"]}/index.html">{html.escape(a["name"])}</a></h3>'
             f'<p class="desc">{inline(a["desc"], prefix)}</p><div class="chips">{chips}</div></article>')
 
@@ -186,7 +211,19 @@ header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page)
   background:color-mix(in srgb,var(--surface) 88%,transparent);border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);
   box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 50%,transparent)}
 .search input::placeholder{color:color-mix(in srgb,var(--ink) 55%,transparent)}
-.search::before{content:"⌕";position:absolute;left:15px;top:50%;transform:translateY(-52%);font-size:1.2rem;opacity:.6;pointer-events:none}
+.search>.ic{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:.6;pointer-events:none}
+.ic{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em}
+.kicker .ic{width:1.1em;height:1.1em}
+.big .ico{display:inline-flex;width:44px;height:44px;align-items:center;justify-content:center;border-radius:14px;color:var(--action);
+  background:color-mix(in srgb,var(--action) 12%,transparent);border:1px solid color-mix(in srgb,var(--action) 24%,transparent)}
+.big .ico .ic{width:24px;height:24px}
+.aico{display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:12px;margin-bottom:12px;color:var(--action);
+  background:color-mix(in srgb,var(--action) 12%,transparent);border:1px solid color-mix(in srgb,var(--action) 22%,transparent)}
+.aico .ic{width:22px;height:22px}
+.tabs a .ic{width:1.05em;height:1.05em;margin-right:6px}
+.dock a .ic{width:22px;height:22px}
+.glass .ic{width:1.1em;height:1.1em}
+.chev{margin-left:2px;opacity:.7}
 /* picker */
 .picker{position:relative;z-index:5}
 summary.glass{list-style:none} summary::-webkit-details-marker{display:none}
@@ -227,7 +264,7 @@ main{padding-bottom:56px}
 .big::after{content:"";position:absolute;inset:auto -20% -60% -20%;height:70%;pointer-events:none;
   background:radial-gradient(closest-side,color-mix(in srgb,var(--glow) 28%,transparent),transparent)}
 .big:hover{transform:translateY(-3px);border-color:var(--action);box-shadow:0 18px 40px -12px rgb(0 0 0/.3)}
-.big .ico{font-size:2rem}
+
 .big h2,.big h3{font-family:"Iowan Old Style",Georgia,serif;font-weight:400;font-size:1.7rem;margin:.1em 0;letter-spacing:-.01em}
 .big p{margin:0;opacity:.8}
 .big .meta{margin-top:10px;font-size:.85rem;font-weight:600;color:var(--action)}
@@ -316,7 +353,7 @@ kbd.glass-key{margin-left:auto;font:600 .72rem/1 inherit;padding:4px 7px;border-
     box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 50%,transparent),0 14px 34px rgb(0 0 0/.3)}
   @supports(backdrop-filter:blur(1px)){.dock{backdrop-filter:blur(14px) saturate(1.4)}}
   .dock a{flex:1;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:999px;text-decoration:none;color:var(--ink);font-size:.72rem;font-weight:600}
-  .dock a span{font-size:1.25rem;line-height:1}.dock a[aria-current]{background:var(--action);color:var(--cta)}
+  .dock a[aria-current]{background:var(--action);color:var(--cta)}
   .stats li{flex:1 1 calc(33% - 10px);padding:10px 12px}.cta .glass{flex:1 1 100%;justify-content:center}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.card,.menu,.glass,.big,.panel{border:1px solid CanvasText}}
@@ -355,31 +392,32 @@ def render(title, prefix, body, hero="", cur=""):
 if(ids.indexOf(t)<0)t=matchMedia('(prefers-color-scheme: dark)').matches?'basalt':'chalk';
 document.documentElement.dataset.theme=t}})();</script>
 <style>{CSS}</style></head><body>
+{SPRITE}
 <a class="glass skip" href="#main">Skip to content</a>
 <header><div class="wrap bar">
-<a class="brand" href="{prefix}index.html">🌊 FiveOceans</a>
+<a class="brand" href="{prefix}index.html">{ic("waves-horizontal")} FiveOceans</a>
 <nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a></nav>
 <span class="spacer"></span>
-<div class="search"><label for="q" hidden>Search</label><input id="q" type="search" placeholder="Search 457(b), ERS…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
-<details class="picker" id="picker"><summary class="glass" aria-label="Change theme">🎨 <span class="lbl">Change theme</span> ▾</summary>
+<div class="search"><label for="q" hidden>Search</label>{ic("search")}<input id="q" type="search" placeholder="Search 457(b), ERS…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
+<details class="picker" id="picker"><summary class="glass" aria-label="Change theme">{ic("palette")} <span class="lbl">Change theme</span> {ic("chevron-down","chev")}</summary>
 <div class="menu" role="radiogroup" aria-label="Theme"><h4>Light</h4>{rows("light")}<h4>Dark</h4>{rows("dark")}</div></details>
 </div></header>
 {hero}
 <main id="main"><div class="wrap">{body}</div></main>
-<footer><div class="wrap"><p>🌊 FiveOceans · planning demo, fictional figures, not financial advice. Nothing you type is stored or sent.</p>
+<footer><div class="wrap"><p>FiveOceans · planning demo, fictional figures, not financial advice. Nothing you type is stored or sent.</p>
 <p><a href="{REPO}COLE_HANDOFF.txt">Handoff</a> · <a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> · <a href="https://github.com/Sukonik/5oceans">GitHub</a></p></div></footer>
 <nav class="dock" aria-label="Quick">
-<a href="{prefix}index.html"{ac("home")}><span>🏠</span>Home</a>
-<a href="{prefix}seawater/index.html"{ac("seawater")}><span>🧂</span>Seawater</a>
-<a href="{prefix}freshwater/index.html"{ac("freshwater")}><span>🚰</span>Fresh</a>
+<a href="{prefix}index.html"{ac("home")}>{ic("house")}<span>Home</span></a>
+<a href="{prefix}seawater/index.html"{ac("seawater")}>{ic("waves-horizontal")}<span>Seawater</span></a>
+<a href="{prefix}freshwater/index.html"{ac("freshwater")}>{ic("droplets")}<span>Fresh</span></a>
 </nav>
 <script>const P={prefix!r};{JS}</script></body></html>"""
 
 
 FAMILIES = {
-    "seawater": ("🧂", "Seawater", ["CoastalSea", "CentralSea", "DeepSea"],
+    "seawater": (ic("waves-horizontal"), "Seawater", ["CoastalSea", "CentralSea", "DeepSea"],
                  "Shoreline and open-water paths: housing near the coast, income bridges and insurance."),
-    "freshwater": ("🚰", "Freshwater", ["Spring", "Lake", "River"],
+    "freshwater": (ic("droplets"), "Freshwater", ["Spring", "Lake", "River"],
                    "Spring, lake and river paths: inland water, family and care decisions."),
 }
 BLURB = {"CoastalSea": "Right-size, rent, and stay near the shore.", "CentralSea": "Mid-water decisions between coast and deep.",
@@ -400,7 +438,7 @@ def slug(n):
 
 def coll_card(prefix, c):
     return (f'<a class="big" href="{prefix}{slug(c)}/index.html"><span class="ico">{EMOJI[c]}</span><h3>{c}</h3>'
-            f'<p>{BLURB[c]}</p><span class="meta">{len(COLL[c])} animals →</span></a>')
+            f'<p>{BLURB[c]}</p><span class="meta">{len(COLL[c])} animals {ic("arrow-right")}</span></a>')
 
 
 def page_hero(crumb, emoji, h, lede, extra=""):
@@ -408,13 +446,14 @@ def page_hero(crumb, emoji, h, lede, extra=""):
             f'<span class="kicker">{emoji} FiveOceans</span><h1>{h}</h1><p class="lede">{lede}</p>{extra}</div></div></section>')
 
 
-home_hero = """<section class="hero"><div class="wrap"><div>
-<span class="kicker">🌊 Retirement planning, near the water</span>
+ICWAVE, ICDROP, ICSHELL = ic("waves-horizontal"), ic("droplets"), ic("shell")
+home_hero = f"""<section class="hero"><div class="wrap"><div>
+<span class="kicker">{ICWAVE} Retirement planning, near the water</span>
 <h1>Where near the water would you like to live, and <em>when can you afford to work less?</em></h1>
 <p class="lede">Thirty-six animal paths, each tied to a real decision and an official source. Start with salt water or fresh.</p>
 <ul class="stats"><li><b>36</b><span>animal paths</span></li><li><b>6</b><span>water bodies</span></li><li><b>8</b><span>shore-rock themes</span></li></ul>
-<div class="cta" style="margin-top:26px"><a class="glass primary" href="seawater/index.html">🧂 Explore Seawater</a><a class="glass" href="freshwater/index.html">🚰 Explore Freshwater</a></div></div>
-<aside class="panel" aria-label="Sample result"><span class="tag">🐚 Hermit Crab · fictional example</span>
+<div class="cta" style="margin-top:26px"><a class="glass primary" href="seawater/index.html">{ICWAVE} Explore Seawater</a><a class="glass" href="freshwater/index.html">{ICDROP} Explore Freshwater</a></div></div>
+<aside class="panel" aria-label="Sample result"><span class="tag">{ICSHELL} Hermit Crab · fictional example</span>
 <h2>Could a tenant pay part of my housing cost?</h2>
 <p class="big-n">$1,552<span style="font-size:1rem;font-family:inherit;color:var(--ink);opacity:.7"> /month</span></p>
 <p class="small" style="margin-top:4px">what the owner still pays after rent</p>
@@ -424,7 +463,7 @@ home_hero = """<section class="hero"><div class="wrap"><div>
 
 fam_cards = "".join(
     f'<a class="big" href="{k}/index.html"><span class="ico">{e}</span><h2>{n}</h2><p>{d}</p>'
-    f'<span class="meta">{" · ".join(c)} →</span></a>' for k, (e, n, c, d) in FAMILIES.items())
+    f'<span class="meta">{" · ".join(c)} {ic("arrow-right")}</span></a>' for k, (e, n, c, d) in FAMILIES.items())
 def tabs(prefix, here):
     allc = [c for _, (_, _, cs, _) in FAMILIES.items() for c in cs]
     return '<nav class="tabs" aria-label="Water bodies">' + "".join(
@@ -456,26 +495,26 @@ for i, a in enumerate(ANIMALS):
         f_, _, anc = gl[1].partition("#")
         sec = GUIDES.get(f_, {}).get(anc)
     btns = "".join(
-        f'<a class="glass{" primary" if n == 0 else ""}" href="{html.escape(u)}" rel="noopener">{html.escape(l)} ↗</a>'
+        f'<a class="glass{" primary" if n == 0 else ""}" href="{html.escape(u)}" rel="noopener">{html.escape(l)} {ic("arrow-up-right")}</a>'
         for n, (l, u) in enumerate(srcs))
     if sec:
-        btns += '<a class="glass" href="#guide">Read the guide ↓</a>'
+        btns += f'<a class="glass" href="#guide">Read the guide {ic("arrow-down")}</a>'
     crumb = (f'<a href="../../index.html">Home</a> / <a href="../../{fam}/index.html">{famn}</a> / '
              f'<a href="../../{slug(a["coll"])}/index.html">{a["coll"]}</a> / {html.escape(a["name"])}')
     hero = (f'<section class="hero compact"><div class="wrap"><div><p class="crumb">{crumb}</p>'
-            f'<span class="kicker">{EMOJI[a["coll"]]} {html.escape(a["task"])}</span><h1>{html.escape(a["name"])}</h1>'
+            f'<span class="kicker">{ic(ANIMAL_ICON[a["slug"]])} {html.escape(a["task"])}</span><h1>{html.escape(a["name"])}</h1>'
             f'<p class="lede">{inline(a["desc"], "../../")}</p><div class="cta">{btns}</div></div></div></section>')
     body = ""
     if sec:
         body += (f'<section class="section" id="guide"><h2>{html.escape(sec[0])}</h2><div class="prose">{md_block(sec[1], "../../")}</div>'
-                 f'<p class="src"><a href="{REPO}{gl[1]}" rel="noopener">Open the full guide on GitHub →</a></p></section>')
+                 f'<p class="src"><a href="{REPO}{gl[1]}" rel="noopener">Open the full guide on GitHub {ic("arrow-up-right")}</a></p></section>')
     sib = [x for x in COLL[a["coll"]] if x is not a]
     body += (f'<section class="section"><h2>More in {a["coll"]}</h2><div class="grid">'
              f'{"".join(card_html(x, "../../") for x in sib)}</div></section>')
     prv, nxt = ANIMALS[i - 1], ANIMALS[(i + 1) % len(ANIMALS)]
     body += ('<nav class="pager" aria-label="Animals">'
-             f'<a class="glass" href="../{prv["slug"]}/index.html">← {html.escape(prv["name"])}</a>'
-             f'<a class="glass next" href="../{nxt["slug"]}/index.html">{html.escape(nxt["name"])} →</a></nav>')
+             f'<a class="glass" href="../{prv["slug"]}/index.html">{ic("arrow-left")} {html.escape(prv["name"])}</a>'
+             f'<a class="glass next" href="../{nxt["slug"]}/index.html">{html.escape(nxt["name"])} {ic("arrow-right")}</a></nav>')
     write(f'animals/{a["slug"]}/index.html', f'{a["name"]} | FiveOceans', 2, body, hero, fam)
 (out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")
 (out / ".nojekyll").write_text("")
