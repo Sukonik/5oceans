@@ -710,6 +710,30 @@ header{transition:box-shadow .2s}header.scrolled{box-shadow:0 1px 0 var(--edge),
 .wrap{padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
 @media(max-height:520px) and (orientation:landscape){header{position:static}body{padding-bottom:72px!important}.dock a span,.dock .dd-btn span{display:none}.dock a,.dock .dd-btn{min-height:44px!important}.dock{padding:4px;left:50%;right:auto;translate:-50% 0;width:min(420px,calc(100vw - 24px))}.hl-float{display:none!important}}
 .calc-res:focus-visible{outline:3px solid var(--action);outline-offset:4px;border-radius:12px}
+/* maps */
+.fm{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:18px;align-items:start}
+.fm-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:14px}
+.fm-bar .fld{flex:1 1 220px;margin:0}
+.fm-count{font-size:.9rem;color:var(--muted);margin:0 0 8px}
+.fm-list{list-style:none;margin:0;padding:6px;max-height:560px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--edge);border-radius:16px;background:var(--surface)}
+.fm-item{all:unset;box-sizing:border-box;display:flex;gap:10px;align-items:center;width:100%;padding:10px 12px;min-height:48px;border-radius:12px;cursor:pointer;transition:background .15s var(--ease)}
+.fm-item b{display:block;font-weight:650}.fm-item small{display:block;color:var(--muted);font-size:.8rem}
+.fm-item:hover{background:color-mix(in srgb,var(--action) 12%,transparent)}
+.fm-item[aria-pressed=true]{background:color-mix(in srgb,var(--action) 20%,transparent);box-shadow:inset 3px 0 0 var(--action)}
+.fm-item:focus-visible{outline:3px solid var(--action);outline-offset:-2px}
+.fm-dot{flex:0 0 auto;width:12px;height:12px;border-radius:50%;background:var(--dot);border:2px solid var(--surface);box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 30%,transparent)}
+.fm-none,.fm-hint{padding:14px;color:var(--muted)}
+.fm-map{height:min(520px,70vh);min-height:320px;border-radius:16px;overflow:hidden;border:1px solid var(--edge);background:color-mix(in srgb,var(--action) 8%,var(--surface));position:relative;z-index:0}
+.fm-legend{display:flex;flex-wrap:wrap;gap:14px;list-style:none;margin:10px 0 0;padding:0;font-size:.85rem;color:var(--muted)}
+.fm-legend li{display:flex;gap:6px;align-items:center}
+.fm-detail{margin-top:14px;padding:16px 18px;border:1px solid var(--edge);border-radius:16px;background:var(--surface)}
+.fm-detail h3{margin:0 0 2px}.fm-detail h3:focus{outline:none}.fm-sub{color:var(--muted);margin:0 0 8px}
+.fm-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.fm-facts dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}.fm-facts dd{margin:0;font-weight:600}
+.fm-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.fm-credit{font-size:.85rem;color:var(--muted)}
+.leaflet-container{font:inherit}.leaflet-container a{color:var(--action)}
+@media(max-width:900px){.fm{grid-template-columns:1fr}.fm-list{max-height:300px}.fm-map{order:-1}}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
 @media(max-width:1100px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
@@ -791,7 +815,9 @@ MENUS = {
         ("tools/savings-bridge/index.html", "piggy-bank", "Savings Bridge", "Cover the years before a pension"),
         ("credit/index.html", "wallet", "Credit Card Tool", "Scores, cards and debt strategy"),
     ]),
-    "maps": dict(label="Maps", icon="map", keys=("maps",), allhref="maps/index.html", alltext="All maps", items=[]),
+    "maps": dict(label="Maps", icon="map", keys=("maps",), allhref="maps/index.html", alltext="All maps", items=[
+        ("maps/cities/index.html", "map-pin", "Cities Map", "Cities on the water, with details"),
+    ]),
 }
 
 
@@ -1213,6 +1239,67 @@ sg = f"""<div class="sg">
 </section></div>"""
 write("design/index.html", "Style guide | FiveOceans", 1, f'<section class="section">{sg}</section>',
       page_hero('<a href="../index.html">Home</a> / Style guide', ic("palette"), "Style guide", "The Blue Glass controls in one place: buttons, tabs, sliders, menus, cards and callouts. Switch themes to check each one."), "design")
+
+# ---------------- maps ----------------
+shutil.copytree(root / "assets/vendor", out / "assets/vendor", dirs_exist_ok=True)
+shutil.copytree(root / "assets/maps", out / "assets/maps", dirs_exist_ok=True)
+(out / "data/maps").mkdir(parents=True, exist_ok=True)
+for _f in (root / "data/maps").glob("*.json"):
+    shutil.copy(_f, out / "data/maps" / _f.name)
+
+MAPS = [
+    ("cities", "Cities Map", "map-pin", "Cities on the ocean, a sea, a lake or a river: where each one sits and what water it faces.", True),
+]
+
+
+def map_page(slug_, title, icon, lede, config, extra_after="", filters=""):
+    cfg = json.dumps(config, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    body = f"""<section class="section"><link rel="stylesheet" href="../../assets/vendor/leaflet/leaflet.css">
+<div class="fm-bar" role="search" aria-label="Filter {title}"><div class="fld"><label for="fm-q">Search</label><div class="inp"><input id="fm-q" type="search" autocomplete="off" placeholder="Name, country, water body"></div></div>
+<div class="fld"><label for="fm-group">{config["groupLabel"].capitalize()}</label><div class="inp"><select id="fm-group"></select></div></div>
+<button type="button" class="glass" id="fm-reset">{ic("rotate-ccw")} Reset</button></div>
+<div class="fm"><div><p class="fm-count" id="fm-count" role="status" aria-live="polite"></p><ul class="fm-list" id="fm-list" aria-label="{title} list"></ul></div>
+<div><div class="fm-map" id="fm-map" role="region" aria-label="{title} map. The list has the same places and details."></div>
+<div class="callout high" id="fm-note" role="note" hidden>Map tiles did not load, so the background is blank. The list and details still work, and the markers show where each place is.</div>
+<ul class="fm-legend" id="fm-legend" aria-label="Legend"></ul>
+<div class="fm-detail" id="fm-detail" aria-live="polite"></div></div></div>
+{extra_after}
+<script>window.FOMAP={cfg};</script>
+<script src="../../assets/vendor/leaflet/leaflet.js"></script><script src="../../assets/maps/map.js"></script></section>"""
+    write(f"maps/{slug_}/index.html", f"{title} | FiveOceans", 2, body,
+          page_hero(f'<a href="../../index.html">Home</a> / <a href="../index.html">Maps</a> / {title}', ic(icon), title, lede), "maps")
+
+
+_cd = json.loads((root / "data/maps/cities.json").read_text(encoding="utf-8"))
+_city_items = []
+for c in _cd["cities"]:
+    fam = c["family"].lower()
+    _city_items.append(dict(
+        id=c["id"], name=c["name"], lat=c["lat"], lon=c["lon"], group=c["family"],
+        sub=f'{c["state"]}, {c["country"]}' if c["state"] and c["state"] != c["country"] else c["country"],
+        tags=[c["ocean"], c["water"], c["kind"], c["region"]], note=c["note"],
+        facts=[["Water", c["water"]], ["Type", c["kind"]], ["Ocean or family", c["ocean"]], ["Region", c["region"]],
+               ["Coordinates", f'{c["lat"]:.3f}, {c["lon"]:.3f}']],
+        links=[["Open in OpenStreetMap", f'https://www.openstreetmap.org/?mlat={c["lat"]}&mlon={c["lon"]}#map=11/{c["lat"]}/{c["lon"]}'],
+               [f'{"Seawater" if fam == "seawater" else "Freshwater"} animals', f'../../{fam}/index.html', True],
+               ["Real Estate Calculator", "../../tools/real-estate/index.html"]]))
+_credit = ('<p class="fm-credit">City names and coordinates come from the <a href="https://github.com/dr5hn/countries-states-cities-database" rel="noopener">countries-states-cities-database</a> '
+           '(ODbL 1.0, credit to dr5hn and contributors). Water body, type and notes are written for this site. Map tiles and data: '
+           '&copy; <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap contributors</a>. '
+           'Dots mark the city center, not a listing or a price. Check each place yourself before you plan around it.</p>')
+map_page("cities", "Cities Map", "map-pin", MAPS[0][3],
+         dict(kind="cities", items=_city_items, noun="cities", one="city", groupLabel="water family",
+              groups=[dict(key="Seawater", label="Seawater", color="#1f6fb2"), dict(key="Freshwater", label="Freshwater", color="#1a9a6b")]),
+         _credit)
+INDEX.append(dict(n="Cities Map", t="Map", c="Map", u="maps/cities/index.html", s=words("cities map city water ocean sea lake river coast harbor bay location leaflet openstreetmap")))
+
+_mcards = "".join(
+    f'<article class="card"><span class="aico">{ic(i)}</span><h2><a class="stretch" href="{sl}/index.html">{t}</a></h2><p class="desc">{d}</p></article>'
+    for sl, t, i, d, live in MAPS)
+write("maps/index.html", "Maps | FiveOceans", 1,
+      f'<section class="section"><div class="grid">{_mcards}</div><p class="disclaim">Maps use OpenStreetMap tiles. Every place is also in a searchable list, so nothing depends on the map loading. Nothing you type is sent anywhere.</p></section>',
+      page_hero('<a href="../index.html">Home</a> / Maps', ic("map"), "Maps", "Find places near water: cities first, with seas and land pricing next."), "maps")
+INDEX.append(dict(n="Maps", t="All map tools", c="Page", u="maps/index.html", s=words("maps cities seas land pricing")))
 
 (out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")
 (out / ".nojekyll").write_text("")

@@ -29,6 +29,7 @@ jobs:
           node tests/sonar.test.mjs
           node tests/sonar_issue.test.mjs
           node tests/sonar_fetch.test.mjs
+          node tests/maps.test.mjs
       - name: 🛠️ Build site
         run: python scripts/build_site.py
       - name: 🧭 Check the built site
