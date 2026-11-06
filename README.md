@@ -209,7 +209,7 @@ Visual direction comes from Nathan's FluxEdit and Pelmatech reference screenshot
 python scripts/build_site.py   # reads docs/handoff/FiveOcean.md, writes site/
 ```
 
-- 🛠️ `scripts/build_site.py` generates 96 static pages and a search index and fails if the roster isn't exactly 36 animals.
+- 🛠️ `scripts/build_site.py` generates 98 static pages and a search index and fails if the roster isn't exactly 36 animals.
 - 🚀 `.github/workflows/pages.yml` deploys `site/` on every push to `main`.
 - ⚙️ One-time setup: **Settings → Pages → Source: GitHub Actions**.
 
@@ -248,6 +248,7 @@ site/              generated output (not committed)
 | v0.14 | Tools menu: themed bubble dropdown on desktop, bubble above the dock on phones |
 | v0.15 | Funding the house: loan-program selector (conventional, FHA, VA, USDA), assistance line, 10 mortgage and grant pages; accessibility sweep (landmarks, heading order, contrast) |
 | v0.16 | Dolphin Sonar reads about 70 kinds of facts in 11 categories (price and payment, costs, property, lot, features, market, price history, rental, location, risk, listing source) with insights; Redfin-, Zillow- and StreetEasy-style test fixtures |
+| v0.17 | UI/UX polish: glass control system and style guide, range sliders, menus that fit the screen and mark the current page, a real Water page for the dock, scroll affordances, floating result pill; fixes calculator results being written to a hidden header element; site structure test in CI |
 
 ## 🧭 Roadmap
 
