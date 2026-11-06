@@ -35,6 +35,7 @@
       w.innerHTML = '<label for="b-' + d[0] + '">' + d[1] + '</label><div class="inp">' + (d[3] === '$' ? '<span class="af pre">$</span>' : '') + '<input id="b-' + d[0] + '" type="text" inputmode="decimal" autocomplete="off" value="' + d[2] + '" aria-describedby="b-' + d[0] + '-h">' + (d[3] === '%' ? '<span class="af suf">%</span>' : '') + '</div><small id="b-' + d[0] + '-h">' + d[4] + '</small>';
       box.appendChild(w);
       var i = w.querySelector('input'); i.addEventListener('input', function () { vals[d[0]] = parse(i.value); render(); });
+      var R = { deposit: [0, 5000, 50], years: [1, 40, 1], ret: [0, 10, 0.1], drawYears: [1, 40, 1], drawRet: [0, 10, 0.1], gap: [0, 8000, 50], start: [0, 500000, 1000] }[d[0]]; if (R && window.FOUI) FOUI.slider(w, i, R);
     });
     $('b-reset').addEventListener('click', function () { F.forEach(function (d) { vals[d[0]] = d[2]; $('b-' + d[0]).value = d[2]; }); render(); });
     render();

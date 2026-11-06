@@ -148,7 +148,7 @@
     var tg = el('div', 'fld tgt'); tg.innerHTML = '<label for="c-target">Target utilization on each statement</label><div class="inp"><input id="c-target" type="text" inputmode="decimal" value="9"><span class="af suf">%</span></div><small>Cards report the balance on the statement date. Paying down before it closes lowers what gets reported. Many lenders like under 30%; lower is often better.</small>';
     box.appendChild(tg);
     var plan = el('div', ''); plan.id = 'c-plan'; box.appendChild(plan);
-    tg.querySelector('input').addEventListener('input', renderPlan); renderPlan();
+    tg.querySelector('input').addEventListener('input', renderPlan); if (window.FOUI) FOUI.slider(tg, tg.querySelector('input'), [0, 50, 1]); renderPlan();
     var list = el('div', 'cardlist'); box.appendChild(el('h3', '', 'Cards'));
     state.cards.forEach(function (c) {
       var uu = c.limit > 0 ? (c.balance / c.limit) * 100 : 0, it = el('article', 'ccard');
@@ -182,7 +182,7 @@
     var s = state.settings, f = el('form', 'fields cc-form'); f.onsubmit = function (e) { e.preventDefault(); };
     [['x-extra', 'Extra money each month', s.extra, { pre: '$', hint: 'On top of all minimum payments' }], ['x-ret', 'Investment return', s.ret, { suf: '%', hint: 'Per year, after fees and tax. Be modest.' }],
       ['x-years', 'Years to look ahead', s.years, { suf: 'years' }], ['x-tax', 'Your tax rate', s.tax, { suf: '%', hint: 'Used only if a debt’s interest is deductible' }], ['x-inv', 'Invested today', s.invested, { pre: '$' }]]
-      .forEach(function (d) { var w = field(d[0], d[1], 'num', d[2], d[3]); f.appendChild(w); w.querySelector('input').addEventListener('input', function () { readSettings(); touch(); refreshStrategy(); }); });
+      .forEach(function (d) { var w = field(d[0], d[1], 'num', d[2], d[3]); f.appendChild(w); w.querySelector('input').addEventListener('input', function () { readSettings(); touch(); refreshStrategy(); }); var R = { 'x-extra': [0, 5000, 50], 'x-ret': [0, 15, 0.5], 'x-years': [1, 40, 1], 'x-tax': [0, 50, 1] }[d[0]]; if (R && window.FOUI) FOUI.slider(w, w.querySelector('input'), R); });
     var lab = el('label', 'chk'); lab.innerHTML = '<input type="checkbox" id="x-cards"> Include the balances from my cards tab'; f.appendChild(lab); p.appendChild(f);
     $('x-cards').checked = s.includeCards; $('x-cards').addEventListener('change', function () { readSettings(); touch(); refreshStrategy(); });
     p.appendChild(el('h3', '', 'Other debts'));

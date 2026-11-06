@@ -2,6 +2,7 @@
 (function () {
   'use strict';
   var RE = window.RE, $ = function (id) { return document.getElementById(id); };
+  var RANGE = { downPct: [0, 60, 0.5], rate: [0, 12, 0.05], term: [5, 40, 5], closingPct: [0, 8, 0.25], vacancy: [0, 40, 1], mgmt: [0, 20, 0.5], growth: [-5, 10, 0.5], rentGrowth: [0, 8, 0.5], years: [1, 40, 1], taxPct: [0, 4, 0.05], maintPct: [0, 4, 0.1], contingency: [0, 30, 1], badOcc: [40, 100, 1], ltv: [50, 100, 1], points: [0, 5, 0.25], flipTaxPct: [0, 10, 0.25], sellCostPct: [0, 10, 0.5], sellPct: [0, 10, 0.5], invest: [0, 15, 0.5], ownCostPct: [0, 5, 0.1], repairsPct: [0, 15, 0.5], capexPct: [0, 15, 0.5], buyCosts: [0, 6, 0.25], sellCosts: [0, 12, 0.5], rehabFin: [0, 100, 5], feePct: [0, 40, 1], lodgingTax: [0, 20, 0.5], taxRate: [0, 50, 1], buildRate: [0, 15, 0.1], personalDays: [0, 365, 1], rentedDays: [0, 365, 1], delayMonths: [0, 24, 1], buildMonths: [1, 36, 1], units: [1, 12, 1], unitsTotal: [1, 12, 1], unitsRented: [0, 12, 1], score: [0, 850, 10] };
   var KEY = 'fiveoceans-re-scenarios', cur = null, vals = {}, saved = [];
   var usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
   function fmt(v, kind) {
@@ -32,12 +33,14 @@
         b.addEventListener('click', function () { setMode(m.id); }); row.appendChild(b);
       });
       wrap.appendChild(row); box.appendChild(wrap);
+      if (window.FOUI) FOUI.edges(row);
     });
   }
   function setMode(id, values) {
     if (!RE.MODES[id]) id = 'home';
     cur = RE.MODES[id]; vals = Object.assign(RE.defaults(cur), values || {});
     document.querySelectorAll('.mbtn').forEach(function (b) { var on = b.dataset.mode === id; b.setAttribute('aria-checked', on); b.classList.toggle('on', on); });
+    var onb = document.querySelector('.mbtn.on'); if (onb && onb.parentNode.scrollWidth > onb.parentNode.clientWidth + 4) onb.parentNode.scrollLeft = Math.max(0, onb.offsetLeft - (onb.parentNode.clientWidth - onb.offsetWidth) / 2);
     $('mode-title').textContent = cur.label; $('mode-blurb').textContent = cur.blurb;
     if (location.hash.slice(1) !== id) history.replaceState(null, '', '#' + id);
     $('ex-btn').hidden = !cur.example;
@@ -67,6 +70,7 @@
       i.addEventListener('blur', function () { i.value = String(vals[fd.id]); });
       w.appendChild(l); w.appendChild(wrap); w.appendChild(hint);
       f.appendChild(w);
+      if (RANGE[fd.id] && window.FOUI) FOUI.slider(w, i, RANGE[fd.id]);
     });
   }
   function render() {
@@ -102,6 +106,7 @@
       sn.vac.forEach(function (vc, i) { h += '<tr><th scope="row">' + (Math.round(vc * 10) / 10) + '%</th>'; sn.grid[i].forEach(function (x, j) { h += '<td' + (i === 0 && j === 1 ? ' class="base"' : '') + '>' + fmt(x, 'money') + '</td>'; }); h += '</tr>'; });
       tt.innerHTML = h + '</tbody>'; g.appendChild(tt); d.appendChild(g); box.appendChild(d);
     }
+    var fl = $('hl-float'); if (fl) { fl.querySelector('span').textContent = out.headline.k + ': ' + fmt(out.headline.v, out.headline.kind); if (window.pillUpdate) window.pillUpdate(); }
     box.dataset.summary = out.headline.k + ': ' + fmt(out.headline.v, out.headline.kind) + '\n' + out.rows.map(function (r) { return r.k + ': ' + fmt(r.v, r.kind); }).join('\n');
   }
 
@@ -201,6 +206,10 @@
 
   function init() {
     load(); buildModes(); var sonarApplied = snInit();
+    var fl = document.createElement('button'); fl.type = 'button'; fl.id = 'hl-float'; fl.className = 'hl-float'; fl.innerHTML = '<span></span><svg class="ic" aria-hidden="true"><use href="#i-arrow-down"/></svg>'; fl.setAttribute('aria-label', 'Jump to results');
+    fl.addEventListener('click', function () { var r = $('results'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); document.body.appendChild(fl);
+    var tick = false; function pill() { tick = false; var r = $('results'); if (!r) return; var t = r.getBoundingClientRect().top; fl.toggleAttribute('data-show', t > innerHeight * 0.92 && innerWidth <= 960); }
+    window.pillUpdate = function () { if (!tick) { tick = true; requestAnimationFrame(pill); } }; addEventListener('scroll', window.pillUpdate, { passive: true }); addEventListener('resize', window.pillUpdate); window.pillUpdate();
     $('save-btn').addEventListener('click', function () {
       var name = $('scn-name').value.trim() || (cur.label + ' ' + (saved.length + 1));
       saved.unshift({ id: String(Date.now()), name: name, mode: cur.id, values: Object.assign({}, vals), at: Date.now() }); saved = saved.slice(0, 12);

@@ -637,6 +637,79 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
 .dock .dd-menu a.dd-item:hover,.dock .dd-menu a.dd-item:focus-visible{background:color-mix(in srgb,var(--action) 12%,transparent)}
 .dock .dd-menu a.dd-all{flex:none;flex-direction:row;justify-content:space-between;align-items:center;min-height:44px;border-radius:0;font-size:.9rem;font-weight:600;color:var(--action);background:none;text-align:left}
 @keyframes ddpopup{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+
+/* ===== polish layer: tokens, glass, buttons, sliders, menus, scrollers ===== */
+html{--shadow-1:0 1px 2px rgb(0 0 0/.08),0 1px 1px rgb(0 0 0/.05);--shadow-2:0 8px 20px -8px rgb(0 0 0/.28),0 2px 4px rgb(0 0 0/.06);--shadow-3:0 26px 60px -14px rgb(0 0 0/.4);
+  --edge:color-mix(in srgb,var(--ink) 16%,transparent);--spec:color-mix(in srgb,#fff 60%,transparent);--ease:cubic-bezier(.2,.8,.2,1)}
+.glass,.mbtn,.sbtn{border:1px solid transparent;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 96%,transparent),color-mix(in srgb,var(--surface) 80%,transparent)) padding-box,
+    linear-gradient(180deg,var(--spec),var(--edge) 55%,color-mix(in srgb,var(--ink) 24%,transparent)) border-box;
+  box-shadow:inset 0 1px 0 var(--spec),inset 0 -1px 0 color-mix(in srgb,var(--ink) 6%,transparent),var(--shadow-1);
+  transition:transform .16s var(--ease),box-shadow .2s,filter .2s,background-color .2s}
+.glass:hover,.mbtn:hover,.sbtn:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 var(--spec),var(--shadow-2);border-color:transparent}
+.glass:active,.mbtn:active,.sbtn:active{transform:translateY(0) scale(.985);box-shadow:inset 0 2px 5px rgb(0 0 0/.14)}
+.glass:focus-visible,.mbtn:focus-visible,.sbtn:focus-visible,.dd-btn:focus-visible,.tabs a:focus-visible,.tabs button:focus-visible{outline:none;box-shadow:inset 0 1px 0 var(--spec),0 0 0 3px var(--page),0 0 0 5px var(--action)}
+.glass[disabled],.glass[aria-disabled="true"],.mbtn[disabled],.sbtn[disabled]{opacity:.5;pointer-events:none;box-shadow:none}
+.glass.primary,.mbtn.on{color:var(--cta);font-weight:600;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--action) 86%,#fff),var(--action) 70%) padding-box,linear-gradient(180deg,rgb(255 255 255/.65),color-mix(in srgb,var(--action) 70%,#000)) border-box;
+  box-shadow:inset 0 1px 0 rgb(255 255 255/.45),inset 0 -1px 0 rgb(0 0 0/.12),0 10px 22px -8px color-mix(in srgb,var(--action) 60%,transparent)}
+.glass.primary:hover,.mbtn.on:hover{box-shadow:inset 0 1px 0 rgb(255 255 255/.5),0 14px 26px -8px color-mix(in srgb,var(--action) 65%,transparent)}
+.mbtn,.sbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.sbtn{min-height:44px;padding:8px 16px;font-size:.9rem}
+@media(hover:none){.glass:hover,.mbtn:hover,.sbtn:hover,.card:hover,.big:hover,.tile:hover{transform:none}}
+.card,.big,.panel,.box,.strat,.ccard,.stile,.sonar,.guide,.hl{box-shadow:var(--shadow-1)}
+.card,.big{transition:transform .2s var(--ease),box-shadow .2s,border-color .2s}
+.card:hover,.big:hover{box-shadow:var(--shadow-2)}
+header{transition:box-shadow .2s}header.scrolled{box-shadow:0 1px 0 var(--edge),0 12px 28px -18px rgb(0 0 0/.35)}
+.nav a,.dd-btn{transition:background-color .15s,opacity .15s}
+.nav a[aria-current],.dd-btn[aria-current]{background:color-mix(in srgb,var(--action) 14%,transparent);color:var(--ink);font-weight:600;opacity:1;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--action) 30%,transparent)}
+/* tabs, segmented controls */
+.tabs a[aria-current],.tabs button.on{background:linear-gradient(180deg,color-mix(in srgb,var(--action) 86%,#fff),var(--action) 70%);color:var(--cta);box-shadow:inset 0 1px 0 rgb(255 255 255/.4),0 6px 14px -6px color-mix(in srgb,var(--action) 60%,transparent)}
+.tabs a,.tabs button{transition:background-color .15s,color .15s,box-shadow .2s;scroll-snap-align:center}
+.tabs{scroll-snap-type:x proximity}
+/* scroll edge fades */
+.scrolls[data-l]{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 26px);mask-image:linear-gradient(90deg,transparent 0,#000 26px)}
+.scrolls[data-r]{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(90deg,#000 calc(100% - 26px),transparent 100%)}
+.scrolls[data-l][data-r]{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 26px,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 26px,#000 calc(100% - 26px),transparent 100%)}
+/* sliders */
+.rng{-webkit-appearance:none;appearance:none;display:block;width:100%;height:44px;margin:2px 0 0;padding:0;background:transparent;cursor:pointer;touch-action:pan-y}
+.rng::-webkit-slider-runnable-track{height:8px;border-radius:99px;background:linear-gradient(90deg,var(--action) var(--fill,0%),color-mix(in srgb,var(--ink) 16%,transparent) var(--fill,0%));box-shadow:inset 0 1px 2px rgb(0 0 0/.18)}
+.rng::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-10px;border-radius:50%;border:2px solid var(--action);
+  background:radial-gradient(circle at 35% 28%,#fff,color-mix(in srgb,var(--surface) 70%,#bfe3f0));box-shadow:0 4px 10px rgb(0 0 0/.3),inset 0 1px 0 #fff;transition:transform .14s var(--ease),box-shadow .2s}
+.rng:hover::-webkit-slider-thumb{transform:scale(1.06)}.rng:active::-webkit-slider-thumb{transform:scale(1.14)}
+.rng::-moz-range-track{height:8px;border-radius:99px;background:color-mix(in srgb,var(--ink) 16%,transparent)}
+.rng::-moz-range-progress{height:8px;border-radius:99px;background:var(--action)}
+.rng::-moz-range-thumb{width:24px;height:24px;border-radius:50%;border:2px solid var(--action);background:#fff;box-shadow:0 4px 10px rgb(0 0 0/.3)}
+.rng:focus-visible{outline:none}.rng:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px color-mix(in srgb,var(--action) 38%,transparent),0 4px 10px rgb(0 0 0/.3)}
+.rng:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px color-mix(in srgb,var(--action) 38%,transparent)}
+/* menus: bubbles share one look */
+.dd-menu{translate:var(--dx,0) 0;box-shadow:var(--shadow-3),inset 0 1px 0 var(--spec)}
+.dd-menu::before{translate:calc(var(--dx,0px) * -1) 0}
+.dd-item{transition:background-color .15s}
+.dd-item[aria-current],.dd-all[aria-current]{background:color-mix(in srgb,var(--action) 14%,transparent);box-shadow:inset 3px 0 0 var(--action)}
+.picker .menu{top:calc(100% + 14px);border-radius:22px;padding:10px 14px 14px;box-shadow:var(--shadow-3),inset 0 1px 0 var(--spec);animation:ddpop .18s ease;transform-origin:calc(100% - 30px) -8px}
+.picker .menu::before{content:"";position:absolute;top:-8px;right:30px;width:14px;height:14px;background:var(--surface);border-left:1px solid var(--edge);border-top:1px solid var(--edge);border-radius:3px 0 0 0;transform:rotate(45deg)}
+.picker[open]>summary .chev{transform:rotate(180deg)}.picker summary .chev{transition:transform .2s}
+.opt{transition:background-color .15s}.opt:has(input:checked){background:color-mix(in srgb,var(--action) 13%,transparent);font-weight:600}
+/* floating result pill for the calculators on small screens */
+.hl-float{display:none;position:fixed;z-index:25;left:50%;translate:-50% 0;bottom:calc(96px + env(safe-area-inset-bottom));max-width:calc(100vw - 32px);gap:10px;align-items:center;min-height:44px;padding:8px 18px;border-radius:999px;font:inherit;font-size:.92rem;font-weight:600;color:var(--cta);cursor:pointer;
+  border:1px solid rgb(255 255 255/.4);background:linear-gradient(180deg,color-mix(in srgb,var(--action) 86%,#fff),var(--action));box-shadow:var(--shadow-3),inset 0 1px 0 rgb(255 255 255/.45)}
+.hl-float[data-show]{display:inline-flex}.hl-float span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100vw - 90px)}.hl-float .ic{width:1.05em;height:1.05em}
+@media(min-width:961px){.hl-float{display:none!important}}
+/* style guide */
+.dd-menu.static{position:relative;top:auto;left:auto;right:auto;translate:none;animation:none;width:min(350px,100%);margin-top:16px}
+.dd-menu.static::before{display:none}
+.sg-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px}
+.sg h2{margin-top:2.2rem}.sg h3{margin:1.4rem 0 .5rem;font-size:1rem;color:var(--muted)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.swatch{padding:12px;border-radius:14px;border:1px solid var(--edge);font-size:.8rem;display:grid;gap:6px}.swatch i{display:block;height:34px;border-radius:8px;border:1px solid var(--edge)}
+.dock .dd-menu{max-height:calc(100vh - 120px);overflow-y:auto;overscroll-behavior:contain}
+/* header hides on scroll down (phones and tablets) */
+@media(max-width:1100px){header{transition:transform .25s var(--ease),box-shadow .2s}header.hide{transform:translateY(-100%)}}
+/* safe areas, short screens */
+.wrap{padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
+@media(max-height:520px) and (orientation:landscape){header{position:static}body{padding-bottom:72px!important}.dock a span,.dock .dd-btn span{display:none}.dock a,.dock .dd-btn{min-height:44px!important}.dock{padding:4px;left:50%;right:auto;translate:-50% 0;width:min(420px,calc(100vw - 24px))}.hl-float{display:none!important}}
+.calc-res:focus-visible{outline:3px solid var(--action);outline-offset:4px;border-radius:12px}
 /* responsive */
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:48px 64px;gap:32px}}
 @media(max-width:1100px){.bar{gap:8px;min-height:56px}.brand{flex:1 0 auto}.nav{display:none}.search{order:4;flex:1 1 100%}.search kbd{display:none}
@@ -649,12 +722,13 @@ textarea{display:block;margin:0 0 8px;resize:vertical}
   .dock a{flex:1;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:999px;text-decoration:none;color:var(--ink);font-size:.72rem;font-weight:600}
   .dock a[aria-current]{background:var(--action);color:var(--cta)}
   .stats li{flex:1 1 calc(33% - 10px);padding:10px 12px}.cta .glass{flex:1 1 100%;justify-content:center}}
+@media(max-width:720px){.mrow{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;padding-bottom:4px}.mrow::-webkit-scrollbar{display:none}.mrow .mbtn{flex:none;scroll-snap-align:center}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.card,.menu,.glass,.big,.panel{border:1px solid CanvasText}}
 """
 
 JS = """
-const q=document.getElementById('q'),pk=document.getElementById('picker'),res=document.getElementById('results');
+const q=document.getElementById('q'),pk=document.getElementById('picker'),res=document.getElementById('search-results');
 const norm=s=>s.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
 const sc=(a,v)=>{const n=norm(a.n);return (n.includes(v)?100:0)+(n.startsWith(v)?50:0)+(a.c==='Resource'?10:a.c==='Guide'?5:0)};
 let INDEX=null;
@@ -692,59 +766,80 @@ document.querySelectorAll('.dd').forEach(function(dd){
   m.addEventListener('click',function(e){if(e.target.closest('a'))close()});
 });
 document.addEventListener('click',function(e){document.querySelectorAll('.dd').forEach(function(d){var m=d.querySelector('.dd-menu');if(!m.hidden&&!d.contains(e.target)){m.hidden=true;d.querySelector('.dd-btn').setAttribute('aria-expanded','false')}})});
+
+function markCurrent(){var path=location.pathname.replace(/index\\.html$/,''),hash=location.hash;
+  document.querySelectorAll('.dd-menu:not(.static)').forEach(function(m){var items=[].slice.call(m.querySelectorAll('a')),same=items.filter(function(a){return new URL(a.getAttribute('href'),location.href).pathname.replace(/index\\.html$/,'')===path}),hit=null;
+    same.forEach(function(a){var u=new URL(a.getAttribute('href'),location.href);if(u.hash&&u.hash===hash)hit=a});
+    if(!hit)hit=same.filter(function(a){return !new URL(a.getAttribute('href'),location.href).hash})[0]||null;
+    items.forEach(function(a){if(a===hit)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})})}
+markCurrent();window.addEventListener('hashchange',markCurrent);
+document.querySelectorAll('.dd').forEach(function(dd){var m=dd.querySelector('.dd-menu'),b=dd.querySelector('.dd-btn');
+  new MutationObserver(function(){if(m.hidden){m.style.removeProperty('--dx');return}
+    m.style.setProperty('--dx','0px');var r=m.getBoundingClientRect(),dx=0;if(r.right>innerWidth-8)dx=innerWidth-8-r.right;if(r.left+dx<8)dx=8-r.left;m.style.setProperty('--dx',dx+'px')}).observe(m,{attributes:true,attributeFilter:['hidden']})});
+(function(){var h=document.querySelector('header'),t=false,last=scrollY;function f(){t=false;var y=scrollY;h.classList.toggle('scrolled',y>6);
+  var busy=h.contains(document.activeElement)||document.querySelector('.dd-menu:not([hidden]):not(.static)')||document.querySelector('.picker[open]');
+  if(matchMedia('(max-width:1100px)').matches&&!busy&&y>120&&y>last+4)h.classList.add('hide');else if(y<last-4||y<=120||busy)h.classList.remove('hide');last=y}
+  addEventListener('scroll',function(){if(!t){t=true;requestAnimationFrame(f)}},{passive:true});f()})();
+document.querySelectorAll('.tabs').forEach(function(t){if(window.FOUI)FOUI.edges(t)});
 """
 
 
-TOOLS_MENU = [
-    ("tools/real-estate/index.html", "calculator", "Real Estate Calculator", "14 ways to own, rent or flip a place"),
-    ("tools/real-estate/index.html#sonar", "search", "Dolphin Sonar", "Fill the calculator from a listing"),
-    ("tools/savings-bridge/index.html", "piggy-bank", "Savings Bridge", "Cover the years before a pension"),
-    ("credit/index.html", "wallet", "Credit Card Tool", "Scores, cards and debt strategy"),
-]
+MENUS = {
+    "tools": dict(label="Tools", icon="calculator", keys=("tools", "credit"), allhref="tools/index.html", alltext="All tools", items=[
+        ("tools/real-estate/index.html", "calculator", "Real Estate Calculator", "14 ways to own, rent or flip a place"),
+        ("tools/real-estate/index.html#sonar", "search", "Dolphin Sonar", "Fill the calculator from a listing"),
+        ("tools/savings-bridge/index.html", "piggy-bank", "Savings Bridge", "Cover the years before a pension"),
+        ("credit/index.html", "wallet", "Credit Card Tool", "Scores, cards and debt strategy"),
+    ]),
+    "maps": dict(label="Maps", icon="map", keys=("maps",), allhref="maps/index.html", alltext="All maps", items=[]),
+}
 
 
-def tools_menu(prefix, mid, current):
+def menu_html(prefix, key, mid, current):
+    m = MENUS[key]
+    if not m["items"]:
+        return ""
     items = "".join(
         f'<a class="dd-item" role="menuitem" href="{prefix}{h}"><span class="aico">{ic(i)}</span><span><b>{t}</b><small>{d}</small></span></a>'
-        for h, i, t, d in TOOLS_MENU)
-    cur = ' aria-current="page"' if current in ("tools", "credit") else ""
+        for h, i, t, d in m["items"])
+    cur = ' aria-current="page"' if current in m["keys"] else ""
     return (f'<div class="dd"><button type="button" class="dd-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="{mid}"{cur}>'
-            f'{ic("calculator") if mid.endswith("-m") else ""}<span>Tools</span>{ic("chevron-down", "chev")}</button>'
-            f'<div class="dd-menu" id="{mid}" role="menu" aria-label="Tools" hidden>{items}'
-            f'<a class="dd-all" href="{prefix}tools/index.html">All tools {ic("arrow-right")}</a></div></div>')
+            f'{ic(m["icon"]) if mid.endswith("-m") else ""}<span>{m["label"]}</span>{ic("chevron-down", "chev")}</button>'
+            f'<div class="dd-menu" id="{mid}" role="menu" aria-label="{m["label"]}" hidden>{items}'
+            f'<a class="dd-all" role="menuitem" href="{prefix}{m["allhref"]}">{m["alltext"]} {ic("arrow-right")}</a></div></div>')
 
 
 def render(title, prefix, body, hero="", cur=""):
     ids = [t[0] for t in THEMES]
     ac = lambda k: ' aria-current="page"' if cur == k else ""
     return f"""<!doctype html><html lang="en" data-theme="chalk"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="FiveOceans: when can you afford to work less near the water? A planning demo.">
 <title>{title}</title>
 <script>(function(){{var ids={ids!r},t=null;try{{t=localStorage.getItem('fiveoceans-theme')}}catch(e){{}}
 if(ids.indexOf(t)<0)t=matchMedia('(prefers-color-scheme: dark)').matches?'basalt':'chalk';
 document.documentElement.dataset.theme=t}})();</script>
-<style>{CSS}</style></head><body>
+<style>{CSS}</style></head><body data-sec="{cur}">
 {SPRITE}
 <a class="glass skip" href="#main">Skip to content</a>
 <header><div class="wrap bar">
 <a class="brand" href="{prefix}index.html">{ic("waves-horizontal")} FiveOceans</a>
-<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a>{tools_menu(prefix, "tools-menu", cur)}</nav>
+<nav class="nav" aria-label="Main"><a href="{prefix}seawater/index.html"{ac("seawater")}>Seawater</a><a href="{prefix}freshwater/index.html"{ac("freshwater")}>Freshwater</a><a href="{prefix}resources/index.html"{ac("resources")}>Resources</a>{menu_html(prefix, "tools", "tools-menu", cur)}{menu_html(prefix, "maps", "maps-menu", cur)}</nav>
 <span class="spacer"></span>
-<div class="search"><label for="q" hidden>Search</label>{ic("search")}<input id="q" type="search" placeholder="Search…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="results" hidden aria-live="polite"></div></div>
+<div class="search"><label for="q" hidden>Search</label>{ic("search")}<input id="q" type="search" placeholder="Search…" autocomplete="off"><kbd aria-hidden="true">/</kbd><div class="results" id="search-results" hidden aria-live="polite"></div></div>
 <details class="picker" id="picker"><summary class="glass" aria-label="Change theme">{ic("palette")} <span class="lbl">Change theme</span> {ic("chevron-down","chev")}</summary>
 <div class="menu" role="radiogroup" aria-label="Theme"><h4>Light</h4>{rows("light")}<h4>Dark</h4>{rows("dark")}</div></details>
 </div></header>
 <main id="main">{hero}<div class="wrap">{body}</div></main>
 <footer><div class="wrap"><p>FiveOceans · planning demo, fictional figures, not financial advice. Nothing you type is stored or sent.</p>
-<p><a href="{REPO}COLE_HANDOFF.txt">Handoff</a> · <a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> · <a href="https://github.com/Sukonik/5oceans">GitHub</a></p></div></footer>
+<p><a href="{prefix}design/index.html">Style guide</a> · <a href="{REPO}COLE_HANDOFF.txt">Handoff</a> · <a href="{REPO}Blue-Glass-Development-Plan.md">Blue Glass plan</a> · <a href="https://github.com/Sukonik/5oceans">GitHub</a></p></div></footer>
 <nav class="dock" aria-label="Quick">
 <a href="{prefix}index.html"{ac("home")}>{ic("house")}<span>Home</span></a>
-<a href="{prefix}index.html#water"{"" if cur not in ("seawater","freshwater") else ' aria-current="page"'}>{ic("waves-horizontal")}<span>Water</span></a>
+<a href="{prefix}water/index.html"{"" if cur not in ("water", "seawater", "freshwater") else ' aria-current="page"'}>{ic("waves-horizontal")}<span>Water</span></a>
 <a href="{prefix}resources/index.html"{ac("resources")}>{ic("landmark")}<span>Resources</span></a>
-{tools_menu(prefix, "tools-menu-m", cur)}
+{menu_html(prefix, "tools", "tools-menu-m", cur)}{menu_html(prefix, "maps", "maps-menu-m", cur)}
 </nav>
-<script>const P={prefix!r};{JS}</script></body></html>"""
+<script src="{prefix}assets/ui/ui.js"></script><script>const P={prefix!r};{JS}</script></body></html>"""
 
 
 FAMILIES = {
@@ -968,6 +1063,7 @@ for k, fn in GUIDE_FILES.items():
 
 # ---------------- tools ----------------
 shutil.copytree(root / "assets/calc", out / "assets/calc", dirs_exist_ok=True)
+shutil.copytree(root / "assets/ui", out / "assets/ui", dirs_exist_ok=True)
 sys.path.insert(0, str(root / "scripts"))
 MODE_LIST = json.loads((root / "assets/calc/modes.json").read_text(encoding="utf-8"))
 TOOLS = [
@@ -1025,7 +1121,7 @@ calc_body = f"""<section class="sonar" id="sonar" aria-labelledby="sn-h"><h2 id=
 <a class="glass" href="#results" id="jump">{ic("arrow-down")} Jump to results</a></div>
 <form id="fields" class="fields" onsubmit="return false" aria-label="Inputs"></form>
 </div>
-<section class="calc-res" aria-live="polite" aria-label="Results"><div id="results"></div></section></div>
+<section class="calc-res" tabindex="0" aria-live="polite" aria-label="Results"><div id="results"></div></section></div>
 <section class="scn" aria-labelledby="scn-h"><h2 id="scn-h">Saved scenarios</h2>
 <p class="subn">Save a scenario to this browser, compare up to three, or move them as a file. Nothing is uploaded.</p>
 <div class="row"><div class="inp"><input id="scn-name" type="text" placeholder="Name this scenario" aria-label="Scenario name" maxlength="60"></div>
@@ -1046,7 +1142,7 @@ bridge_body = f"""<div class="calc" id="calc-top"><div class="calc-main">
 <div class="tools-row"><button type="button" class="glass" id="b-reset">{ic("rotate-ccw")} Reset</button>
 <a class="glass" href="#b-results">{ic("arrow-down")} Jump to results</a></div>
 <form id="b-fields" class="fields" onsubmit="return false" aria-label="Inputs"></form></div>
-<section class="calc-res" aria-live="polite" aria-label="Results"><div id="b-results"></div></section></div>
+<section class="calc-res" tabindex="0" aria-live="polite" aria-label="Results"><div id="b-results"></div></section></div>
 <p class="disclaim">{TOOL_NOTE} See <a href="../../resources/governmental-457b/index.html">Governmental 457(b)</a>, <a href="../../resources/roth-ira/index.html">Roth IRA</a> and <a href="../../resources/treasuries/index.html">Treasury bills</a> for where bridge money can live.</p>
 <script src="../../assets/calc/engine.js"></script><script src="../../assets/calc/bridge.js"></script>"""
 write("tools/savings-bridge/index.html", "Savings Bridge | FiveOceans", 2, f'<section class="section">{bridge_body}</section>',
@@ -1083,6 +1179,40 @@ sample_body = ("""<section class="section"><div class="prose"><div class="callou
 <div class="sample-text">""" + "".join(f"<div>{html.escape(l)}</div>" for l in _sample_lines) + """</div></div></section>""")
 write("tools/real-estate/sample-listing/index.html", "Sample listing (fictional) | FiveOceans", 3, sample_body,
       page_hero('<a href="../../../index.html">Home</a> / <a href="../../index.html">Tools</a> / <a href="../index.html">Real Estate Calculator</a> / Sample listing', ic("house"), "Sample listing", "A fictional listing for practising Dolphin Sonar."), "tools")
+
+# ---------------- water hub and style guide ----------------
+water_secs = "".join(
+    f'<section class="section"><h2>{e} {n}</h2><p>{d}</p><div class="fam">{"".join(coll_card("../", c) for c in cs)}</div></section>'
+    for k, (e, n, cs, d) in FAMILIES.items())
+write("water/index.html", "Choose your water | FiveOceans", 1, water_secs,
+      page_hero('<a href="../index.html">Home</a> / Water', ic("waves-horizontal"), "Choose your water",
+                "Salt water or fresh: six collections, six animal paths each. Pick the water that fits the life you want near it.",
+                '<nav class="tabs" aria-label="Families">' + "".join(f'<a href="../{k}/index.html">{e} {n}</a>' for k, (e, n, cs, d) in FAMILIES.items()) + "</nav>"), "water")
+INDEX.append(dict(n="Choose your water", t="Seawater and freshwater collections", c="Page", u="water/index.html", s=words("water seawater freshwater coastalsea centralsea deepsea spring lake river collections")))
+
+def sg_btns():
+    return (f'<div class="sg-row"><button class="glass" type="button">{ic("search")} Default</button><button class="glass primary" type="button">{ic("calculator")} Primary</button>'
+            f'<button class="glass" type="button" disabled>Disabled</button><a class="glass" href="#">{ic("arrow-up-right")} Link button</a><button class="sbtn" type="button">Small</button></div>')
+sg = f"""<div class="sg">
+<section class="section"><h2>Buttons</h2>{sg_btns()}<h3>Mode buttons and segmented tabs</h3>
+<div class="sg-row"><button class="mbtn on" type="button">Selected</button><button class="mbtn" type="button">Not selected</button><button class="mbtn" type="button">Another</button></div>
+<nav class="tabs" aria-label="Example tabs"><a href="#" aria-current="page">{ic("tree-palm")} First</a><a href="#">{ic("anchor")} Second</a><a href="#">{ic("droplet")} Third</a></nav>
+<h3>Chips and tags</h3><div class="tags"><a class="tag" href="#">{ic("house")}Primary home</a><a class="tag" href="#">{ic("landmark")}457(b)</a><a class="tag" href="#">{ic("coins")}T-bills</a></div>
+<h2>Form controls</h2>
+<div class="fields"><div class="fld" data-range="0,60,0.5"><label for="sg1">Down payment</label><div class="inp"><input id="sg1" value="20" inputmode="decimal"><span class="af suf">%</span></div><small>Drag the slider or type.</small></div>
+<div class="fld" data-range="0,12,0.05"><label for="sg2">Interest rate</label><div class="inp"><input id="sg2" value="6.5" inputmode="decimal"><span class="af suf">%</span></div><small>Annual.</small></div>
+<div class="fld"><label for="sg3">Loan program</label><div class="inp"><select id="sg3"><option>Conventional</option><option>FHA</option><option>VA</option></select></div><small>A select.</small></div>
+<div class="fld"><label for="sg4">Purchase price</label><div class="inp"><span class="af pre">$</span><input id="sg4" value="450000" inputmode="decimal"></div><small>Money input.</small></div></div>
+<h2>Menus</h2><div class="dd-menu static" role="group" aria-label="Menu preview"><a class="dd-item" href="#"><span class="aico">{ic("calculator")}</span><span><b>Menu item</b><small>One-line description</small></span></a>
+<a class="dd-item" href="#" aria-current="page"><span class="aico">{ic("search")}</span><span><b>Current item</b><small>Marked as the page you are on</small></span></a><a class="dd-all" href="#">All items {ic("arrow-right")}</a></div>
+<h2>Cards, callouts, status</h2>
+<div class="grid"><article class="card"><span class="aico">{ic("house")}</span><p class="eyebrow">Eyebrow</p><h3>Card title</h3><p class="desc">Card description in the muted text color, with a <a href="#">link</a>.</p></article>
+<div class="hl"><span class="hl-k">Headline</span><strong class="hl-v">$1,552</strong><span class="hl-n">a note under it</span></div></div>
+<div class="callout" role="note">A callout. Good for a tip or a warning.</div><div class="callout high" role="note">A warning callout.</div><div class="callout ok" role="note">A positive callout.</div>
+<p><span class="neg">Negative value</span> · <span class="pos">Positive value</span></p>
+</section></div>"""
+write("design/index.html", "Style guide | FiveOceans", 1, f'<section class="section">{sg}</section>',
+      page_hero('<a href="../index.html">Home</a> / Style guide', ic("palette"), "Style guide", "The Blue Glass controls in one place: buttons, tabs, sliders, menus, cards and callouts. Switch themes to check each one."), "design")
 
 (out / "search-index.json").write_text(json.dumps(INDEX, separators=(",", ":")), encoding="utf-8")
 (out / ".nojekyll").write_text("")
