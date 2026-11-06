@@ -61,6 +61,7 @@ Every tool runs in your browser, saves nothing unless you press a button, and ha
 | 🐬 **Dolphin Sonar** | top of the Real Estate Calculator | Fills the calculator from a listing link plus the listing text. See below. | [#15](https://github.com/Sukonik/5oceans/issues/15) · [licensed data #16](https://github.com/Sukonik/5oceans/issues/16) · [open data #17](https://github.com/Sukonik/5oceans/issues/17) |
 | 🏦 **Savings Bridge** | [`/tools/savings-bridge/`](https://sukonik.github.io/5oceans/tools/savings-bridge/) | Monthly deposits to a balance at the day you stop working, the monthly draw it supports, and the deposit that closes a gap before a pension starts. | [#13](https://github.com/Sukonik/5oceans/issues/13) |
 | 💳 **Credit Card Tool** | [`/credit/`](https://sukonik.github.io/5oceans/credit/) | Your three scores, cards, good-vs-bad debt strategy and a private packet. See below. | [#14](https://github.com/Sukonik/5oceans/issues/14) |
+| 📍 **Cities Map** | [`/maps/cities/`](https://sukonik.github.io/5oceans/maps/cities/) | 57 cities on an ocean, sea, lake or river, with a searchable list, map and details. Seas Map and Land Map follow. | [#29](https://github.com/Sukonik/5oceans/issues/29) |
 | 🏡 **Funding the house** | [`/resources/`](https://sukonik.github.io/5oceans/resources/#funding) + a **Loan program** selector in the calculator | Conventional, FHA, VA and USDA terms (down payment, financed fees, mortgage insurance), credit-score prompts and a grant or down-payment-help line that lowers cash to close. See below. | [#18](https://github.com/Sukonik/5oceans/issues/18) |
 
 **Tools menu.** Every tool is reachable from the **Tools** item in the main navigation: a themed bubble dropdown (desktop: opens on hover or click, pins on click, closes on Esc or an outside click; arrow keys, Home and End move through it) that becomes a bubble above the bottom dock on phones. Add a tool by adding a row to `TOOLS_MENU` in `scripts/build_site.py`. The idea follows [responsive-dropdown-menu-2](https://github.com/bedimcode/responsive-dropdown-menu-2) (MIT); the code is original and keyboard accessible.
@@ -98,6 +99,14 @@ Ping a listing and the calculator fills itself. Five ways in:
 **Tools we looked at.** [Scrapling](https://github.com/D4Vinci/Scrapling) advertises getting past anti-bot protections; we do not use that on any site that is trying to keep bots out. [AutoScraper](https://github.com/alirezamika/autoscraper) and [mlscraper](https://github.com/lorey/mlscraper) learn extraction rules from examples and are good candidates for pages that allow reading ([#15](https://github.com/Sukonik/5oceans/issues/15)). [Galer](https://github.com/dwisiswant0/galer) extracts URLs through Chrome and is not needed here.
 
 **Why the big portals are not scraped.** A browser cannot fetch those pages from another site, and Redfin, Zillow and StreetEasy block automated reads; their terms are reported to forbid scraping, and Zillow has acted against scrapers. MLS data is licensed too: OneKey MLS (New York) delivers data through MLS Grid to brokers and registered vendors, and IDX is a display permission, not a general license. So Sonar reads only what you give it. Real listing feeds (a licensed OneKey partnership, or your own API key) and open public data (flood zone, HUD rents, tax lots) are planned in [#16](https://github.com/Sukonik/5oceans/issues/16) and [#17](https://github.com/Sukonik/5oceans/issues/17). Engine: [`assets/calc/sonar.js`](assets/calc/sonar.js); tests: [`tests/sonar.test.mjs`](tests/sonar.test.mjs) and [`tests/sonar_issue.test.mjs`](tests/sonar_issue.test.mjs).
+
+## 📍 Maps
+
+A **Maps** menu sits beside Tools. Every map has the same layout: filters, a list, the map and a details panel. The list carries every fact, so nothing depends on the map tiles loading.
+
+- **Cities Map** (v0.18): cities on an ocean, sea, lake or river. Names and coordinates come from [dr5hn/countries-states-cities-database](https://github.com/dr5hn/countries-states-cities-database) (ODbL 1.0); the water body, type and notes are written for this site. Rebuild the data with `python scripts/build_city_data.py <path to that repo>`.
+- **Seas Map** and **Land Map** (pricing) are planned next; see [#30](https://github.com/Sukonik/5oceans/issues/30) and [#31](https://github.com/Sukonik/5oceans/issues/31).
+- Map engine: [Leaflet](https://leafletjs.com) 1.9.4 (BSD-2, vendored in `assets/vendor/leaflet`). Tiles: © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). No scraping, no personal data.
 
 ## 💳 Credit Card Tool
 
@@ -249,6 +258,7 @@ site/              generated output (not committed)
 | v0.15 | Funding the house: loan-program selector (conventional, FHA, VA, USDA), assistance line, 10 mortgage and grant pages; accessibility sweep (landmarks, heading order, contrast) |
 | v0.16 | Dolphin Sonar reads about 70 kinds of facts in 11 categories (price and payment, costs, property, lot, features, market, price history, rental, location, risk, listing source) with insights; Redfin-, Zillow- and StreetEasy-style test fixtures |
 | v0.17 | UI/UX polish: glass control system and style guide, range sliders, menus that fit the screen and mark the current page, a real Water page for the dock, scroll affordances, floating result pill; fixes calculator results being written to a hidden header element; site structure test in CI |
+| v0.18 | Maps menu beside Tools, `/maps/` hub, **Cities Map** (Leaflet + OpenStreetMap, list-first and accessible, 57 cities with ODbL-credited coordinates from dr5hn), map data test in CI |
 
 ## 🧭 Roadmap
 
